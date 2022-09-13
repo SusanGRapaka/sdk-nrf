@@ -38,7 +38,7 @@
 #include <errno.h>
 
 #define MAX_UDP_LEN       1470
-#define MAX_RCV_BUF_LEN   (32*1024)
+#define MAX_RCV_BUF_LEN   (1*1024)
 
 struct sockfds
 {
@@ -53,7 +53,7 @@ extern int wfaCreateTCPServSock(unsigned short sport);
 extern int wfaCreateUDPSock(char *sipaddr, unsigned short sport);
 extern int wfaAcceptTCPConn(int servSock);
 extern int wfaConnectUDPPeer(int sock, char *dipaddr, int dport);
-extern void wfaSetSockFiDesc(fd_set *sockset, int *, struct sockfds *);
+extern void wfaSetSockFiDesc(zsock_fd_set *sockset, int *, struct sockfds *);
 #ifdef _WINDOWS
 extern int wfaCtrlSend(SOCKET sock, unsigned char *buf, int bufLen);
 #else
@@ -65,7 +65,7 @@ extern int wfaTrafficRecv(int sock, char *buf, struct sockaddr *from);
 extern int wfaGetifAddr(char *ifname, struct sockaddr_in *sa);
 extern struct timeval *wfaSetTimer(int, int, struct timeval *);
 extern int wfaSetSockMcastRecvOpt(int, char*);
-extern int wfaSetSockMcastSendOpt(int);
+//extern int wfaSetSockMcastSendOpt(int);
 extern int wfaSetProcPriority(int);
 
 #endif /* _WFA_SOCK_H */

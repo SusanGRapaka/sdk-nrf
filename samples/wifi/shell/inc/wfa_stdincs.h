@@ -28,14 +28,14 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <linux/types.h>
-#include <linux/socket.h>
+#include <zephyr/types.h>
+#include <sys/socket.h>
 #include <sys/select.h>
 #include <poll.h>
-#include <linux/if.h>
+//#include <linux/if.h>
 #include <sys/ioctl.h>
-#include <sys/mman.h>
-#include <sched.h>
+//#include <sys/mman.h>
+//#include <sched.h>
 #include <math.h>
 #include <errno.h>
 

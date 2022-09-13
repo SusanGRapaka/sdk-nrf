@@ -69,7 +69,7 @@ int wfaCreateTCPServSock(unsigned short port)
 
     /* Construct local address structure */
     wMEMSET(&servAddr, 0, sizeof(servAddr));
-    wfaGetifAddr(gnetIf, &servAddr);
+    //wfaGetifAddr(gnetIf, &servAddr);
     servAddr.sin_family = AF_INET;        /* Internet address family */
     servAddr.sin_port = htons(port);              /* Local port */
 
@@ -119,22 +119,26 @@ int wfaCreateUDPSock(char *ipaddr, unsigned short port)
     return udpsock;
 }
 
+#if 0
 int wfaSetSockMcastSendOpt(int sockfd)
 {
     unsigned char ttlval = 1;
 
     return wSETSOCKOPT(sockfd, IPPROTO_IP, IP_MULTICAST_TTL, &ttlval, sizeof(ttlval));
 }
+#endif
 
 int wfaSetSockMcastRecvOpt(int sockfd, char *mcastgroup)
 {
+    int so = 0;
+    #if 0
     struct ip_mreq mcreq;
-    int so;
 
     mcreq.imr_multiaddr.s_addr = inet_addr(mcastgroup);
     mcreq.imr_interface.s_addr = htonl(INADDR_ANY);
     so = wSETSOCKOPT(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
                      (void *)&mcreq, sizeof(mcreq));
+    #endif
 
     return so;
 }
@@ -145,7 +149,7 @@ int wfaConnectUDPPeer(int mysock, char *daddr, int dport)
 
     wMEMSET(&peerAddr, 0, sizeof(peerAddr));
     peerAddr.sin_family = AF_INET;
-    inet_aton(daddr, &peerAddr.sin_addr);
+    inet_pton(peerAddr.sin_family, daddr, &peerAddr.sin_addr);
     peerAddr.sin_port   = htons(dport);
 
     wCONNECT(mysock, (struct sockaddr *)&peerAddr, sizeof(peerAddr));
@@ -256,6 +260,7 @@ void wfaSetSockFiDesc(fd_set *fdset, int *maxfdn1, struct sockfds *fds)
 int wfaCtrlSend(int sock, unsigned char *buf, int bufLen)
 {
     int bytesSent = 0;
+    int i = 0;
 
     if(bufLen == 0)
         return WFA_FAILURE;
@@ -267,6 +272,10 @@ int wfaCtrlSend(int sock, unsigned char *buf, int bufLen)
         DPRINT_WARNING(WFA_WNG, "Error sending tcp packet\n");
     }
 
+    for (i = 0; i < bufLen; i++) {
+        printf("%02x ", buf[i]);
+    }
+    printf("\n");
     return bytesSent;
 }
 
@@ -318,6 +327,7 @@ int wfaTrafficRecv(int sock, char *buf, struct sockaddr *from)
     return bytesRecvd;
 }
 
+#if 0
 int wfaGetifAddr(char *ifname, struct sockaddr_in *sa)
 {
     struct ifreq ifr;
@@ -402,3 +412,4 @@ int wfaSetProcPriority(int set)
 
     return currprio;
 }
+#endif
