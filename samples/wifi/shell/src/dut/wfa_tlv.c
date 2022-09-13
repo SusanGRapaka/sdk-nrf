@@ -46,7 +46,7 @@ BOOL wfaEncodeTLV(WORD the_tag, WORD the_len, BYTE *the_value, BYTE *tlv_data)
     ((wfaTLV *)data)->tag = the_tag;
     ((wfaTLV *)data)->len = the_len;
     if(the_value != NULL && the_len != 0)
-        wMEMCPY((data+4), (BYTE *)the_value, the_len);
+        wMEMCPY(((BYTE *)data+4), (BYTE *)the_value, the_len);
 
     return WFA_SUCCESS;
 }
@@ -64,6 +64,7 @@ BOOL wfaDecodeTLV(BYTE *tlv_data, int tlv_len, WORD *ptag, int *pval_len, BYTE *
 {
     wfaTLV *data = (wfaTLV *)tlv_data;
 
+    printf("tag: %x len:%x\n", data->tag, data->len);
     if(pvalue == NULL)
     {
         DPRINT_ERR(WFA_ERR, "Parm buf invalid\n");
