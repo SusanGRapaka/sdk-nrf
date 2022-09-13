@@ -38,6 +38,7 @@
 
 extern int gSock;
 extern void printProfile(tgProfile_t *);
+extern char  *strtok_r(char *str, const char *sep, char **state);
 int wfaStandardBoolParsing (char *str);
 
 /* command KEY WORD String table */
@@ -96,7 +97,7 @@ int getParamValueInt(char *pcmdStr, char *pParam, int *paramValue)
     if(strcasecmp(pcmdStr, pParam) == 0)
     {
         str = strtok_r(NULL, ",", &pcmdStr);
-        paramValue = atoi(str);
+        *paramValue = atoi(str);
         return 0;
     }
     return -1;
@@ -864,6 +865,7 @@ int xcCmdProcStaGetIpConfig(char *pcmdStr, BYTE *aBuf, int *aLen)
     dutCommand_t getipconf;
     memset(&getipconf, 0, sizeof(dutCommand_t));
 
+#if 0
     DPRINT_INFO(WFA_OUT, "Entering xcCmdProcStaGetIpConfig ...\n");
 
     if(aBuf == NULL)
@@ -882,6 +884,7 @@ int xcCmdProcStaGetIpConfig(char *pcmdStr, BYTE *aBuf, int *aLen)
     wfaEncodeTLV(WFA_STA_GET_IP_CONFIG_TLV, sizeof(dutCommand_t), (BYTE *)&getipconf, aBuf);
 
     *aLen = 4+sizeof(getipconf);
+#endif
 
     return WFA_SUCCESS;
 }
