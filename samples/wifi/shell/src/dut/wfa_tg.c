@@ -27,7 +27,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <netdb.h>
-#include <pthread.h>
+//#include <pthread.h>
 #include <math.h>
 
 #include "wfa_portall.h"
@@ -42,6 +42,7 @@
 #include "wfa_rsp.h"
 #include "wfa_wmmps.h"
 #include "wfa_miscs.h"
+#include "wfa_dut.h"
 
 extern tgStream_t gStreams[];
 extern BOOL gtgRecv;
@@ -120,6 +121,7 @@ tgStream_t *findStreamProfile(int id)
 
     for(i = 0; i< WFA_MAX_TRAFFIC_STREAMS; i++)
     {
+        printf("%s:%d streamId: %d\n", __func__, __LINE__, myStream->id);
         if(myStream->id == id)
             return myStream;
 
@@ -277,7 +279,7 @@ int wfaTGStopPing(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
         gtgTransac =0;
         gtgSend = 0;
         gtgRecv = 0;
-        alarm(0);
+        //alarm(0);
 
         myStream = findStreamProfile(streamid);
         if(myStream == NULL)
@@ -339,13 +341,12 @@ int wfaTGConfig(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     myStream->id = ++streamId; /* the id start from 1 */
     myStream->tblidx = slotCnt-1;
 
-#if 0
     DPRINT_INFO(WFA_OUT, "profile %i direction %i dest ip %s dport %i source %s sport %i rate %i duration %i size %i class %i delay %i\n", myStream->profile.profile, myStream->profile.direction, myStream->profile.dipaddr, myStream->profile.dport, myStream->profile.sipaddr, myStream->profile.sport, myStream->profile.rate, myStream->profile.duration, myStream->profile.pksize, myStream->profile.trafficClass, myStream->profile.startdelay);
-#endif
 
     confResp->status = STATUS_COMPLETE;
     confResp->streamId = myStream->id;
     wfaEncodeTLV(WFA_TRAFFIC_AGENT_CONFIG_RESP_TLV, sizeof(dutCmdResponse_t), (BYTE *)confResp, respBuf);
+    printf ("%s:%d %s\n", __func__, __LINE__, respBuf);
     *respLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
 
 
@@ -662,18 +663,23 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
     for(i=0; i<numStreams; i++)
     {
         wMEMCPY(&streamid, parms+(4*i), 4);
+        printf("%s:%d %d\n", __func__, __LINE__, streamid);
         myStream = findStreamProfile(streamid);
+        printf("%s:%d\n", __func__, __LINE__);
         if(myStream == NULL)
         {
+        printf("%s:%d\n", __func__, __LINE__);
             staSendResp.status = STATUS_INVALID;
             wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, 4, (BYTE *)&staSendResp, respBuf);
             *respLen = WFA_TLV_HDR_LEN + 4;
             return WFA_SUCCESS;
         }
 
+        printf("%s:%d\n", __func__, __LINE__);
         theProfile = &myStream->profile;
         if(theProfile == NULL)
         {
+        printf("%s:%d\n", __func__, __LINE__);
             staSendResp.status = STATUS_INVALID;
             wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, 4, (BYTE *)&staSendResp, respBuf);
             *respLen = WFA_TLV_HDR_LEN + 4;
@@ -681,8 +687,10 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
             return WFA_SUCCESS;
         }
 
+        printf("%s:%d\n", __func__, __LINE__);
         if(theProfile->direction != DIRECT_SEND)
         {
+        printf("%s:%d\n", __func__, __LINE__);
             staSendResp.status = STATUS_INVALID;
             wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, 4, (BYTE *)&staSendResp, respBuf);
             *respLen = WFA_TLV_HDR_LEN + 4;
@@ -693,9 +701,11 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
         /*
          * need to reset the stats
          */
+        printf("%s:%d\n", __func__, __LINE__);
         wMEMSET(&myStream->stats, 0, sizeof(tgStats_t));
 
         // mark the stream active;
+        printf("%s:%d\n", __func__, __LINE__);
         myStream->state = WFA_STREAM_ACTIVE;
 
         switch(theProfile->profile)
@@ -708,6 +718,7 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
         case PROF_CALI_RTD:
             gtgCaliRTD = streamid;
         case PROF_IPTV:
+        printf("%s:%d\n", __func__, __LINE__);
             gtgSend = streamid;
             /*
              * singal the thread to Sending WMM traffic
@@ -719,6 +730,7 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
             wPT_MUTEX_UNLOCK(&wmm_thr[usedThread].thr_flag_mutex);
             usedThread++;
 
+        printf("%s:%d\n", __func__, __LINE__);
             *respLen = 0;
             break;
         case PROF_UAPSD:
@@ -743,6 +755,7 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
         } /* switch  */
     }/*  for */
 
+        printf("%s:%d\n", __func__, __LINE__);
     return WFA_SUCCESS;
 }
 
@@ -768,7 +781,7 @@ int wfaTGReset(int len, BYTE *parms, int *respLen, BYTE *respBuf)
     }
 
     /* reset the timer alarm if it was armed */
-    wALARM(0);
+    //wALARM(0)
 
     /* just reset the flags for the command */
     gtgRecv = 0;
@@ -983,7 +996,7 @@ int wfaSendLongFile(int mySockfd, int streamid, BYTE *aRespBuf, int *aRespLen)
     /* initialize the destination address */
     wMEMSET(&toAddr, 0, sizeof(toAddr));
     toAddr.sin_family = AF_INET;
-    toAddr.sin_addr.s_addr = inet_addr(theProf->dipaddr);
+    inet_pton(toAddr.sin_family, theProf->dipaddr, &toAddr.sin_addr);
     toAddr.sin_port = htons(theProf->dport);
 
     /* if a frame rate and duration are defined, then we know
@@ -1205,17 +1218,17 @@ int wfaSendShortFile(int mySockfd, int streamid, BYTE *sendBuf, int pksize, BYTE
 
     wMEMSET(&toAddr, 0, sizeof(toAddr));
     toAddr.sin_family = AF_INET;
-    toAddr.sin_addr.s_addr = inet_addr(theProf->sipaddr);
+    inet_pton(toAddr.sin_family, theProf->sipaddr, &toAddr.sin_addr);
     toAddr.sin_port = htons(theProf->sport);
 
     if(gtgRecv && gtgTransac)
     {
-        toAddr.sin_addr.s_addr = inet_addr(theProf->sipaddr);
+        inet_pton(toAddr.sin_family, theProf->sipaddr, &toAddr.sin_addr);
         toAddr.sin_port = htons(theProf->sport);
     }
     else if(gtgSend && gtgTransac)
     {
-        toAddr.sin_addr.s_addr = inet_addr(theProf->dipaddr);
+        inet_pton(toAddr.sin_family, theProf->dipaddr, &toAddr.sin_addr);
         toAddr.sin_port = htons(theProf->dport);
     }
 
@@ -1278,17 +1291,17 @@ int wfaRecvFile(int mySockfd, int streamid, char *recvBuf)
 
     wMEMSET(&fromAddr, 0, sizeof(fromAddr));
     fromAddr.sin_family = AF_INET;
-    fromAddr.sin_addr.s_addr = inet_addr(theProf->dipaddr);
+    inet_pton(fromAddr.sin_family, theProf->dipaddr, &fromAddr.sin_addr);
     fromAddr.sin_port = htons(theProf->dport);
 
     if(gtgRecv && gtgTransac)
     {
-        fromAddr.sin_addr.s_addr = inet_addr(theProf->sipaddr);
+        inet_pton(fromAddr.sin_family, theProf->sipaddr, &fromAddr.sin_addr);
         fromAddr.sin_port = htons(theProf->sport);
     }
     else if(gtgSend && gtgTransac)
     {
-        fromAddr.sin_addr.s_addr = inet_addr(theProf->dipaddr);
+        inet_pton(fromAddr.sin_family, theProf->dipaddr, &fromAddr.sin_addr);
         fromAddr.sin_port = htons(theProf->dport);
     }
 
@@ -1356,7 +1369,7 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
     if ( (mySockfd < 0) || (streamId < 0) || ( pRespBuf == NULL) 
             || ( pRespLen == NULL) )
     {
-        DPRINT_INFO(WFA_OUT, "wfaSendBitrateData pass-in parameter err mySockfd=%i streamId=%i pRespBuf=0x%x pRespLen=0x%x\n",
+        DPRINT_INFO(WFA_OUT, "wfaSendBitrateData pass-in parameter err mySockfd=%i streamId=%i pRespBuf=0x%hhn pRespLen=0x%ls\n",
             mySockfd,streamId,pRespBuf,pRespLen );
         ret= WFA_FAILURE;
         goto errcleanup;
@@ -1364,7 +1377,7 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 
     if ( theProf == NULL || myStream == NULL)
     {
-        DPRINT_INFO(WFA_OUT, "wfaSendBitrateData parameter err in NULL pt theProf=%l myStream=%l \n",
+        DPRINT_INFO(WFA_OUT, "wfaSendBitrateData parameter err in NULL pt theProf=%ld myStream=%ld \n",
             theProf, myStream);
         ret= WFA_FAILURE;
         goto errcleanup;
@@ -1385,7 +1398,7 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
     /* calculate bitrate asked */
     if ( (rate = theProf->pksize * theProf->rate * 8) > WFA_SEND_FIX_BITRATE_MAX)
     {
-        DPRINT_INFO(WFA_OUT, "wfaSendBitrateData over birate can do in the routine, req bitrate=%l \n",rate);
+        DPRINT_INFO(WFA_OUT, "wfaSendBitrateData over birate can do in the routine, req bitrate=%ld \n",rate);
         ret= WFA_FAILURE;
         goto errcleanup;
     }
@@ -1406,7 +1419,7 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
     /*  initialize the destination address  */
     memset(&toAddr, 0, sizeof(toAddr));
     toAddr.sin_family = AF_INET;
-    toAddr.sin_addr.s_addr = inet_addr(theProf->dipaddr);
+    inet_pton(toAddr.sin_family, theProf->dipaddr, &toAddr.sin_addr);
     toAddr.sin_port = htons(theProf->dport); 
 
     /*  set sleep time per sending */

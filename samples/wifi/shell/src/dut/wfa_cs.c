@@ -37,10 +37,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/socket.h>
+#include <zephyr/posix/sys/socket.h>
 #include <arpa/inet.h>
-#include <linux/types.h>
-#include <linux/socket.h>
+#include <zephyr/types.h>
+#include <zephyr/net/socket.h>
 #include <poll.h>
 
 #include "wfa_portall.h"
@@ -72,7 +72,7 @@ int wfaExecuteCLI(char *CLI);
 /* Since the two definitions are used all over the CA function */
 char gCmdStr[WFA_CMD_STR_SZ];
 dutCmdResponse_t gGenericResp;
-int wfaTGSetPrio(int sockfd, int tgClass);
+//int wfaTGSetPrio(int sockfd, int tgClass);
 void create_apts_msg(int msg, unsigned int txbuf[],int id);
 
 int sret = 0;
@@ -333,6 +333,7 @@ int wfaStaGetIpConfig(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     char *ifname = getIpConf->intf;
     caStaGetIpConfigResp_t *ifinfo = &ipconfigResp->cmdru.getIfconfig;
 
+#if 0
     FILE *tmpfd;
     char string[256];
     char *str;
@@ -460,6 +461,7 @@ int wfaStaGetIpConfig(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 #endif
 
     fclose(tmpfd);
+#endif
     return WFA_SUCCESS;
 }
 
@@ -1950,7 +1952,7 @@ int wfaDeviceGetInfo(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     else
     {
         // Call internal API to pull the version ID */
-        memcpy(infoResp->cmdru.devInfo.firmware, "NOVERSION", 15);
+        memcpy(infoResp->cmdru.devInfo.firmware, "NOVERSION", sizeof("NOVERSION"));
     }
 
     infoResp->status = STATUS_COMPLETE;
@@ -4067,6 +4069,7 @@ int wfaStaCliCommand(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     caStaCliCmdResp_t infoResp;
 
     printf("\nEntry wfaStaCliCommand; command Received: %s\n",caCmdBuf);
+#if 0
     memcpy(cmdName, strtok_r((char *)caCmdBuf, ",", (char **)&pcmdStr), 32);
     sprintf(CmdStr, "%s",cmdName);
 
@@ -4161,7 +4164,9 @@ int wfaStaCliCommand(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     {
         printf("wfaStaCliCommand no return code found\n");
     }
+#endif
     infoResp.resFlag=CmdReturnFlag;
+    st = 1;
 
 cleanup:
 

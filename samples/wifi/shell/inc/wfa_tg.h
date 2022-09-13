@@ -25,6 +25,7 @@
 #define _WFA_TG_H
 
 #include <sys/time.h>
+#include <pthread.h>
 
 /* maximum number of streams to support */
 #define IPV4_ADDRESS_STRING_LEN    16

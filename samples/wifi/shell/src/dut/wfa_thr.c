@@ -37,6 +37,7 @@
 #include "wfa_rsp.h"
 #include "wfa_wmmps.h"
 #include "wfa_miscs.h"
+#include <sys/signal.h>
 
 /*
  * external global thread sync variables
@@ -58,6 +59,7 @@ extern unsigned int recvThr;
 extern int tgWMMTestEnable;
 int num_stops=0;
 int num_hello=0;
+static struct k_work_delayable set_stop_alrm;
 
 BOOL gtgCaliRTD;
 
@@ -147,13 +149,11 @@ void tmout_stop_send(int num)
     {
         wmm_thr[i].thr_flag = 0;
     }
-
-    /* all alarms need to reset */
-    wALARM(0);
 }
 
 
 
+#if 0
 /*
  * wfaTGSetPrio(): This depends on the network interface card.
  *               So you might want to remap according to the driver
@@ -248,6 +248,7 @@ int wfaTGSetPrio(int sockfd, int tgUserPriority)
     }
     return (tosval == 0xE0)?0xD8:tosval;
 }
+#endif
 
 /*
  * wfaSetThreadPrio():
@@ -589,6 +590,7 @@ int WfaStaWaitStop(char psave,int sleep_period,int *state)
 
 void * wfa_wmm_thread(void *thr_param)
 {
+        printf("%s:%d\n", __func__, __LINE__);
     int myId = ((tgThrData_t *)thr_param)->tid;
     tgWMM_t *my_wmm = &wmm_thr[myId];
     tgStream_t *myStream = NULL;
@@ -601,6 +603,7 @@ void * wfa_wmm_thread(void *thr_param)
     StationProcStatetbl_t  curr_state;
 #endif
 
+printf("started wmm thread\n");
 //#ifdef WFA_VOICE_EXT
     struct timeval lstime, lrtime;
     int asn = 1;  /* everytime it starts from 1, and to ++ */
@@ -608,6 +611,7 @@ void * wfa_wmm_thread(void *thr_param)
 
     wPT_ATTR_INIT(&tattr);
     wPT_ATTR_SETSCH(&tattr, SCHED_RR);
+
 
     while(1)
     {
@@ -633,6 +637,7 @@ void * wfa_wmm_thread(void *thr_param)
         myStream = findStreamProfile(myStreamId);
         myProfile = &myStream->profile;
 
+    memset(respBuf, 0, WFA_RESP_BUF_SZ);
         if(myProfile == NULL)
         {
             status = STATUS_INVALID;
@@ -660,7 +665,7 @@ void * wfa_wmm_thread(void *thr_param)
             /*
              * Set packet/socket priority TOS field
              */
-            wfaTGSetPrio(mySock, myProfile->trafficClass);
+           // wfaTGSetPrio(mySock, myProfile->trafficClass);
 
             /*
              * set a proper priority
@@ -678,15 +683,17 @@ void * wfa_wmm_thread(void *thr_param)
              */
             if(myProfile->maxcnt == 0)
             {
-                wSIGNAL(SIGALRM, tmout_stop_send);
-                wALARM(myProfile->duration );
+                k_work_init_delayable(&set_stop_alrm, tmout_stop_send);
+                k_work_schedule(&set_stop_alrm, K_SECONDS(myProfile->duration));
                 DPRINT_INFO(WFA_OUT, "wfa_wmm_thread SEND set stop alarm for %d sec \n", myProfile->duration);
             }
 
+#if 0
             if(myProfile->profile == PROF_MCAST)
             {
                 wfaSetSockMcastSendOpt(mySock);
             }
+#endif
 
             if (myProfile->profile == PROF_IPTV || myProfile->profile == PROF_FILE_TX || myProfile->profile == PROF_MCAST)
             {
@@ -698,8 +705,13 @@ void * wfa_wmm_thread(void *thr_param)
 
               if ( (myProfile->rate != 0 ) /* WFA_SEND_FIX_BITRATE_MAX_FRAME_RATE)*/ && 
                    (myProfile->pksize * myProfile->rate * 8 < WFA_SEND_FIX_BITRATE_MAX) &&
-                   (myProfile->trafficClass != TG_WMM_AC_VO)  )
+                   (myProfile->trafficClass != TG_WMM_AC_VO)  ) {
                  wfaSendBitrateData(mySock, myStreamId, respBuf, &respLen);
+                 for(i = 0; i < respLen; i++) {
+                    printf("%02x ", respBuf[i]);
+                 }
+                 printf("\n");
+                   }
               else
               {
                  wfaSendLongFile(mySock, myStreamId, respBuf, &respLen);
@@ -1153,7 +1165,6 @@ void * wfa_wmm_thread(void *thr_param)
                //////////////////// Wifi Alliance Added
            }
             break;
-
         default:
             DPRINT_ERR(WFA_ERR, "Unknown covered case\n");
         }

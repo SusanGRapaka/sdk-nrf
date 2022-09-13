@@ -29,6 +29,11 @@
 #include <pthread.h>
 #include <signal.h>
 #include <time.h>
+#include <zephyr/net/socket.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/select.h>
 
 #include "wfa_portall.h"
 #include "wfa_debug.h"
@@ -42,6 +47,7 @@
 #include "wfa_agt.h"
 #include "wfa_rsp.h"
 #include "wfa_wmmps.h"
+#include "wfa_agtctrl.h"
 
 /* Global flags for synchronizing the TG functions */
 int        gtimeOut = 0;        /* timeout value for select call in usec */
@@ -66,6 +72,8 @@ char       gnetIf[WFA_BUFF_32];        /* specify the interface to use */
 
 extern BYTE   *trafficBuf, *respBuf;
 
+BYTE      *xcCmdBuf=NULL, *parmsVal=NULL;
+struct timeval *toutvalp=NULL, *tovalp; /* Timeout for select()           */
 /* stream table */
 extern tgStream_t gStreams[];         /* streams' buffers             */
 
@@ -82,7 +90,8 @@ extern     char gCmdStr[];
 extern     tgStream_t *findStreamProfile(int);
 extern     int clock_drift_ps;
 
-dutCmdResponse_t gGenericResp;
+extern dutCmdResponse_t gGenericResp;
+extern typeNameStr_t nameStr[];
 
 /* Debug message flags */
 unsigned short wfa_defined_debug = WFA_DEBUG_ERR | WFA_DEBUG_WARNING | WFA_DEBUG_INFO;
@@ -91,7 +100,7 @@ unsigned short dfd_lvl = WFA_DEBUG_DEFAULT | WFA_DEBUG_ERR | WFA_DEBUG_INFO;
 /*
  * Thread Synchronize flags
  */
-tgWMM_t wmm_thr[WFA_THREADS_NUM];
+extern tgWMM_t wmm_thr[WFA_THREADS_NUM];
 
 extern void *wfa_wmm_thread(void *thr_param);
 extern void *wfa_wmmps_thread();
@@ -99,135 +108,31 @@ extern void *wfa_wmmps_thread();
 extern double gtgPktRTDelay;
 
 int gxcSockfd = -1;
-
+static pthread_t main_thread;
 #define DEBUG 0
+#define STACK_SIZE 4096
+//K_THREAD_STACK_DEFINE(status_check_stack, 4096);
+static pthread_attr_t attr[WFA_THREADS_NUM];
+K_THREAD_STACK_ARRAY_DEFINE(status_check_stack, WFA_THREADS_NUM, STACK_SIZE);
 
 extern int wfa_estimate_timer_latency();
 extern void wfa_dut_init(BYTE **tBuf, BYTE **rBuf, BYTE **paBuf, BYTE **cBuf, struct timeval **timerp);
 
-int
-main(int argc, char **argv)
+void *main_thread_handler()
 {
     int	      nfds, maxfdn1 = -1, nbytes = 0, cmdLen = 0, isExit = 1;
     int       respLen, ret;
     WORD      locPortNo = 0;   /* local control port number                  */
-    fd_set    sockSet;         /* Set of socket descriptors for select()     */
-    BYTE      *xcCmdBuf=NULL, *parmsVal=NULL;
-    struct timeval *toutvalp=NULL, *tovalp; /* Timeout for select()           */
+    zsock_fd_set    sockSet;         /* Set of socket descriptors for select()     */
     WORD      xcCmdTag;
     struct sockfds fds;
 
     tgThrData_t tdata[WFA_THREADS_NUM];
     int i = 0;
-    pthread_attr_t ptAttr;
     int ptPolicy;
 
     struct sched_param ptSchedParam;
-
-    if (argc < 3)              /* Test for correct number of arguments */
-    {
-        DPRINT_ERR(WFA_ERR, "Usage:  %s <command interface> <Local Control Port> \n", argv[0]);
-        exit(1);
-    }
-#ifdef WFA_PC_CONSOLE
-    else if(argc > 3)
-    {
-        FILE *logfile;
-        int fd;
-        logfile = fopen(argv[3],"a");
-        if(logfile != NULL)
-        {
-            fd = fileno(logfile);
-            DPRINT_INFO(WFA_OUT,"redirecting the output to %s\n",argv[3]);
-            dup2(fd,1);
-            dup2(fd,2);
-        }
-        else
-        {
-            DPRINT_ERR(WFA_ERR, "Cant open the log file continuing without redirecting\n");
-        }
-        printf("Output starts\n");
-    }
-#endif
-
-    if(isString(argv[1]) == WFA_FAILURE)
-    {
-        DPRINT_ERR(WFA_ERR, "incorrect network interface\n");
-        exit(1);
-    }
-
-    strncpy(gnetIf, argv[1], 31);
-
-    if(isNumber(argv[2]) == WFA_FAILURE)
-    {
-        DPRINT_ERR(WFA_ERR, "incorrect port number\n");
-        exit(1);
-    }
-
-    locPortNo = atoi(argv[2]);
-
-    adj_latency = wfa_estimate_timer_latency() + 4000; /* four more mini */
-
-    if(adj_latency > 500000)
-    {
-        printf("****************** WARNING  **********************\n");
-        printf("!!!THE SLEEP TIMER LATENCY IS TOO HIGH!!!!!!!!!!!!\n");
-        printf("**************************************************\n");
-
-        /* Just set it to  500 mini seconds */
-        adj_latency = 500000;
-    }
-
-    /* allocate the traffic stream table */
-    wfa_dut_init(&trafficBuf, &respBuf, &parmsVal, &xcCmdBuf, &toutvalp);
-
-    /* 4create listening TCP socket */
-    gagtSockfd = wfaCreateTCPServSock(locPortNo);
-    if(gagtSockfd == -1)
-    {
-        DPRINT_ERR(WFA_ERR, "Failed to open socket\n");
-        exit(1);
-    }
-
-    pthread_attr_init(&ptAttr);
-
-    ptSchedParam.sched_priority = 10;
-    pthread_attr_setschedparam(&ptAttr, &ptSchedParam);
-    pthread_attr_getschedpolicy(&ptAttr, &ptPolicy);
-    pthread_attr_setschedpolicy(&ptAttr, SCHED_RR);
-    pthread_attr_getschedpolicy(&ptAttr, &ptPolicy);
-
-    /*
-     * Create multiple threads for WMM Stream processing.
-     */
-    for(i = 0; i< WFA_THREADS_NUM; i++)
-    {
-        tdata[i].tid = i;
-        pthread_mutex_init(&wmm_thr[i].thr_flag_mutex, NULL);
-        pthread_cond_init(&wmm_thr[i].thr_flag_cond, NULL);
-        wmm_thr[i].thr_id = pthread_create(&wmm_thr[i].thr,
-                                           &ptAttr, wfa_wmm_thread, &tdata[i]);
-    }
-
-    for(i = 0; i < WFA_MAX_TRAFFIC_STREAMS; i++)
-        tgSockfds[i] = -1;
-
-#ifdef WFA_WMM_PS_EXT
-    /* WMMPS thread   */
-    ret = pthread_mutex_init(&wmmps_mutex_info.thr_flag_mutex,NULL);
-    if ( ret !=0)
-    {
-        DPRINT_INFO(WFA_OUT, "WMMPS pthread_mutex_init faile\n");
-    }
-    ret = pthread_cond_init(&wmmps_mutex_info.thr_flag_cond,NULL);
-    if (ret != 0)
-    {
-        DPRINT_INFO(WFA_OUT, "WMMPS pthread_cond_init faile\n");
-    }
-    wmmps_mutex_info.thr_id=pthread_create(&wmmps_mutex_info.thr,NULL /*&ptAttr*/,wfa_wmmps_thread,(void*)&wmmps_mutex_info.thr_id);// calls up the wmmps-thread
-#endif
-
-    maxfdn1 = gagtSockfd + 1;
+     maxfdn1 = gagtSockfd + 1;
     while (isExit)
     {
         fds.agtfd = &gagtSockfd;
@@ -381,5 +286,231 @@ printf("%s DDEBUG: no command defined  %s, %d\n", __FILE__,  __func__,  __LINE__
         }
     }
 
+}
+
+
+int commandHandle(const char *cmd)
+{
+
+    int	      nfds, maxfdn1 = -1, nbytes = 0, cmdLen = 0;
+    int       respLen, ret;
+    WORD      locPortNo = 0;   /* local control port number                  */
+    zsock_fd_set    sockSet;         /* Set of socket descriptors for select()     */
+    WORD      xcCmdTag;
+    struct sockfds fds;
+    int aLen = 0;
+    char cmdName[WFA_BUFF_32] = {'\0'};
+    int i = 0, isFound = 0;
+    char *pcmdStr = NULL;
+    char respStr[WFA_BUFF_512];
+    BYTE pcmdBuf[WFA_BUFF_1K];
+    char * cliCmd,*tempCmdBuff;
+
+    BYTE *buf = malloc(WFA_BUFF_1K);
+
+    if (!buf) {
+        printf("memory alloc failed \n");
+        return -ENOMEM;
+    }
+
+    tempCmdBuff=(char* )malloc(strlen(cmd));
+    memcpy(tempCmdBuff,cmd,strlen(cmd));
+    memcpy(cmdName, strtok_r((char *)tempCmdBuff, ",", (char **)&pcmdStr), 32);
+
+    while(nameStr[i].type != -1) {
+        if(strcmp(nameStr[i].name, cmdName) == 0) {
+            isFound = 1;
+            break;
+        }
+        i++;
+    }
+
+    DPRINT_INFO(WFA_OUT, "%s\n", cmdName);
+    DPRINT_INFO(WFA_OUT, "input command  %d \n", i);
+    printf("%s DDEBUG: %s, %d\n", __FILE__, __func__, __LINE__);
+    if(isFound == 0) {
+        printf("%s DDEBUG: command is invalid %s, %d\n", __FILE__, __func__, __LINE__);
+        sleep(1);
+        sprintf(respStr, "status,INVALID\r\n");
+        wfaCtrlSend(gxcSockfd, (BYTE *)respStr, strlen(respStr));
+        DPRINT_WARNING(WFA_WNG, "Command not valid, check the name\n");
+        return -1;
+    }
+
+    memset(pcmdBuf, 0, WFA_BUFF_1K);
+    if(nameStr[i].cmdProcFunc(pcmdStr, pcmdBuf, &cmdLen)==WFA_FAILURE) {
+        printf("%s DDEBUG command syntax is invalid %s, %d\n", __FILE__, __func__, __LINE__);
+        sleep(1);
+        sprintf(respStr, "status,INVALID\r\n");
+        wfaCtrlSend(gxcSockfd, (BYTE *)respStr, strlen(respStr));
+        DPRINT_WARNING(WFA_WNG, "Incorrect command syntax\n");
+        return -1;
+    }
+
+    wfaDecodeTLV(pcmdBuf, WFA_BUFF_1K, &xcCmdTag, &cmdLen, parmsVal);
+                memset(respBuf, 0, WFA_RESP_BUF_SZ);
+                respLen = 0;
+
+                /* reset two commond storages used by control functions */
+                memset(gCmdStr, 0, WFA_CMD_STR_SZ);
+                memset(&gGenericResp, 0, sizeof(dutCmdResponse_t));
+printf("%s DDEBUG: command rcv on dut %s, %d, xcCmdTag = %d\n", __FILE__,  __func__,  __LINE__, xcCmdTag);
+
+                /* command process function defined in wfa_ca.c and wfa_tg.c */
+                if(xcCmdTag != 0 && gWfaCmdFuncTbl[xcCmdTag] != NULL)
+                {
+printf("%s DDEBUG: command defined %s, %d %p\n", __FILE__,  __func__,  __LINE__, gWfaCmdFuncTbl[xcCmdTag]);
+        
+	     /* since the new commands are expanded to new block */
+                    gWfaCmdFuncTbl[xcCmdTag](cmdLen, parmsVal, &respLen, (BYTE *)respBuf);
+                }
+                else
+                {
+printf("%s DDEBUG: no command defined  %s, %d\n", __FILE__,  __func__,  __LINE__);
+
+                    // no command defined
+                    gWfaCmdFuncTbl[0](cmdLen, parmsVal, &respLen, (BYTE *)respBuf);
+                }
+    free(buf);
+    return 0;
+                    
+}
+
+int
+dut_main(int argc, char **argv)
+{
+    int	      nfds, maxfdn1 = -1, nbytes = 0, cmdLen = 0, isExit = 1;
+    int       respLen, ret;
+    WORD      locPortNo = 0;   /* local control port number                  */
+    zsock_fd_set    sockSet;         /* Set of socket descriptors for select()     */
+    WORD      xcCmdTag;
+    struct sockfds fds;
+
+    tgThrData_t tdata[WFA_THREADS_NUM];
+    int i = 0;
+    pthread_attr_t *ptAttr;
+    int ptPolicy;
+
+    struct sched_param ptSchedParam;
+
+    if (argc < 3)              /* Test for correct number of arguments */
+    {
+        DPRINT_ERR(WFA_ERR, "Usage:  %s <command interface> <Local Control Port> \n", argv[0]);
+        exit(1);
+    }
+#ifdef WFA_PC_CONSOLE
+    else if(argc > 3)
+    {
+        FILE *logfile;
+        int fd;
+        logfile = fopen(argv[3],"a");
+        if(logfile != NULL)
+        {
+            fd = fileno(logfile);
+            DPRINT_INFO(WFA_OUT,"redirecting the output to %s\n",argv[3]);
+            dup2(fd,1);
+            dup2(fd,2);
+        }
+        else
+        {
+            DPRINT_ERR(WFA_ERR, "Cant open the log file continuing without redirecting\n");
+        }
+        printf("Output starts\n");
+    }
+#endif
+
+    if(isString(argv[1]) == WFA_FAILURE)
+    {
+        DPRINT_ERR(WFA_ERR, "incorrect network interface\n");
+        exit(1);
+    }
+
+    strncpy(gnetIf, argv[1], 31);
+
+    if(isNumber(argv[2]) == WFA_FAILURE)
+    {
+        DPRINT_ERR(WFA_ERR, "incorrect port number\n");
+        exit(1);
+    }
+
+    locPortNo = atoi(argv[2]);
+
+    adj_latency = wfa_estimate_timer_latency() + 4000; /* four more mini */
+
+    if(adj_latency > 500000)
+    {
+        printf("****************** WARNING  **********************\n");
+        printf("!!!THE SLEEP TIMER LATENCY IS TOO HIGH!!!!!!!!!!!!\n");
+        printf("**************************************************\n");
+
+        /* Just set it to  500 mini seconds */
+        adj_latency = 500000;
+    }
+
+    /* allocate the traffic stream table */
+    wfa_dut_init(&trafficBuf, &respBuf, &parmsVal, &xcCmdBuf, &toutvalp);
+
+    /* 4create listening TCP socket */
+    gagtSockfd = wfaCreateTCPServSock(locPortNo);
+    if(gagtSockfd == -1)
+    {
+        DPRINT_ERR(WFA_ERR, "Failed to open socket\n");
+        exit(1);
+    }
+
+        printf("%s:%d\n", __func__, __LINE__);
+#if 0
+    pthread_attr_init(&ptAttr);
+
+    ptSchedParam.sched_priority = 10;
+    pthread_attr_setschedparam(&ptAttr, &ptSchedParam);
+    pthread_attr_getschedpolicy(&ptAttr, &ptPolicy);
+    pthread_attr_setschedpolicy(&ptAttr, SCHED_RR);
+    pthread_attr_getschedpolicy(&ptAttr, &ptPolicy);
+#endif
+    /*
+     * Create multiple threads for WMM Stream processing.
+     */
+    for(i = 0; i< WFA_THREADS_NUM; i++)
+    {
+        printf("%s:%d\n", __func__, __LINE__);
+        tdata[i].tid = i;
+        ptAttr = &attr[i];
+        pthread_mutex_init(&wmm_thr[i].thr_flag_mutex, NULL);
+        pthread_cond_init(&wmm_thr[i].thr_flag_cond, NULL);
+        pthread_attr_init(ptAttr);
+
+        ptSchedParam.sched_priority = 10;
+        pthread_attr_setschedparam(ptAttr, &ptSchedParam);
+        pthread_attr_getschedpolicy(ptAttr, &ptPolicy);
+        pthread_attr_setschedpolicy(ptAttr, SCHED_RR);
+        pthread_attr_getschedpolicy(ptAttr, &ptPolicy);
+        ret = pthread_attr_setstack(ptAttr, &status_check_stack[i], STACK_SIZE);
+        printf("%s:%d ret: %d\n", __func__, __LINE__, ret);
+        wmm_thr[i].thr_id = pthread_create(&wmm_thr[i].thr,
+                                           ptAttr, wfa_wmm_thread, &tdata[i]);
+        printf("%s:%d thread_id :%d\n", __func__, __LINE__, wmm_thr[i].thr_id);
+    }
+
+    for(i = 0; i < WFA_MAX_TRAFFIC_STREAMS; i++)
+        tgSockfds[i] = -1;
+
+#ifdef WFA_WMM_PS_EXT
+    /* WMMPS thread   */
+    ret = pthread_mutex_init(&wmmps_mutex_info.thr_flag_mutex,NULL);
+    if ( ret !=0)
+    {
+        DPRINT_INFO(WFA_OUT, "WMMPS pthread_mutex_init faile\n");
+    }
+    ret = pthread_cond_init(&wmmps_mutex_info.thr_flag_cond,NULL);
+    if (ret != 0)
+    {
+        DPRINT_INFO(WFA_OUT, "WMMPS pthread_cond_init faile\n");
+    }
+    wmmps_mutex_info.thr_id=pthread_create(&wmmps_mutex_info.thr,NULL /*&ptAttr*/,wfa_wmmps_thread,(void*)&wmmps_mutex_info.thr_id);// calls up the wmmps-thread
+#endif
+
+   // pthread_create(&main_thread, &ptAttr, main_thread_handler, NULL);
+   
     return 0;
 }
