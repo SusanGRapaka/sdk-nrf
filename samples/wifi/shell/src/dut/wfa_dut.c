@@ -288,26 +288,17 @@ printf("%s DDEBUG: no command defined  %s, %d\n", __FILE__,  __func__,  __LINE__
 
 }
 
-
-int commandHandle(const char *cmd)
+int cmd_to_hex(const char *cmd, unsigned char *pcmdBuf)
 {
-
-    int	      nfds, maxfdn1 = -1, nbytes = 0, cmdLen = 0;
-    int       respLen, ret;
-    WORD      locPortNo = 0;   /* local control port number                  */
-    zsock_fd_set    sockSet;         /* Set of socket descriptors for select()     */
-    WORD      xcCmdTag;
-    struct sockfds fds;
-    int aLen = 0;
+	int	      nfds, maxfdn1 = -1, nbytes = 0, cmdLen = 0;
     char cmdName[WFA_BUFF_32] = {'\0'};
     int i = 0, isFound = 0;
     char *pcmdStr = NULL;
     char respStr[WFA_BUFF_512];
-    BYTE pcmdBuf[WFA_BUFF_1K];
-    char * cliCmd,*tempCmdBuff;
+    char *tempCmdBuff;
+	BYTE *buf = malloc(WFA_BUFF_1K);
 
-    BYTE *buf = malloc(WFA_BUFF_1K);
-
+printf("%s\n", __func__);
     if (!buf) {
         printf("memory alloc failed \n");
         return -ENOMEM;
@@ -346,6 +337,23 @@ int commandHandle(const char *cmd)
         DPRINT_WARNING(WFA_WNG, "Incorrect command syntax\n");
         return -1;
     }
+}
+
+int commandHandle(unsigned char *pcmdBuf)
+{
+
+    int	      nfds, maxfdn1 = -1, nbytes = 0, cmdLen = 0;
+    int       respLen, ret;
+    WORD      locPortNo = 0;   /* local control port number                  */
+    zsock_fd_set    sockSet;         /* Set of socket descriptors for select()     */
+    WORD      xcCmdTag;
+    struct sockfds fds;
+    int aLen = 0;
+    char cmdName[WFA_BUFF_32] = {'\0'};
+    int i = 0, isFound = 0;
+    char *pcmdStr = NULL;
+    char respStr[WFA_BUFF_512];
+    char * cliCmd,*tempCmdBuff;
 
     wfaDecodeTLV(pcmdBuf, WFA_BUFF_1K, &xcCmdTag, &cmdLen, parmsVal);
                 memset(respBuf, 0, WFA_RESP_BUF_SZ);
@@ -371,7 +379,6 @@ printf("%s DDEBUG: no command defined  %s, %d\n", __FILE__,  __func__,  __LINE__
                     // no command defined
                     gWfaCmdFuncTbl[0](cmdLen, parmsVal, &respLen, (BYTE *)respBuf);
                 }
-    free(buf);
     return 0;
                     
 }

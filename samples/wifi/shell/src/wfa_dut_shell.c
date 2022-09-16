@@ -16,6 +16,9 @@
 #include <zephyr/zephyr.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/init.h>
+#include "wfa_debug.h"
+
+
 
 static int cmd_wfa_dut_test(const struct shell *shell,
 			  size_t argc,
@@ -26,22 +29,7 @@ static int cmd_wfa_dut_test(const struct shell *shell,
 			argv);
 }
 
-static int cmd_wfa_dut(const struct shell *shell,
-			  size_t argc,
-			  const char *argv[])
-{
-	printf("arg0: %s\n", argv[0]);
-	unsigned char *respBuf = os_zalloc(64 * sizeof(unsigned char));
-	int bufLen = 0;
-	int streamid = 1;
-	unsigned char streamId = streamid; 
-	int status = -1;
-	char * cmdBuf = argv[1];
-	status = commandHandle(cmdBuf);
-	return status;
-}
-
-static int cmd_wfa_dut_traffic_config(const struct shell *shell,
+static int wfa_dut_execute(const struct shell *shell,
 			  size_t argc,
 			  const char *argv[])
 {
@@ -49,33 +37,26 @@ static int cmd_wfa_dut_traffic_config(const struct shell *shell,
 	unsigned char *respBuf = os_zalloc(64 * sizeof(unsigned char));
 	int bufLen = 0;
 	int status = -1;
-	char * cmdBuf = argv[1];
+	unsigned char cmdBuf[512] = {0};
+#if COMMAND_BYTE_STREAM
+	hex_str_to_val(cmdBuf, sizeof(cmdBuf), argv[1]);
+#else
+	cmd_to_hex(argv[1], cmdBuf);
+#endif /* COMMAND_BYTE_STREAM */
 	status = commandHandle(cmdBuf);
 	return status;
 }
 
 SHELL_STATIC_SUBCMD_SET_CREATE(
 	wfa_dut_cmds,
-	SHELL_CMD(dut_test,
+	SHELL_CMD(dut_test_setup,
 		  NULL,
 		  "\"Start DUT\"",
 		  cmd_wfa_dut_test),
-	SHELL_CMD(dut_traffic_config,
+	SHELL_CMD(dut_command,
 		  NULL,
-		  "\"Set Traffic Config params\"",
-		  cmd_wfa_dut_traffic_config),
-	SHELL_CMD(dut_send_start,
-		  NULL,
-		  "\"Send Traffic Start\"",
-		  cmd_wfa_dut),
-	SHELL_CMD(dut_receive_start,
-		  NULL,
-		  "\"Receive Traffic Start\"",
-		  cmd_wfa_dut),
-	SHELL_CMD(dut_receive_stop,
-		  NULL,
-		  "\"Receive Traffic Stop\"",
-		  cmd_wfa_dut),
+		  "\"Sets Traffic params or runs traffic\"",
+		  wfa_dut_execute),
 	SHELL_SUBCMD_SET_END
 );
 
