@@ -23,6 +23,7 @@ target_include_directories(mbedcrypto_common
 
 target_sources(app PRIVATE
 	src/wifi_main.c
+	src/wfa_dut_shell.c
 	src/dut/wfa_sock.c
 	src/dut/wfa_tg.c
 	src/dut/wfa_cs.c
