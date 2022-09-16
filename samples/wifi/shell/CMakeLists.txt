@@ -21,6 +21,10 @@ target_include_directories(mbedcrypto_common
 	inc
 )
 
+zephyr_library_compile_definitions(
+	COMMAND_BYTE_STREAM
+)
+
 target_sources(app PRIVATE
 	src/wifi_main.c
 	src/wfa_dut_shell.c
