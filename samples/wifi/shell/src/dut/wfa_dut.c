@@ -288,7 +288,7 @@ printf("%s DDEBUG: no command defined  %s, %d\n", __FILE__,  __func__,  __LINE__
 
 }
 
-int cmd_to_hex(const char *cmd, unsigned char *pcmdBuf)
+int cmd_to_hex(char *cmd, unsigned char *pcmdBuf)
 {
 	int	      nfds, maxfdn1 = -1, nbytes = 0, cmdLen = 0;
     char cmdName[WFA_BUFF_32] = {'\0'};
@@ -328,7 +328,7 @@ printf("%s\n", __func__);
         return -1;
     }
 
-    memset(pcmdBuf, 0, WFA_BUFF_1K);
+    memset(pcmdBuf, 0, WFA_BUFF_512);
     if(nameStr[i].cmdProcFunc(pcmdStr, pcmdBuf, &cmdLen)==WFA_FAILURE) {
         printf("%s DDEBUG command syntax is invalid %s, %d\n", __FILE__, __func__, __LINE__);
         sleep(1);
