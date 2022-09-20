@@ -16,6 +16,7 @@
 #include <zephyr/zephyr.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/init.h>
+#include "wfa_main.h"
 #include "wfa_debug.h"
 
 
@@ -37,7 +38,7 @@ static int wfa_dut_execute(const struct shell *shell,
 	unsigned char *respBuf = os_zalloc(64 * sizeof(unsigned char));
 	int bufLen = 0;
 	int status = -1;
-	unsigned char cmdBuf[512] = {0};
+	unsigned char cmdBuf[WFA_BUFF_512] = {0};
 #if COMMAND_BYTE_STREAM
 	hex_str_to_val(cmdBuf, sizeof(cmdBuf), argv[1]);
 #else
