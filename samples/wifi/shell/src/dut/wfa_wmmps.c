@@ -925,7 +925,6 @@ void* wfa_wmmps_thread(void* input) //Aaron's//The main thread runs the wmmps pr
     //int   sendThreadId = 0;
     len=sizeof(from);
 
-
     while(1)
     {
         if (sendThreadHandle != 0)

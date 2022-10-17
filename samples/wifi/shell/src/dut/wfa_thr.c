@@ -707,7 +707,7 @@ printf("started wmm thread\n");
                    (myProfile->pksize * myProfile->rate * 8 < WFA_SEND_FIX_BITRATE_MAX) &&
                    (myProfile->trafficClass != TG_WMM_AC_VO)  ) {
                  wfaSendBitrateData(mySock, myStreamId, respBuf, &respLen);
-                 for(i = 0; i < respLen; i++) {
+	          for(i = 0; i < respLen; i++) {
                     printf("%02x ", respBuf[i]);
                  }
                  printf("\n");
@@ -926,6 +926,7 @@ printf("started wmm thread\n");
             /*
              * Test WMM-PS
              */
+        printf("In WFA_DUT: In func %s In line In DIRECT_RECEIVE myId = %d\n",__func__,__LINE__,myId);
             if(myProfile->profile == PROF_UAPSD)
             {
 #ifdef WFA_WMM_PS_EXT /* legacy code not used now  */
@@ -957,7 +958,7 @@ printf("started wmm thread\n");
             }
             else if (myProfile->profile == PROF_IPTV || myProfile->profile == PROF_FILE_TX || myProfile->profile == PROF_MCAST)
             {
-                char recvBuf[MAX_RCV_BUF_LEN+1];
+               // char recvBuf[MAX_RCV_BUF_LEN+1];
                 int iOptVal, iOptLen;
                 struct timeval tmout;
 
@@ -1015,6 +1016,11 @@ printf("started wmm thread\n");
                 setsockopt(mySock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tmout, (socklen_t) sizeof(tmout));
 
                 wfaSetThreadPrio(myId, TG_WMM_AC_VO);   /* try to raise the receiver higher priority than sender */
+        printf("In WFA_DUT: In func %s In line In DIRECT_RECV before wfaRecv\n",__func__,__LINE__);
+        printf("%s:%d thread_id :%d\n", __func__, __LINE__, wmm_thr[myId]);
+                char *recvBuf;
+		recvBuf =(char* )malloc(MAX_RCV_BUF_LEN+1);
+		wMEMSET(recvBuf, 0, MAX_RCV_BUF_LEN);
                 for(;;)
                 {
                     nbytes = wfaRecvFile(mySock, myStreamId, (char *)recvBuf);
@@ -1065,7 +1071,7 @@ printf("started wmm thread\n");
 #endif /* WFA_VOICE_EXT */
                     wfaSetThreadPrio(myId, TG_WMM_AC_BE); /* put it back down */
                 } /* while */
-
+		wFREE(recvBuf);
                 my_wmm->thr_flag = 0;
 
 #ifdef WFA_VOICE_EXT
@@ -1163,6 +1169,12 @@ printf("started wmm thread\n");
                    mySock = -1;
                }
                //////////////////// Wifi Alliance Added
+    printf("In WFA_DUT: In func %s In line\n",__func__,__LINE__);
+    printf("Printing RespBuf START\n");
+    for (i = 0; i < respLen; i++) {
+        printf("%02x", respBuf[i]);
+    }
+    printf("Printing RespBuf DONE\n");
            }
             break;
         default:

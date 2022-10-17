@@ -121,7 +121,6 @@ tgStream_t *findStreamProfile(int id)
 
     for(i = 0; i< WFA_MAX_TRAFFIC_STREAMS; i++)
     {
-        printf("%s:%d streamId: %d\n", __func__, __LINE__, myStream->id);
         if(myStream->id == id)
             return myStream;
 
@@ -341,12 +340,13 @@ int wfaTGConfig(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     myStream->id = ++streamId; /* the id start from 1 */
     myStream->tblidx = slotCnt-1;
 
+#if 0
     DPRINT_INFO(WFA_OUT, "profile %i direction %i dest ip %s dport %i source %s sport %i rate %i duration %i size %i class %i delay %i\n", myStream->profile.profile, myStream->profile.direction, myStream->profile.dipaddr, myStream->profile.dport, myStream->profile.sipaddr, myStream->profile.sport, myStream->profile.rate, myStream->profile.duration, myStream->profile.pksize, myStream->profile.trafficClass, myStream->profile.startdelay);
 
+#endif
     confResp->status = STATUS_COMPLETE;
     confResp->streamId = myStream->id;
     wfaEncodeTLV(WFA_TRAFFIC_AGENT_CONFIG_RESP_TLV, sizeof(dutCmdResponse_t), (BYTE *)confResp, respBuf);
-    printf ("%s:%d %s\n", __func__, __LINE__, respBuf);
     *respLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
 
 
@@ -498,7 +498,6 @@ int wfaTGRecvStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
     wfaEncodeTLV(WFA_TRAFFIC_AGENT_RECV_START_RESP_TLV, sizeof(int),
                  (BYTE *)&status, respBuf);
     *respLen = WFA_TLV_HDR_LEN + sizeof(int);
-
     return WFA_SUCCESS;
 }
 
@@ -639,6 +638,7 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
     /* done here */
     *respLen = WFA_TLV_HDR_LEN + numStreams * sizeof(dutCmdResponse_t);
 
+    //wFREE(dutRspBuf);
     return WFA_SUCCESS;
 }
 
