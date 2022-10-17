@@ -117,6 +117,7 @@ K_THREAD_STACK_ARRAY_DEFINE(status_check_stack, WFA_THREADS_NUM, STACK_SIZE);
 
 extern int wfa_estimate_timer_latency();
 extern void wfa_dut_init(BYTE **tBuf, BYTE **rBuf, BYTE **paBuf, BYTE **cBuf, struct timeval **timerp);
+extern dutCommandRespFuncPtr wfaCmdRespProcFuncTbl[];
 
 void *main_thread_handler()
 {
@@ -296,17 +297,20 @@ int cmd_to_hex(char *cmd, unsigned char *pcmdBuf)
     char *pcmdStr = NULL;
     char respStr[WFA_BUFF_512];
     char *tempCmdBuff;
-	BYTE *buf = malloc(WFA_BUFF_1K);
 
-printf("%s\n", __func__);
-    if (!buf) {
-        printf("memory alloc failed \n");
-        return -ENOMEM;
-    }
 
-    tempCmdBuff=(char* )malloc(strlen(cmd));
-    memcpy(tempCmdBuff,cmd,strlen(cmd));
-    memcpy(cmdName, strtok_r((char *)tempCmdBuff, ",", (char **)&pcmdStr), 32);
+    	tempCmdBuff=(char* )malloc(strlen(cmd));
+#if 1 //susan
+	        int s = 0;
+        while(cmd[s] != '\0')
+                        {
+                        tempCmdBuff[s] = cmd[s];
+                        ++s;
+                        }
+	tempCmdBuff[s] = '\0';
+#endif
+	//memcpy(tempCmdBuff,cmd,strlen(cmd));
+    	memcpy(cmdName, strtok_r((char *)tempCmdBuff, ",", (char **)&pcmdStr), 32);
 
     while(nameStr[i].type != -1) {
         if(strcmp(nameStr[i].name, cmdName) == 0) {
@@ -337,6 +341,8 @@ printf("%s\n", __func__);
         DPRINT_WARNING(WFA_WNG, "Incorrect command syntax\n");
         return -1;
     }
+
+    //wFREE(tempCmdBuff);
 }
 
 int commandHandle(unsigned char *pcmdBuf)
@@ -350,11 +356,12 @@ int commandHandle(unsigned char *pcmdBuf)
     struct sockfds fds;
     int aLen = 0;
     char cmdName[WFA_BUFF_32] = {'\0'};
-    int i = 0, isFound = 0;
+    int i = 0, isFound = 0, ret_status;
     char *pcmdStr = NULL;
     char respStr[WFA_BUFF_512];
     char * cliCmd,*tempCmdBuff;
-
+    WORD tag;
+    
     wfaDecodeTLV(pcmdBuf, WFA_BUFF_1K, &xcCmdTag, &cmdLen, parmsVal);
                 memset(respBuf, 0, WFA_RESP_BUF_SZ);
                 respLen = 0;
@@ -367,7 +374,7 @@ printf("%s DDEBUG: command rcv on dut %s, %d, xcCmdTag = %d\n", __FILE__,  __fun
                 /* command process function defined in wfa_ca.c and wfa_tg.c */
                 if(xcCmdTag != 0 && gWfaCmdFuncTbl[xcCmdTag] != NULL)
                 {
-printf("%s DDEBUG: command defined %s, %d %p\n", __FILE__,  __func__,  __LINE__, gWfaCmdFuncTbl[xcCmdTag]);
+printf("%s DDEBUG: command defined %s, %d %p cmdLen = %d\n", __FILE__,  __func__,  __LINE__, gWfaCmdFuncTbl[xcCmdTag],cmdLen);
         
 	     /* since the new commands are expanded to new block */
                     gWfaCmdFuncTbl[xcCmdTag](cmdLen, parmsVal, &respLen, (BYTE *)respBuf);
@@ -379,6 +386,16 @@ printf("%s DDEBUG: no command defined  %s, %d\n", __FILE__,  __func__,  __LINE__
                     // no command defined
                     gWfaCmdFuncTbl[0](cmdLen, parmsVal, &respLen, (BYTE *)respBuf);
                 }
+		int gxcSockfd = 1;
+printf("%s DDEBUG: In func %s, In line %d respLen = %d\n", __FILE__,  __func__,  __LINE__, respLen);
+               if(gxcSockfd != -1)
+               {
+                 if((ret = wfaCtrlSend(gxcSockfd, (BYTE *)respBuf, respLen)) != respLen)
+                 {
+                      //DPRINT_WARNING(WFA_WNG, "wfa-dut main:wfaCtrlSend returned value %d != respLen %d\n", ret, respLen);
+                      printf("wfa-dut main:wfaCtrlSend returned value %d != respLen %d\n", ret, respLen);
+                 }
+               }
     return 0;
                     
 }
