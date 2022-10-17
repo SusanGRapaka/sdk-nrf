@@ -265,17 +265,18 @@ int wfaCtrlSend(int sock, unsigned char *buf, int bufLen)
     if(bufLen == 0)
         return WFA_FAILURE;
 
-    bytesSent = wSEND(sock, buf, bufLen, 0);
+   // bytesSent = wSEND(sock, buf, bufLen, 0);
 
-    if(bytesSent == -1)
-    {
-        DPRINT_WARNING(WFA_WNG, "Error sending tcp packet\n");
-    }
-
+    //if(bytesSent == -1)
+    //{
+     //   DPRINT_WARNING(WFA_WNG, "Error sending tcp packet\n");
+    //}
+    printf("Printing RespBuf START\n");
     for (i = 0; i < bufLen; i++) {
-        printf("%02x ", buf[i]);
+        printf("%02x", buf[i]);
     }
-    printf("\n");
+    printf("Printing RespBuf DONE\n");
+    bytesSent = bufLen;
     return bytesSent;
 }
 
