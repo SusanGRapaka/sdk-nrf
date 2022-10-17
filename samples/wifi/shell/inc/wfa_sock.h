@@ -38,7 +38,7 @@
 #include <errno.h>
 
 #define MAX_UDP_LEN       1470
-#define MAX_RCV_BUF_LEN   (1*1024)
+#define MAX_RCV_BUF_LEN   (24*1024)
 
 struct sockfds
 {
