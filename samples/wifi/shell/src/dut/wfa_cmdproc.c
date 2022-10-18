@@ -554,8 +554,8 @@ int xcCmdProcAgentSend(char *pcmdStr, BYTE *aBuf, int *aLen)
 #if 1
     {
         int i;
-        for(i = 0; i< *aLen; i++)
-            printf("%x ", aBuf[i]);
+        for(i = 0; i< *aLen; i++){
+            printf("%02x ", aBuf[i]);}
 
         printf("\n");
     }

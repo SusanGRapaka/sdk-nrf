@@ -653,6 +653,7 @@ printf("started wmm thread\n");
         switch(myProfile->direction)
         {
         case DIRECT_SEND:
+		printf("In WFA_DUT thread, DIRECT_SEND.....!\n");
             mySock = wfaCreateUDPSock(myProfile->sipaddr, myProfile->sport);
             if (mySock < 0)
             {
@@ -697,6 +698,7 @@ printf("started wmm thread\n");
 
             if (myProfile->profile == PROF_IPTV || myProfile->profile == PROF_FILE_TX || myProfile->profile == PROF_MCAST)
             {
+		printf("In WFA_DUT: direct send IPTV !\n");
                 int iOptVal, iOptLen;
 
                 getsockopt(mySock, SOL_SOCKET, SO_SNDBUF, (char *)&iOptVal, (socklen_t *)&iOptLen);
@@ -705,15 +707,11 @@ printf("started wmm thread\n");
 
               if ( (myProfile->rate != 0 ) /* WFA_SEND_FIX_BITRATE_MAX_FRAME_RATE)*/ && 
                    (myProfile->pksize * myProfile->rate * 8 < WFA_SEND_FIX_BITRATE_MAX) &&
-                   (myProfile->trafficClass != TG_WMM_AC_VO)  ) {
+                   (myProfile->trafficClass != TG_WMM_AC_VO)  ) 
                  wfaSendBitrateData(mySock, myStreamId, respBuf, &respLen);
-	          for(i = 0; i < respLen; i++) {
-                    printf("%02x ", respBuf[i]);
-                 }
-                 printf("\n");
-                   }
               else
               {
+		printf("In WFA_DUT: direct send wfaSendLongFile call !\n");
                  wfaSendLongFile(mySock, myStreamId, respBuf, &respLen);
               }
 
@@ -787,6 +785,7 @@ printf("started wmm thread\n");
                             if(wfaSendShortFile(mySock, myStreamId,
                                 trafficBuf, 0, respBuf, &respLen) == DONE)
                             {
+		printf("In WFA_DUT: direct send wfaCtrlsend !\n");
                                 if(wfaCtrlSend(gxcSockfd, respBuf, respLen) != respLen)
                                 {
                                     DPRINT_INFO(WFA_OUT, "wfa_wmm_thread SEND,PROF_TRANSC::wfaCtrlSend Error for wfaSendShortFile\n");
@@ -1016,10 +1015,13 @@ printf("started wmm thread\n");
                 setsockopt(mySock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tmout, (socklen_t) sizeof(tmout));
 
                 wfaSetThreadPrio(myId, TG_WMM_AC_VO);   /* try to raise the receiver higher priority than sender */
-        printf("In WFA_DUT: In func %s In line In DIRECT_RECV before wfaRecv\n",__func__,__LINE__);
-        printf("%s:%d thread_id :%d\n", __func__, __LINE__, wmm_thr[myId]);
                 char *recvBuf;
 		recvBuf =(char* )malloc(MAX_RCV_BUF_LEN+1);
+		if (!recvBuf) {
+			printf("malloc failed\n");
+			/* TODO: Inform CA */
+			continue;
+		}
 		wMEMSET(recvBuf, 0, MAX_RCV_BUF_LEN);
                 for(;;)
                 {
