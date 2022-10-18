@@ -747,15 +747,16 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
             myStream->stats.txFrames = 10;
             myStream->stats.txPayloadBytes = 10000;
             wMEMCPY(&staSendResp.cmdru.stats, &myStream->stats, sizeof(tgStats_t));
+            //wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, sizeof(dutCmdResponse_t),
+              //           (BYTE *)&staSendResp, (BYTE *)respBuf);
             wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, sizeof(dutCmdResponse_t),
-                         (BYTE *)&staSendResp, (BYTE *)respBuf);
+                         (BYTE *)&staSendResp, respBuf);
             *respLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
         }
         break;
         } /* switch  */
     }/*  for */
 
-        printf("%s:%d\n", __func__, __LINE__);
     return WFA_SUCCESS;
 }
 
@@ -895,13 +896,13 @@ void wfaTxSleepTime(int profile, int rate, int *sleepTime, int *throttledRate)
              * The device will send rate/50 (rate = packets / second),
              * then go sleep for rest of time.
              */
-            *sleepTime = 20000; /* fixed 20 miniseconds */
+            *sleepTime = 100000; /* fixed 20 miniseconds */
             *throttledRate = (rate?rate:10000)/50;
             printf("Hi Sleep time %i, throttledRate %i\n", *sleepTime, *throttledRate);
         }
         else if(rate == 0)
         {
-            *sleepTime = 20000; /* fixed 20 miniseconds */
+            *sleepTime = 100000; /* fixed 20 miniseconds */
             *throttledRate = (rate?rate:10000)/50;
             printf("Hi Sleep time %i, throttledRate %i\n", *sleepTime, *throttledRate);
         }
@@ -1152,7 +1153,7 @@ int wfaSendLongFile(int mySockfd, int streamid, BYTE *aRespBuf, int *aRespLen)
     sendResp.streamId = myStream->id;
     wMEMCPY(&sendResp.cmdru.stats, &myStream->stats, sizeof(tgStats_t));
 
-#if 0
+#if 1
     DPRINT_INFO(WFA_OUT, "stream Id %u tx %u total %llu\n", myStream->id, myStream->stats.txFrames, myStream->stats.txPayloadBytes);
 #endif
 
