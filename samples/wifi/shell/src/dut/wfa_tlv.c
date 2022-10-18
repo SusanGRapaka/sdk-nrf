@@ -47,7 +47,6 @@ BOOL wfaEncodeTLV(WORD the_tag, WORD the_len, BYTE *the_value, BYTE *tlv_data)
     ((wfaTLV *)data)->len = the_len;
     if(the_value != NULL && the_len != 0)
         wMEMCPY(((BYTE *)data+4), (BYTE *)the_value, the_len);
-
     return WFA_SUCCESS;
 }
 
