@@ -495,6 +495,7 @@ int wfaTGRecvStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
     }
 
     /* encode a TLV for response for "complete/error ..." */
+    printf("IN WFA_DUT:In func %s in line %d before resPBuf\n",__func__,__LINE__);
     wfaEncodeTLV(WFA_TRAFFIC_AGENT_RECV_START_RESP_TLV, sizeof(int),
                  (BYTE *)&status, respBuf);
     *respLen = WFA_TLV_HDR_LEN + sizeof(int);
@@ -530,6 +531,7 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
      * while it starts receiving for raising priority level.
      */
     wMEMSET(dutRspBuf, 0, WFA_RESP_BUF_SZ);
+        printf(" In recv stop numstreams = %i\n", numStreams);
     for(i=0; i<numStreams; i++)
     {
         wMEMCPY(&streamid, parms+(4*i), 4);
@@ -638,7 +640,12 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
     /* done here */
     *respLen = WFA_TLV_HDR_LEN + numStreams * sizeof(dutCmdResponse_t);
 
-    //wFREE(dutRspBuf);
+   /* printf("In recv stop buf**********respLen = %i sizeof hdrlen = %d numStreams= %d dutsize=%d\n",respLen,WFA_TLV_HDR_LEN,numStreams,sizeof(dutCmdResponse_t));
+    for (i = 0; i < 1049; i++) {
+        printf("%02x", respBuf[i]);
+    }
+    printf("complted buf\n");
+    */
     return WFA_SUCCESS;
 }
 
