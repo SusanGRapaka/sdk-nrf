@@ -670,23 +670,23 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
     for(i=0; i<numStreams; i++)
     {
         wMEMCPY(&streamid, parms+(4*i), 4);
-        printf("%s:%d %d\n", __func__, __LINE__, streamid);
+        //printf("%s:%d %d\n", __func__, __LINE__, streamid);
         myStream = findStreamProfile(streamid);
-        printf("%s:%d\n", __func__, __LINE__);
+        //printf("%s:%d\n", __func__, __LINE__);
         if(myStream == NULL)
         {
-        printf("%s:%d\n", __func__, __LINE__);
+        //printf("%s:%d\n", __func__, __LINE__);
             staSendResp.status = STATUS_INVALID;
             wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, 4, (BYTE *)&staSendResp, respBuf);
             *respLen = WFA_TLV_HDR_LEN + 4;
             return WFA_SUCCESS;
         }
 
-        printf("%s:%d\n", __func__, __LINE__);
+        //printf("%s:%d\n", __func__, __LINE__);
         theProfile = &myStream->profile;
         if(theProfile == NULL)
         {
-        printf("%s:%d\n", __func__, __LINE__);
+        //printf("%s:%d\n", __func__, __LINE__);
             staSendResp.status = STATUS_INVALID;
             wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, 4, (BYTE *)&staSendResp, respBuf);
             *respLen = WFA_TLV_HDR_LEN + 4;
@@ -694,10 +694,10 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
             return WFA_SUCCESS;
         }
 
-        printf("%s:%d\n", __func__, __LINE__);
+        //printf("%s:%d\n", __func__, __LINE__);
         if(theProfile->direction != DIRECT_SEND)
         {
-        printf("%s:%d\n", __func__, __LINE__);
+        //printf("%s:%d\n", __func__, __LINE__);
             staSendResp.status = STATUS_INVALID;
             wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, 4, (BYTE *)&staSendResp, respBuf);
             *respLen = WFA_TLV_HDR_LEN + 4;
@@ -708,11 +708,11 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
         /*
          * need to reset the stats
          */
-        printf("%s:%d\n", __func__, __LINE__);
+        //printf("%s:%d\n", __func__, __LINE__);
         wMEMSET(&myStream->stats, 0, sizeof(tgStats_t));
 
         // mark the stream active;
-        printf("%s:%d\n", __func__, __LINE__);
+        //printf("%s:%d\n", __func__, __LINE__);
         myStream->state = WFA_STREAM_ACTIVE;
 
         switch(theProfile->profile)
@@ -725,7 +725,7 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
         case PROF_CALI_RTD:
             gtgCaliRTD = streamid;
         case PROF_IPTV:
-        printf("%s:%d\n", __func__, __LINE__);
+        //printf("%s:%d\n", __func__, __LINE__);
             gtgSend = streamid;
             /*
              * singal the thread to Sending WMM traffic
@@ -737,14 +737,14 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
             wPT_MUTEX_UNLOCK(&wmm_thr[usedThread].thr_flag_mutex);
             usedThread++;
 
-        printf("%s:%d\n", __func__, __LINE__);
+        //printf("%s:%d\n", __func__, __LINE__);
             *respLen = 0;
             break;
         case PROF_UAPSD:
         {
             int ttout = 20;
 
-            printf(" Run wfa_con timer = %d sec\n", ttout);
+          //  printf(" Run wfa_con timer = %d sec\n", ttout);
             sprintf(gCmdStr,"/usr/bin/wfa_con -t %d %s",ttout,theProfile->WmmpsTagName);
             if(system(gCmdStr))
                 printf("Done with wfa_con\n");
@@ -754,10 +754,10 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
             myStream->stats.txFrames = 10;
             myStream->stats.txPayloadBytes = 10000;
             wMEMCPY(&staSendResp.cmdru.stats, &myStream->stats, sizeof(tgStats_t));
-            //wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, sizeof(dutCmdResponse_t),
-              //           (BYTE *)&staSendResp, (BYTE *)respBuf);
             wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, sizeof(dutCmdResponse_t),
-                         (BYTE *)&staSendResp, respBuf);
+                         (BYTE *)&staSendResp, (BYTE *)respBuf);
+            //wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, sizeof(dutCmdResponse_t),
+              //           (BYTE *)&staSendResp, respBuf);
             *respLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
         }
         break;
@@ -1154,7 +1154,6 @@ int wfaSendLongFile(int mySockfd, int streamid, BYTE *aRespBuf, int *aRespLen)
     /* free the buffer */
     wFREE(packBuf);
 
-    //printf("done sending long\n");
     /* return statistics */
     sendResp.status = STATUS_COMPLETE;
     sendResp.streamId = myStream->id;

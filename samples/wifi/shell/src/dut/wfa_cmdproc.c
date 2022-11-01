@@ -551,7 +551,7 @@ int xcCmdProcAgentSend(char *pcmdStr, BYTE *aBuf, int *aLen)
 
     *aLen = 4 + 4*id_cnt;
 
-#if 1
+#if 0
     {
         int i;
         for(i = 0; i< *aLen; i++){
