@@ -387,13 +387,12 @@ printf("%s DDEBUG: no command defined  %s, %d\n", __FILE__,  __func__,  __LINE__
                     gWfaCmdFuncTbl[0](cmdLen, parmsVal, &respLen, (BYTE *)respBuf);
                 }
 		int gxcSockfd = 1;
-printf("%s DDEBUG: In func %s, In line %d RESP LENGTH respLen = %d\n", __FILE__,  __func__,  __LINE__, respLen);
+//printf("%s DDEBUG: In func %s, In line %d RESP LENGTH respLen = %d\n", __FILE__,  __func__,  __LINE__, respLen);
                if(gxcSockfd != -1)
                {
                  if((ret = wfaCtrlSend(gxcSockfd, (BYTE *)respBuf, respLen)) != respLen)
                  {
-                      //DPRINT_WARNING(WFA_WNG, "wfa-dut main:wfaCtrlSend returned value %d != respLen %d\n", ret, respLen);
-                      printf("wfa-dut main:wfaCtrlSend returned value %d != respLen %d\n", ret, respLen);
+             //         DPRINT_WARNING(WFA_WNG, "wfa-dut main:wfaCtrlSend returned value %d != respLen %d\n", ret, respLen);
                  }
                }
     return 0;

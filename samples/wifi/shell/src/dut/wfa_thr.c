@@ -153,7 +153,7 @@ void tmout_stop_send(int num)
 
 
 
-#if 0
+#if 1
 /*
  * wfaTGSetPrio(): This depends on the network interface card.
  *               So you might want to remap according to the driver
@@ -590,7 +590,6 @@ int WfaStaWaitStop(char psave,int sleep_period,int *state)
 
 void * wfa_wmm_thread(void *thr_param)
 {
-        printf("%s:%d\n", __func__, __LINE__);
     int myId = ((tgThrData_t *)thr_param)->tid;
     tgWMM_t *my_wmm = &wmm_thr[myId];
     tgStream_t *myStream = NULL;
@@ -603,7 +602,6 @@ void * wfa_wmm_thread(void *thr_param)
     StationProcStatetbl_t  curr_state;
 #endif
 
-printf("started wmm thread\n");
 //#ifdef WFA_VOICE_EXT
     struct timeval lstime, lrtime;
     int asn = 1;  /* everytime it starts from 1, and to ++ */
@@ -653,7 +651,6 @@ printf("started wmm thread\n");
         switch(myProfile->direction)
         {
         case DIRECT_SEND:
-		printf("In WFA_DUT thread, DIRECT_SEND.....!\n");
             mySock = wfaCreateUDPSock(myProfile->sipaddr, myProfile->sport);
             if (mySock < 0)
             {
@@ -698,7 +695,6 @@ printf("started wmm thread\n");
 
             if (myProfile->profile == PROF_IPTV || myProfile->profile == PROF_FILE_TX || myProfile->profile == PROF_MCAST)
             {
-		printf("In WFA_DUT: direct send IPTV !\n");
                 int iOptVal, iOptLen;
 
                 getsockopt(mySock, SOL_SOCKET, SO_SNDBUF, (char *)&iOptVal, (socklen_t *)&iOptLen);
@@ -711,7 +707,6 @@ printf("started wmm thread\n");
                  wfaSendBitrateData(mySock, myStreamId, respBuf, &respLen);
               else
               {
-		printf("In WFA_DUT: direct send wfaSendLongFile call !\n");
                  wfaSendLongFile(mySock, myStreamId, respBuf, &respLen);
               }
 
@@ -744,7 +739,7 @@ printf("started wmm thread\n");
                 wFCNTL(mySock, F_SETFL, ioflags | O_NONBLOCK);
 #endif
                 gettimeofday(&lstime,0);
-                DPRINT_INFO(WFA_OUT, "Start sending traffic,at sec %d usec %d\n", (int )lstime.tv_sec, (int)lstime.tv_usec);
+                //DPRINT_INFO(WFA_OUT, "Start sending traffic,at sec %d usec %d\n", (int )lstime.tv_sec, (int)lstime.tv_usec);
 
 
                 tmout.tv_sec = 0;
@@ -785,8 +780,8 @@ printf("started wmm thread\n");
                             if(wfaSendShortFile(mySock, myStreamId,
                                 trafficBuf, 0, respBuf, &respLen) == DONE)
                             {
-		printf("In WFA_DUT: direct send wfaCtrlsend !\n");
-                                if(wfaCtrlSend(gxcSockfd, respBuf, respLen) != respLen)
+                                //if(wfaCtrlSend(gxcSockfd, respBuf, respLen) != respLen) //susan added
+                                if(wfaCtrlSend(gxcSockfd, (BYTE *)respBuf, respLen) != respLen)
                                 {
                                     DPRINT_INFO(WFA_OUT, "wfa_wmm_thread SEND,PROF_TRANSC::wfaCtrlSend Error for wfaSendShortFile\n");
                                 }
@@ -925,7 +920,6 @@ printf("started wmm thread\n");
             /*
              * Test WMM-PS
              */
-        printf("In WFA_DUT: In func %s In line In DIRECT_RECEIVE myId = %d\n",__func__,__LINE__,myId);
             if(myProfile->profile == PROF_UAPSD)
             {
 #ifdef WFA_WMM_PS_EXT /* legacy code not used now  */
@@ -1171,7 +1165,6 @@ printf("started wmm thread\n");
                    mySock = -1;
                }
                //////////////////// Wifi Alliance Added
-    printf("In WFA_DUT: In func %s In line\n",__func__,__LINE__);
     printf("Printing RespBuf START\n");
     for (i = 0; i < respLen; i++) {
         printf("%02x", respBuf[i]);
