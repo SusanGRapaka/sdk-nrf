@@ -59,6 +59,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "wfa_wmmps.h"
 #endif
 
+#include <src/utils/common.h>
+#include <wpa_supplicant/config.h>
+#include <wpa_supplicant/wpa_supplicant_i.h>
 #define CERTIFICATES_PATH    "/etc/wpa_supplicant"
 
 /* Some device may only support UDP ECHO, activate this line */
@@ -66,6 +69,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #define WFA_ENABLED 1
 
+extern struct wpa_global *global;
 extern unsigned short wfa_defined_debug;
 int wfaExecuteCLI(char *CLI);
 
@@ -260,7 +264,7 @@ int wfaStaIsConnected(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     char *ifname = connStat->intf;
     FILE *tmpfile = NULL;
     char result[32];
-
+    struct wpa_supplicant *wpa_s;
 
     DPRINT_INFO(WFA_OUT, "Entering isConnected ...\n");
 
@@ -277,31 +281,28 @@ int wfaStaIsConnected(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
      * use 'wpa_cli' command to check the interface status
      * none, scanning or complete (wpa_supplicant specific)
      */
-    sprintf(gCmdStr, "wpa_cli status | grep ^wpa_state= | cut -f2- -d= > /tmp/.isConnected", ifname);
+    sprintf(gCmdStr, "wpa_cli status");
     sret = system(gCmdStr);
-
+    printf("In func %s in line %d ifname = %s\n",__func__,__LINE__,ifname);
+	wpa_s = wpa_supplicant_get_iface(global, ifname);
+	if (!wpa_s) {
+		printf("Unable to find the interface: %s, quitting", ifname);
+		return -1;
+	}
+	int ret;	
+	ret = os_snprintf(result, 9,"%s",wpa_supplicant_state_txt(wpa_s->wpa_state));
+    printf("In func %s in line %d\n",__func__,__LINE__);
     /*
      * the status is saved in a file.  Open the file and check it.
      */
-    tmpfile = fopen("/tmp/.isConnected", "r+");
-    if(tmpfile == NULL)
-    {
-        staConnectResp->status = STATUS_ERROR;
-        wfaEncodeTLV(WFA_STA_IS_CONNECTED_RESP_TLV, 4, (BYTE *)staConnectResp, respBuf);
-        *respLen = WFA_TLV_HDR_LEN + 4;
-
-        DPRINT_ERR(WFA_ERR, "file open failed\n");
-        return WFA_FAILURE;
-    }
-
-    sret = fscanf(tmpfile, "%s", (char *)result);
-
-    if(strncmp(result, "COMPLETED", 9) == 0)
+    printf("In func %s in line %d result = %s\n",__func__,__LINE__,result);
+    if(strncmp(result, "COMPLETE", 9) == 0)
         staConnectResp->cmdru.connected = 1;
     else
         staConnectResp->cmdru.connected = 0;
 #endif
 
+    printf("In func %s in line %d connected = %d\n",__func__,__LINE__,staConnectResp->cmdru.connected);
     /*
      * Report back the status: Complete or Failed.
      */
@@ -655,7 +656,6 @@ int wfaStaGetMacAddress(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 	
     DPRINT_INFO(WFA_OUT, "Entering wfaStaGetMacAddress ...\n");
                 
-    printf("MAC ADDRESS In if line %d ifname = %s\n",__LINE__,ifname);
     if (net_if_get_link_addr(ifname)) 
     	{
 		net_sprint_ll_addr_buf(ifname,mac_addr_len,mac_buf,sizeof(mac_buf));
@@ -665,6 +665,7 @@ int wfaStaGetMacAddress(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 	strcpy(getmacResp->cmdru.mac, mac_buf);
         getmacResp->status = STATUS_COMPLETE;
 
+    printf("%s:MAC ADDRESS = %s\n",__func__,getmacResp->cmdru.mac);
 
 
     wfaEncodeTLV(WFA_STA_GET_MAC_ADDRESS_RESP_TLV, sizeof(dutCmdResponse_t), (BYTE *)getmacResp, respBuf);
@@ -858,37 +859,28 @@ int wfaSetEncryption(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 
 int wfaStaSetSecurity(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 {
-
 	dutCommand_t *setSecurity = (dutCommand_t *)caCmdBuf;
 	caStaSetSecurity_t *setsec = &setSecurity->cmdsu.setsec;
 	dutCmdResponse_t infoResp;
 	char *ifname = setSecurity->intf;
+	char *gCmdstr;
 	if(ifname[0] == '\0')
 	{
 		ifname = "wlan0";
 		
 	}
 	printf("\n Entry wfaStaSetSecurity...\n ");
-	sprintf(gCmdStr, "wpa_cli remove_network 0", ifname);
-	sret = system(gCmdStr);
-	printf("\n %s \n", gCmdStr);
-	sprintf(gCmdStr, "wpa_cli add_network 0", ifname);
-        sret = system(gCmdStr);
-	printf("\n %s \n", gCmdStr);
 
-/* 
-	sprintf(gCmdStr, "wpa_cli disable_network 0", ifname);
-	sret = system(gCmdStr);
-	printf("\n %s \n", gCmdStr);
- */
-	sprintf(gCmdStr, "wpa_cli set_network 0 ssid '\"%s\"'", ifname, setsec->ssid);
-	sret = system(gCmdStr);
-	printf("\n %s \n", gCmdStr);
+	int ret;
 
-/* 	sprintf(gCmdStr, "wpa_cli set_network 0 mode 0", ifname);
-	sret = system(gCmdStr);
-	printf("\n %s \n", gCmdStr);
- */
+ret = shell_execute_cmd(NULL, "wpa_cli remove_network 0");
+ret = shell_execute_cmd(NULL, "wpa_cli add_network 0");
+
+
+	sprintf(gCmdStr, "wpa_cli set_network 0 ssid '\"%s\"'", setsec->ssid);
+	printf("\n gCmdstr = %s\n",gCmdStr);
+	ret = shell_execute_cmd(NULL, gCmdStr);
+
 	printf("\n Interface = %s \n",setSecurity->intf );
 	printf("\n keyMgmType = %s \n",setsec->keyMgmtType );
 	printf("\n certType = %s \n",setsec->certType );
@@ -902,183 +894,86 @@ int wfaStaSetSecurity(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 if(setsec->type == SEC_TYPE_PSKSAE)
                 {
                         printf("\n IMG DEBUG >>>>>>> IN SEC_TYPE_PSKSAE");
-                         sprintf(gCmdStr, "wpa_cli SAE_PWE 2", ifname);
-                        printf("\n %s \n", gCmdStr);
-                       sret = system(gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli disable_network 0", ifname);
-                         sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli set_network 0  pairwise CCMP", ifname);
-                        printf("\n %s \n", gCmdStr);
-                        sret = system(gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli set_network 0 group CCMP", ifname);
-                        printf("\n %s \n", gCmdStr);
-                        sret = system(gCmdStr);
+			ret = shell_execute_cmd(NULL, "wpa_cli SAE_PWE 2");
+			ret = shell_execute_cmd(NULL, "wpa_cli disable_network 0");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 pairwise CCMP");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 group CCMP");
 
 
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 key_mgmt WPA-PSK SAE");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 ieee80211w 1");
+			sprintf(gCmdStr, "wpa_cli set_network 0 sae_password '\"%s\"'", setsec->secu.passphrase);
+			ret = shell_execute_cmd(NULL, gCmdstr);
+			sprintf(gCmdstr, "wpa_cli set_network 0 psk '\"%s\"'",  setsec->secu.passphrase);
+			ret = shell_execute_cmd(NULL, gCmdstr);
                         sprintf(gCmdStr, "wpa_cli set_network 0 key_mgmt WPA-PSK SAE", ifname);
-                        sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli set_network 0 ieee80211w 1", ifname);
-                        sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli set_network 0 sae_password '\"%s\"'", ifname, setsec->secu.passphrase);
-                        printf("\n %s \n", gCmdStr);
-                        sret = system(gCmdStr);
-
-                        sprintf(gCmdStr, "wpa_cli set_network 0 psk '\"%s\"'", ifname, setsec->secu.passphrase);
-                        sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli enable_network 0", ifname);
-                         sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
+			ret = shell_execute_cmd(NULL, gCmdstr);
+			ret = shell_execute_cmd(NULL, "wpa_cli enable_network 0");
                    }
 	
 		if(setsec->type == SEC_TYPE_SAE)
 		{
 			printf("\n IMG DEBUG >>>>>>> IN SEC_TYPE_SAE");
-   //	                printf(gCmdStr, "wpa_cli sae_pmkid_in_assoc 0", ifname);
-     //                    printf("\n %s \n", gCmdStr);
-      //                sret = system(gCmdStr);
-                       sprintf(gCmdStr, "wpa_cli SAE_PWE 2", ifname);
-                        printf("\n %s \n", gCmdStr);
-                       sret = system(gCmdStr);
-		       // sprintf(gCmdStr, "wpa_cli disable_network 0", ifname);
-                         //sret = system(gCmdStr);
-                       // printf("\n %s \n", gCmdStr);
-
-                       //sprintf(gCmdStr, "wpa_cli  SKIP_BSS_MEMBERSHIP_SELECTOR 0", ifname);
-                       // printf("\n %s \n", gCmdStr);
-                      // sret = system(gCmdStr);
-                        //sprintf(gCmdStr, "wpa_cli set_network 0 beacon_prot 1", ifname);
-                        //printf("\n %s \n", gCmdStr);
-                       // sret = system(gCmdStr);
-                        //sprintf(gCmdStr, "wpa_cli set_network 0 sae_pk 2", ifname);
-                      //  printf("\n %s \n", gCmdStr);
-                        //sret = system(gCmdStr);
-			sprintf(gCmdStr, "wpa_cli set_network 0  pairwise CCMP", ifname);
-                        printf("\n %s \n", gCmdStr);
-                        sret = system(gCmdStr);
-			sprintf(gCmdStr, "wpa_cli set_network 0 group CCMP", ifname);
-                        printf("\n %s \n", gCmdStr);
-                        sret = system(gCmdStr);
-                     
-			sprintf(gCmdStr, "wpa_cli set_network 0 key_mgmt SAE", ifname);
-			printf("\n %s \n", gCmdStr);
-			sret = system(gCmdStr);
-			sprintf(gCmdStr, "wpa_cli set_network 0 ieee80211w 2", ifname);
-			printf("\n %s \n", gCmdStr);
-			sret = system(gCmdStr);
-			//sprintf(gCmdStr, "wpa_cli set_network 0 ocv 1", ifname);
-                       // printf("\n %s \n", gCmdStr);
-                        //sret = system(gCmdStr);
-			sprintf(gCmdStr, "wpa_cli set_network 0 sae_password '\"%s\"'", ifname, setsec->secu.passphrase);
-			printf("\n %s \n", gCmdStr);
-			sret = system(gCmdStr);
-			sprintf(gCmdStr, "wpa_cli enable_network 0", ifname);
-                         sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
+			ret = shell_execute_cmd(NULL, "wpa_cli SAE_PWE 2");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0  pairwise CCMP");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 group CCMP");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 key_mgmt SAE");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 ieee80211w 2");
+			sprintf(gCmdstr, "wpa_cli set_network 0 sae_password '\"%s\"'", setsec->secu.passphrase);
+			ret = shell_execute_cmd(NULL, gCmdstr);
+			ret = shell_execute_cmd(NULL, "wpa_cli enable_network 0");
 
 		}
 		else if(setsec->type == SEC_TYPE_PSKSAE)
 		{
 			printf("\n IMG DEBUG >>>>>>> IN SEC_TYPE_PSKSAE");
-			 sprintf(gCmdStr, "wpa_cli SAE_PWE 2", ifname);
-                        printf("\n %s \n", gCmdStr);
-                       sret = system(gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli disable_network 0", ifname);
-                         sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
-			sprintf(gCmdStr, "wpa_cli set_network 0  pairwise CCMP", ifname);
-                        printf("\n %s \n", gCmdStr);
-                        sret = system(gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli set_network 0 group CCMP", ifname);
-                        printf("\n %s \n", gCmdStr);
-                        sret = system(gCmdStr);
-
-
-			sprintf(gCmdStr, "wpa_cli set_network 0 key_mgmt WPA-PSK SAE", ifname);
-			sret = system(gCmdStr);
-			printf("\n %s \n", gCmdStr);
-			sprintf(gCmdStr, "wpa_cli set_network 0 ieee80211w 1", ifname);
-			sret = system(gCmdStr);
-			printf("\n %s \n", gCmdStr);
-			sprintf(gCmdStr, "wpa_cli set_network 0 sae_password '\"%s\"'", ifname, setsec->secu.passphrase);
-                        printf("\n %s \n", gCmdStr);
-                        sret = system(gCmdStr);
-
-			sprintf(gCmdStr, "wpa_cli set_network 0 psk '\"%s\"'", ifname, setsec->secu.passphrase);
-			sret = system(gCmdStr);
-			printf("\n %s \n", gCmdStr);
-			sprintf(gCmdStr, "wpa_cli enable_network 0", ifname);
-                         sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
-
-
+			
+			ret = shell_execute_cmd(NULL, "wpa_cli SAE_PWE 2");
+			ret = shell_execute_cmd(NULL, "wpa_cli disable_network 0");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0  pairwise CCMP");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 group CCMP");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 key_mgmt WPA-PSK SAE");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 ieee80211w 1");
+			sprintf(gCmdstr, "wpa_cli set_network 0 sae_password '\"%s\"'", setsec->secu.passphrase);
+			ret = shell_execute_cmd(NULL, gCmdstr);
+			sprintf(gCmdstr, "wpa_cli set_network 0 psk '\"%s\"'", setsec->secu.passphrase);
+			ret = shell_execute_cmd(NULL, gCmdstr);
+			ret = shell_execute_cmd(NULL, "wpa_cli enable_network 0");
 	   	}
 		else if(setsec->type == SEC_TYPE_PSK)
 		{
 			printf("\n IMG DEBUG >>>>>>> IN SEC_TYPE_PSK");
-			sprintf(gCmdStr, "wpa_cli set_network 0 key_mgmt WPA-PSK WPA-PSK-SHA256", ifname);
-                        sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli set_network 0 auth_alg OPEN", ifname);
-                        sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli set_network 0 group CCMP", ifname);
-                        sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli set_network 0 pairwise CCMP", ifname);
-                        sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli set_network 0 ieee80211w %d", ifname, setsec->pmf);
-                        sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli set pmf %d", ifname, setsec->pmf);
-                        sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
-			sprintf(gCmdStr, "wpa_cli sta_autoconnect 1 ", ifname);
-                        sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
-                        sprintf(gCmdStr, "wpa_cli set_network 0 psk '\"%s\"'", ifname, setsec->secu.passphrase);
-                        sret = system(gCmdStr);
-                        printf("\n %s \n", gCmdStr);
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 key_mgmt WPA-PSK WPA-PSK-SHA256");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 auth_alg OPEN");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 group CCMP");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 pairwise CCMP");
+			sprintf(gCmdstr, "wpa_cli set_network 0 ieee80211w %d", setsec->pmf);
+			ret = shell_execute_cmd(NULL, gCmdstr);
+			sprintf(gCmdstr, "wpa_cli set pmf %d", setsec->pmf);
+			ret = shell_execute_cmd(NULL, gCmdstr);
+			ret = shell_execute_cmd(NULL, "wpa_cli sta_autoconnect 1");
+			sprintf(gCmdstr, "wpa_cli set_network 0 psk '\"%s\"'", setsec->secu.passphrase);
+			ret = shell_execute_cmd(NULL, gCmdstr);
+
                 }
-
-
-		
 		else if(setsec->type == SEC_TYPE_EAPTLS)
 		{
 			printf("\n IMG DEBUG >>>>>>> IN SEC_TYPE_EAPTLS");
-			sprintf(gCmdStr, "wpa_cli set_network 0 key_mgmt WPA-EAP", ifname);
-			printf("\n %s \n", gCmdStr);
-			sret = system(gCmdStr);
-			sprintf(gCmdStr, "wpa_cli set_network 0 ieee80211w 1", ifname);
-			printf("\n %s \n", gCmdStr);
-			sret = system(gCmdStr);
-			sprintf(gCmdStr, "wpa_cli set_network 0 eap TLS", ifname);
-			printf("\n %s \n", gCmdStr);
-			sret = system(gCmdStr);
-			sprintf(gCmdStr, "wpa_cli set_network 0 identity '\"user@example.com\"'", ifname);//IMG EDITED
-			printf("\n %s \n", gCmdStr);
-			sret = system(gCmdStr);//IMG EDITED
-			sprintf(gCmdStr, "wpa_cli set_network 0 ca_cert '\"/etc/wpa_supplicant/%s\"'", ifname,setsec->trustedRootCA);//IMG EDITED , s
-			printf("\n %s \n", gCmdStr);
-			sret = system(gCmdStr);//IMG EDITED
-			sprintf(gCmdStr, "wpa_cli set_network 0 client_cert '\"/etc/wpa_supplicant/%s\"'", ifname,setsec->clientCertificate);//IMG EDITED
-			printf("\n %s \n", gCmdStr);
-			sret = system(gCmdStr);//IMG EDITED
-
-			sprintf(gCmdStr, "wpa_cli set_network 0 private_key '\"/etc/wpa_supplicant/%s\"'", ifname,setsec->clientCertificate);//IMG EDITED
-			printf("\n %s \n", gCmdStr);
-			sret = system(gCmdStr);//IMG EDITED
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 key_mgmt WPA-EAP");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 ieee80211w 1");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 eap TLS");
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 identity '\"user@example.com\"'");
+			sprintf(gCmdstr, "wpa_cli set_network 0 ca_cert '\"/etc/wpa_supplicant/%s\"'", setsec->trustedRootCA);
+			ret = shell_execute_cmd(NULL, gCmdstr);
+			sprintf(gCmdstr, "wpa_cli set_network 0 client_cert '\"/etc/wpa_supplicant/%s\"'", setsec->clientCertificate);
+			ret = shell_execute_cmd(NULL, gCmdstr);
+			sprintf(gCmdstr, "wpa_cli set_network 0 private_key '\"/etc/wpa_supplicant/%s\"'", setsec->clientCertificate);
+			ret = shell_execute_cmd(NULL, gCmdstr);
 		}
 		else if(setsec->type == 0)
                 {
                         printf("\n IMG DEBUG >>>>>>> IN SEC_TYPE_OPEN");
-                        sprintf(gCmdStr, "wpa_cli set_network 0 key_mgmt NONE", ifname);
-                        printf("\n %s \n", gCmdStr);
-                        sret = system(gCmdStr);
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 key_mgmt NONE");
                 }
 
 		if(setsec->ecGroupID[0] != '\0')
@@ -1088,75 +983,36 @@ if(setsec->type == SEC_TYPE_PSKSAE)
 			printf("\n %s \n", gCmdStr);
 		}
 	
-	//else if(strcasecmp(setsec->keyMgmtType, "OWE") == 0)	
 	if(strcasecmp(setsec->keyMgmtType, "OWE") == 0)	
 	{
 		printf("\n IMG DEBUG >>>>>>> IN OWE");
-		sprintf(gCmdStr, "wpa_cli set_network 0 key_mgmt OWE", ifname);
-		printf("\n %s \n", gCmdStr);		
-		sret = system(gCmdStr);
-		sprintf(gCmdStr, "wpa_cli set_network 0 group CCMP", ifname);
-		printf("\n %s \n", gCmdStr);		
-		sret = system(gCmdStr);
-		/* 			sprintf(gCmdStr, "wpa_cli set_network 0 psk '\"%s\"'", ifname, setsec->secu.passphrase);
-		printf("\n %s \n", gCmdStr);		
-		sret = system(gCmdStr); */
-		sprintf(gCmdStr, "wpa_cli set_network 0 pairwise CCMP", ifname);
-		printf("\n %s \n", gCmdStr);		
-		sret = system(gCmdStr);
-		sprintf(gCmdStr, "wpa_cli set_network 0 proto RSN", ifname);
-		printf("\n %s \n", gCmdStr);		
-		sret = system(gCmdStr);
-		sprintf(gCmdStr, "wpa_cli set_network 0 ieee80211w 2", ifname);
-		printf("\n %s \n", gCmdStr);		
-		sret = system(gCmdStr);
+		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 key_mgmt OWE");
+		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 group CCMP");
+		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 pairwise CCMP");
+		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 proto RSN");
+		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 ieee80211w 2");
 	}
 	else if(strcasecmp(setsec->keyMgmtType, "SuiteB") == 0)	
 	{
 		printf("\n IMG DEBUG >>>>>>> IN SuiteB");
-		sprintf(gCmdStr, "wpa_cli set_network 0 key_mgmt WPA-EAP-SUITE-B-192", ifname);			
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);
-		sprintf(gCmdStr, "wpa_cli set_network 0 pairwise GCMP-256", ifname);
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);
-		sprintf(gCmdStr, "wpa_cli set_network 0 group GCMP-256", ifname);
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);
-		sprintf(gCmdStr, "wpa_cli set_network 0 eap TLS", ifname);
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);
-		sprintf(gCmdStr, "wpa_cli set_network 0 identity '\"user@example.com\"'", ifname);//IMG EDITED
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);//IMG EDITED
-		sprintf(gCmdStr, "wpa_cli set_network 0 ca_cert '\"/etc/wpa_supplicant/%s\"'", ifname,setsec->trustedRootCA);//IMG EDITED , s
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);//IMG EDITED
-		sprintf(gCmdStr, "wpa_cli set_network 0 client_cert '\"/etc/wpa_supplicant/%s\"'", ifname,setsec->clientCertificate);//IMG EDITED
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);//IMG EDITED
-
-		sprintf(gCmdStr, "wpa_cli set_network 0 private_key '\"/etc/wpa_supplicant/%s\"'", ifname,setsec->clientCertificate);//IMG EDITED
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);//IMG EDITED
-		sprintf(gCmdStr, "wpa_cli set_network 0 group_mgmt BIP-GMAC-256", ifname);
-		printf("\n %s \n", gCmdStr); 
-		sret = system(gCmdStr);
+		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 key_mgmt WPA-EAP-SUITE-B-192");
+		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 pairwise GCMP-256");
+		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 group GCMP-256");
+		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 eap TLS");
+		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 identity '\"user@example.com\"'");
+		sprintf(gCmdstr, "wpa_cli set_network 0 ca_cert '\"/etc/wpa_supplicant/%s\"'", setsec->trustedRootCA);
+		ret = shell_execute_cmd(NULL, gCmdstr);
+		sprintf(gCmdstr, "wpa_cli set_network 0 client_cert '\"/etc/wpa_supplicant/%s\"'", setsec->clientCertificate);
+		ret = shell_execute_cmd(NULL, gCmdstr);
+		sprintf(gCmdstr, "wpa_cli set_network 0 private_key '\"/etc/wpa_supplicant/%s\"'", setsec->clientCertificate);
+		ret = shell_execute_cmd(NULL, gCmdstr);
+		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 group_mgmt BIP-GMAC-256");
 		if(strcasecmp(setsec->certType, "ecc") == 0)
-			sprintf(gCmdStr, "wpa_cli set_network 0 openssl_ciphers '\"ECDHE-ECDSA-AES256-GCM-SHA384\"'", ifname);
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 openssl_ciphers '\"ECDHE-ECDSA-AES256-GCM-SHA384\"'");
 		else if(strcasecmp(setsec->certType, "rsa") == 0)
-			sprintf(gCmdStr, "wpa_cli set_network 0 openssl_ciphers '\"ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384\"'", ifname);
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);
-		/* 		   sprintf(gCmdStr, "wpa_cli set_network 0 password '\"test%11\"'", ifname);//IMG EDITED
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);//IMG EDITED
-		sprintf(gCmdStr, "wpa_cli set_network 0 private_key_passwd '\"wifi\"'", ifname);//IMG EDITED
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);//IMG EDITED */
-		sprintf(gCmdStr, "wpa_cli set_network 0 ieee80211w 2", ifname);
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 openssl_ciphers '\"ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384\"'");
+
+		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 ieee80211w 2");
 	}
 
 	else
@@ -1164,33 +1020,16 @@ if(setsec->type == SEC_TYPE_PSKSAE)
 		 if(setsec->type == 0)
                 {
                         printf("\n IMG DEBUG >>>>>>> IN SEC_TYPE_OPEN");
-                        sprintf(gCmdStr, "wpa_cli set_network 0 key_mgmt NONE", ifname);
-                        printf("\n %s \n", gCmdStr);
-                        sret = system(gCmdStr);
+			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 ieee80211w 1");
                 }
-        /*        else
-               {			
-		sprintf(gCmdStr, "wpa_cli set_network 0 key_mgmt WPA-PSK WPA-PSK-SHA256", ifname);
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);
-		
-		sprintf(gCmdStr, "wpa_cli set_network 0 proto RSN", ifname);
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);
-			sprintf(gCmdStr, "wpa_cli set_network 0 psk '\"%s\"'", ifname, setsec->secu.passphrase);
-		printf("\n %s \n", gCmdStr);
-		sret = system(gCmdStr);
-	       }*/
 		
 	}
-	sprintf(gCmdStr, "wpa_cli set_network 0 scan_ssid 1 ", ifname);
-        printf("\n %s \n", gCmdStr);
-        sret = system(gCmdStr);
+                printf("\n IMG DEBUG >>>>>>> IN STA_AUTO_CONNECT");
+		ret = shell_execute_cmd(NULL, "wpa_cli sta_autoconnect 1 ");
 
+		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 scan_ssid 1 ");
 
-	sprintf(gCmdStr, "wpa_cli select_network 0", ifname);
-	sret = system(gCmdStr);
-	printf("\n %s \n", gCmdStr);
+		ret = shell_execute_cmd(NULL, "wpa_cli select_network 0");
 	sleep(2);
 	infoResp.status = STATUS_COMPLETE;
 	wfaEncodeTLV(WFA_STA_SET_SECURITY_RESP_TLV, sizeof(infoResp), (BYTE *)&infoResp, respBuf);
@@ -2019,50 +1858,31 @@ int wfaStaGetBSSID(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     char *str;
     FILE *tmpfd;
     dutCmdResponse_t *bssidResp = &gGenericResp;
+    dutCommand_t *connStat = (dutCommand_t *)caCmdBuf;
+    char *ifname = connStat->intf;
+    struct wpa_supplicant *wpa_s;
 
     DPRINT_INFO(WFA_OUT, "Entering wfaStaGetBSSID ...\n");
     /* retrieve the BSSID */
-    sprintf(gCmdStr, "wpa_cli 'status' > /tmp/bssid.txt");
+	ret = shell_execute_cmd(NULL, "wpa_cli status");
 
-    sret = system(gCmdStr);
+    	sret = system(gCmdStr);
+	wpa_s = wpa_supplicant_get_iface(global, ifname);
+	if (!wpa_s) {
+		printf("Unable to find the interface: %s, quitting", ifname);
+		return -1;
+	}
+	int ret;	
+	ret = os_snprintf(string,6,"%s",MAC2STR(wpa_s->bssid));
+		printf("...string BSSID = %s",string);
 
-    tmpfd = fopen("/tmp/bssid.txt", "r+");
-    if(tmpfd == NULL)
-    {
-        bssidResp->status = STATUS_ERROR;
-        wfaEncodeTLV(WFA_STA_GET_BSSID_RESP_TLV, 4, (BYTE *)bssidResp, respBuf);
-        *respLen = WFA_TLV_HDR_LEN + 4;
-
-        DPRINT_ERR(WFA_ERR, "file open failed\n");
-        return WFA_FAILURE;
-    }
-
-    for(;;)
-    {
-        if(fscanf(tmpfd, "%s", string) == EOF)
-        {
-            bssidResp->status = STATUS_COMPLETE;
-            strcpy(bssidResp->cmdru.bssid, "00:00:00:00:00:00");
-            break;
-        }
-
-        if(strncmp(string, "bssid", 5) == 0)
-        {
-            str = strtok(string, "=");
-            str = strtok(NULL, "=");
-            if(str != NULL)
-            {
-                strcpy(bssidResp->cmdru.bssid, str);
+                strcpy(bssidResp->cmdru.bssid, string);
                 bssidResp->status = STATUS_COMPLETE;
-                break;
-            }
-        }
-    }
+		printf("string BSSID = %s bssidresp=  %s",string,bssidResp->cmdru.bssid);
 
     wfaEncodeTLV(WFA_STA_GET_BSSID_RESP_TLV, sizeof(dutCmdResponse_t), (BYTE *)bssidResp, respBuf);
     *respLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
 
-    fclose(tmpfd);
     return WFA_SUCCESS;
 }
 

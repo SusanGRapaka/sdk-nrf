@@ -26,6 +26,7 @@ target_include_directories(mbedcrypto_common
 	#)
 
 zephyr_library_compile_definitions(WFA_STA_TB)
+
 target_sources(app PRIVATE
 	src/wifi_main.c
 	src/wfa_dut_shell.c

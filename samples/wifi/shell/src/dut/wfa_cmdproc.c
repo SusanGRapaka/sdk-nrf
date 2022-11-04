@@ -988,6 +988,11 @@ int xcCmdProcStaGetMacAddress(char *pcmdStr, BYTE *aBuf, int *aLen)
     wfaEncodeTLV(WFA_STA_GET_MAC_ADDRESS_TLV, sizeof(getmac), (BYTE *)&getmac, aBuf);
 
     *aLen = 4+sizeof(getmac);
+    printf("xcCmdPro ....\n");
+    for (int i = 0; i < 20; i++) {
+        printf("%02x", aBuf[i]);
+    }
+    printf("xcCmdProc END.....\n");
 
     return WFA_SUCCESS;
 }
