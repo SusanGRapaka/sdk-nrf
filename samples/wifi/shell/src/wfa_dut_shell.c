@@ -30,19 +30,19 @@ static int cmd_wfa_dut_test(const struct shell *shell,
 			argv);
 }
 
+unsigned char cmdBuf[WFA_BUFF_512] = {0};
+
 static int wfa_dut_execute(const struct shell *shell,
 			  size_t argc,
 			  const char *argv[])
 {
 	printf("arg0: %s\n", argv[0]);
-	unsigned char *respBuf = os_zalloc(64 * sizeof(unsigned char));
-	int bufLen = 0;
 	int status = -1;
-	unsigned char cmdBuf[WFA_BUFF_512] = {0};
+
 #if COMMAND_BYTE_STREAM
 	hex_str_to_val(cmdBuf, sizeof(cmdBuf), argv[1]);
 #else
-	cmd_to_hex(argv[1], cmdBuf);
+	status = cmd_to_hex(argv[1], cmdBuf);
 #endif /* COMMAND_BYTE_STREAM */
 	status = commandHandle(cmdBuf);
 	return status;
