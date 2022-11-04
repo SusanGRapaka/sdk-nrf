@@ -286,7 +286,7 @@ printf("%s DDEBUG: no command defined  %s, %d\n", __FILE__,  __func__,  __LINE__
             tgSockfds[i] = -1;
         }
     }
-
+// return 0;
 }
 
 int cmd_to_hex(char *cmd, unsigned char *pcmdBuf)
@@ -343,6 +343,7 @@ int cmd_to_hex(char *cmd, unsigned char *pcmdBuf)
     }
 
     wFREE(tempCmdBuff);
+    return 0;
 }
 
 int commandHandle(unsigned char *pcmdBuf)
@@ -395,6 +396,7 @@ printf("%s DDEBUG: no command defined  %s, %d\n", __FILE__,  __func__,  __LINE__
              //         DPRINT_WARNING(WFA_WNG, "wfa-dut main:wfaCtrlSend returned value %d != respLen %d\n", ret, respLen);
                  }
                }
+	printf("In .cmdhandle adress is = %d\n",&commandHandle);
     return 0;
                     
 }
