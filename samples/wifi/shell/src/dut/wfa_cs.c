@@ -38,6 +38,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <string.h>
 #include <stdlib.h>
 #include <zephyr/posix/sys/socket.h>
+#include <icmpv4.h>
 #include <arpa/inet.h>
 #include <zephyr/types.h>
 #include <zephyr/net/socket.h>
@@ -177,7 +178,7 @@ int wfaStaAssociate(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     printf("\n%d\n",k);
     if(k!='\0')
     {
-    sprintf(gCmdStr, "wpa_cli bssid 0 %s", ifname,setassoc->bssid);
+    sprintf(gCmdStr, "wpa_cli bssid 0 %s",setassoc->bssid);
     sret=system(gCmdStr);
     printf("\n %s \n", gCmdStr);
     }
@@ -328,11 +329,49 @@ int wfaStaIsConnected(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
  */
 int wfaStaGetIpConfig(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 {
-    int slen, ret, i = 0;
+    int slen, ret, i = 0,count = 0;
     dutCommand_t *getIpConf = (dutCommand_t *)caCmdBuf;
     dutCmdResponse_t *ipconfigResp = &gGenericResp;
     char *ifname = getIpConf->intf;
     caStaGetIpConfigResp_t *ifinfo = &ipconfigResp->cmdru.getIfconfig;
+	char tmp[30];
+	char *string_ip;
+	struct wpa_supplicant *wpa_s;
+
+    DPRINT_INFO(WFA_OUT, "Entering GetIpConfig...\n");
+		printf("interface %s\n", ifname);
+
+	struct net_if *iface;
+	struct net_if_ipv4 *ipv4;
+	struct net_if_addr *unicast;
+
+	iface = net_if_get_by_index(1);
+	if (iface == NULL) {
+		printf("No such interface with index %s\n", ifname);
+		return -ENOEXEC;
+	}
+	ipv4 = iface->config.ip.ipv4;
+	printf("IPv4 unicast addresses (max %d):\n", NET_IF_MAX_IPV4_ADDR);
+        for (i = 0; ipv4 && i < NET_IF_MAX_IPV4_ADDR; i++) {
+                unicast = &ipv4->unicast[i];
+
+                if (!unicast->is_used) {
+                        continue;
+                }
+
+	printf("IPv4 unicast addresses %s:\n", &unicast->address.in_addr);
+
+        }
+	//wpa_s = wpa_supplicant_get_iface(global, ifname);
+        //if (!wpa_s) {
+        //        printf("Unable to find the interface: %s, quitting", ifname);
+        //        return -1;
+        //}
+	    //ret = l2_packet_get_ip_addr(wpa_s->l2, tmp, sizeof(tmp));
+              //  ret = os_snprintf(string_ip,32, "ip_address=%s\n", tmp);
+		//printf("IP ADDRESS :%s\n", string_ip);
+
+
 
 #if 0
     FILE *tmpfd;
@@ -463,6 +502,10 @@ int wfaStaGetIpConfig(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 
     fclose(tmpfd);
 #endif
+    ipconfigResp->status = STATUS_COMPLETE;
+    wfaEncodeTLV(WFA_STA_GET_IP_CONFIG_RESP_TLV, sizeof(dutCmdResponse_t), (BYTE *)ipconfigResp, respBuf);
+
+    *respLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
     return WFA_SUCCESS;
 }
 
@@ -863,7 +906,6 @@ int wfaStaSetSecurity(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 	caStaSetSecurity_t *setsec = &setSecurity->cmdsu.setsec;
 	dutCmdResponse_t infoResp;
 	char *ifname = setSecurity->intf;
-	char *gCmdstr;
 	if(ifname[0] == '\0')
 	{
 		ifname = "wlan0";
@@ -878,7 +920,6 @@ ret = shell_execute_cmd(NULL, "wpa_cli add_network 0");
 
 
 	sprintf(gCmdStr, "wpa_cli set_network 0 ssid '\"%s\"'", setsec->ssid);
-	printf("\n gCmdstr = %s\n",gCmdStr);
 	ret = shell_execute_cmd(NULL, gCmdStr);
 
 	printf("\n Interface = %s \n",setSecurity->intf );
@@ -903,11 +944,11 @@ if(setsec->type == SEC_TYPE_PSKSAE)
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 key_mgmt WPA-PSK SAE");
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 ieee80211w 1");
 			sprintf(gCmdStr, "wpa_cli set_network 0 sae_password '\"%s\"'", setsec->secu.passphrase);
-			ret = shell_execute_cmd(NULL, gCmdstr);
-			sprintf(gCmdstr, "wpa_cli set_network 0 psk '\"%s\"'",  setsec->secu.passphrase);
-			ret = shell_execute_cmd(NULL, gCmdstr);
+			ret = shell_execute_cmd(NULL, gCmdStr);
+			sprintf(gCmdStr, "wpa_cli set_network 0 psk '\"%s\"'",  setsec->secu.passphrase);
+			ret = shell_execute_cmd(NULL, gCmdStr);
                         sprintf(gCmdStr, "wpa_cli set_network 0 key_mgmt WPA-PSK SAE", ifname);
-			ret = shell_execute_cmd(NULL, gCmdstr);
+			ret = shell_execute_cmd(NULL, gCmdStr);
 			ret = shell_execute_cmd(NULL, "wpa_cli enable_network 0");
                    }
 	
@@ -919,8 +960,8 @@ if(setsec->type == SEC_TYPE_PSKSAE)
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 group CCMP");
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 key_mgmt SAE");
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 ieee80211w 2");
-			sprintf(gCmdstr, "wpa_cli set_network 0 sae_password '\"%s\"'", setsec->secu.passphrase);
-			ret = shell_execute_cmd(NULL, gCmdstr);
+			sprintf(gCmdStr, "wpa_cli set_network 0 sae_password '\"%s\"'", setsec->secu.passphrase);
+			ret = shell_execute_cmd(NULL, gCmdStr);
 			ret = shell_execute_cmd(NULL, "wpa_cli enable_network 0");
 
 		}
@@ -934,10 +975,10 @@ if(setsec->type == SEC_TYPE_PSKSAE)
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 group CCMP");
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 key_mgmt WPA-PSK SAE");
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 ieee80211w 1");
-			sprintf(gCmdstr, "wpa_cli set_network 0 sae_password '\"%s\"'", setsec->secu.passphrase);
-			ret = shell_execute_cmd(NULL, gCmdstr);
-			sprintf(gCmdstr, "wpa_cli set_network 0 psk '\"%s\"'", setsec->secu.passphrase);
-			ret = shell_execute_cmd(NULL, gCmdstr);
+			sprintf(gCmdStr, "wpa_cli set_network 0 sae_password '\"%s\"'", setsec->secu.passphrase);
+			ret = shell_execute_cmd(NULL, gCmdStr);
+			sprintf(gCmdStr, "wpa_cli set_network 0 psk '\"%s\"'", setsec->secu.passphrase);
+			ret = shell_execute_cmd(NULL, gCmdStr);
 			ret = shell_execute_cmd(NULL, "wpa_cli enable_network 0");
 	   	}
 		else if(setsec->type == SEC_TYPE_PSK)
@@ -947,13 +988,13 @@ if(setsec->type == SEC_TYPE_PSKSAE)
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 auth_alg OPEN");
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 group CCMP");
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 pairwise CCMP");
-			sprintf(gCmdstr, "wpa_cli set_network 0 ieee80211w %d", setsec->pmf);
-			ret = shell_execute_cmd(NULL, gCmdstr);
-			sprintf(gCmdstr, "wpa_cli set pmf %d", setsec->pmf);
-			ret = shell_execute_cmd(NULL, gCmdstr);
+			sprintf(gCmdStr, "wpa_cli set_network 0 ieee80211w %d", setsec->pmf);
+			ret = shell_execute_cmd(NULL, gCmdStr);
+			sprintf(gCmdStr, "wpa_cli set pmf %d", setsec->pmf);
+			ret = shell_execute_cmd(NULL, gCmdStr);
 			ret = shell_execute_cmd(NULL, "wpa_cli sta_autoconnect 1");
-			sprintf(gCmdstr, "wpa_cli set_network 0 psk '\"%s\"'", setsec->secu.passphrase);
-			ret = shell_execute_cmd(NULL, gCmdstr);
+			sprintf(gCmdStr, "wpa_cli set_network 0 psk '\"%s\"'", setsec->secu.passphrase);
+			ret = shell_execute_cmd(NULL, gCmdStr);
 
                 }
 		else if(setsec->type == SEC_TYPE_EAPTLS)
@@ -963,12 +1004,12 @@ if(setsec->type == SEC_TYPE_PSKSAE)
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 ieee80211w 1");
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 eap TLS");
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 identity '\"user@example.com\"'");
-			sprintf(gCmdstr, "wpa_cli set_network 0 ca_cert '\"/etc/wpa_supplicant/%s\"'", setsec->trustedRootCA);
-			ret = shell_execute_cmd(NULL, gCmdstr);
-			sprintf(gCmdstr, "wpa_cli set_network 0 client_cert '\"/etc/wpa_supplicant/%s\"'", setsec->clientCertificate);
-			ret = shell_execute_cmd(NULL, gCmdstr);
-			sprintf(gCmdstr, "wpa_cli set_network 0 private_key '\"/etc/wpa_supplicant/%s\"'", setsec->clientCertificate);
-			ret = shell_execute_cmd(NULL, gCmdstr);
+			sprintf(gCmdStr, "wpa_cli set_network 0 ca_cert '\"/etc/wpa_supplicant/%s\"'", setsec->trustedRootCA);
+			ret = shell_execute_cmd(NULL, gCmdStr);
+			sprintf(gCmdStr, "wpa_cli set_network 0 client_cert '\"/etc/wpa_supplicant/%s\"'", setsec->clientCertificate);
+			ret = shell_execute_cmd(NULL, gCmdStr);
+			sprintf(gCmdStr, "wpa_cli set_network 0 private_key '\"/etc/wpa_supplicant/%s\"'", setsec->clientCertificate);
+			ret = shell_execute_cmd(NULL, gCmdStr);
 		}
 		else if(setsec->type == 0)
                 {
@@ -1000,12 +1041,12 @@ if(setsec->type == SEC_TYPE_PSKSAE)
 		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 group GCMP-256");
 		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 eap TLS");
 		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 identity '\"user@example.com\"'");
-		sprintf(gCmdstr, "wpa_cli set_network 0 ca_cert '\"/etc/wpa_supplicant/%s\"'", setsec->trustedRootCA);
-		ret = shell_execute_cmd(NULL, gCmdstr);
-		sprintf(gCmdstr, "wpa_cli set_network 0 client_cert '\"/etc/wpa_supplicant/%s\"'", setsec->clientCertificate);
-		ret = shell_execute_cmd(NULL, gCmdstr);
-		sprintf(gCmdstr, "wpa_cli set_network 0 private_key '\"/etc/wpa_supplicant/%s\"'", setsec->clientCertificate);
-		ret = shell_execute_cmd(NULL, gCmdstr);
+		sprintf(gCmdStr, "wpa_cli set_network 0 ca_cert '\"/etc/wpa_supplicant/%s\"'", setsec->trustedRootCA);
+		ret = shell_execute_cmd(NULL, gCmdStr);
+		sprintf(gCmdStr, "wpa_cli set_network 0 client_cert '\"/etc/wpa_supplicant/%s\"'", setsec->clientCertificate);
+		ret = shell_execute_cmd(NULL, gCmdStr);
+		sprintf(gCmdStr, "wpa_cli set_network 0 private_key '\"/etc/wpa_supplicant/%s\"'", setsec->clientCertificate);
+		ret = shell_execute_cmd(NULL, gCmdStr);
 		ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 group_mgmt BIP-GMAC-256");
 		if(strcasecmp(setsec->certType, "ecc") == 0)
 			ret = shell_execute_cmd(NULL, "wpa_cli set_network 0 openssl_ciphers '\"ECDHE-ECDSA-AES256-GCM-SHA384\"'");
@@ -1854,7 +1895,7 @@ int wfaStaDebugSet(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
  */
 int wfaStaGetBSSID(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 {
-    char string[64];
+    char string_bssid[100];
     char *str;
     FILE *tmpfd;
     dutCmdResponse_t *bssidResp = &gGenericResp;
@@ -1864,6 +1905,7 @@ int wfaStaGetBSSID(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 
     DPRINT_INFO(WFA_OUT, "Entering wfaStaGetBSSID ...\n");
     /* retrieve the BSSID */
+	int ret;	
 	ret = shell_execute_cmd(NULL, "wpa_cli status");
 
     	sret = system(gCmdStr);
@@ -1872,13 +1914,14 @@ int wfaStaGetBSSID(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 		printf("Unable to find the interface: %s, quitting", ifname);
 		return -1;
 	}
-	int ret;	
-	ret = os_snprintf(string,6,"%s",MAC2STR(wpa_s->bssid));
-		printf("...string BSSID = %s",string);
+		ret = os_snprintf(string_bssid,64, "bssid=" MACSTR "\n",MAC2STR(wpa_s->bssid));
+		//ret = os_snprintf(string_bssid,64,"%s",MAC2STR(wpa_s->bssid));
+		//os_memcpy(string_bssid, wpa_s->bssid, ETH_ALEN);
+		printf("...string BSSID = %s",string_bssid);
 
-                strcpy(bssidResp->cmdru.bssid, string);
+                strcpy(bssidResp->cmdru.bssid, string_bssid);
                 bssidResp->status = STATUS_COMPLETE;
-		printf("string BSSID = %s bssidresp=  %s",string,bssidResp->cmdru.bssid);
+		printf("string BSSID = %s bssidresp=  %s",string_bssid,bssidResp->cmdru.bssid);
 
     wfaEncodeTLV(WFA_STA_GET_BSSID_RESP_TLV, sizeof(dutCmdResponse_t), (BYTE *)bssidResp, respBuf);
     *respLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
@@ -2898,22 +2941,23 @@ int wfaExecuteCLI(char *CLI)
 
 /* Supporting Functions */
 
-void wfaSendPing(tgPingStart_t *staPing, float *interval, int streamid)
+void wfaSendPing(tgPingStart_t *staPing, int duration, int streamid)
 {
     int totalpkts, tos=-1;
     char cmdStr[256];
 //    char *addr = staPing->dipaddr;
-#ifdef WFA_PC_CONSOLE
     char addr[40];
     char bflag[] = "-b";
     char *tmpstr;
     int inum=0;
-#else
-    char bflag[] = "  ";
-#endif
 
     totalpkts = (int)(staPing->duration * staPing->frameRate);
+	int ret;
 
+    	printf("Printing PING OUTPUT\n");
+	sprintf(gCmdStr, "net ping  -c %d %s", duration,addr);
+	ret = shell_execute_cmd(NULL, gCmdStr);
+/*
 #ifdef WFA_PC_CONSOLE
 
     printf("\nwfa_cs.c wfaSendPing CS : The Stream ID is %d",streamid);
@@ -2985,7 +3029,8 @@ void wfaSendPing(tgPingStart_t *staPing, float *interval, int streamid)
     sprintf(cmdStr, "updatepid.sh /tmp/spout_%d.txt",streamid);
     sret = system(cmdStr);
     printf("\nCS : The command string is %s",cmdStr);
-
+*/
+    	printf("Printing PING OUTPUT DONE\n");
 }
 
 int wfaStopPing(dutCmdResponse_t *stpResp, int streamid)
@@ -2993,7 +3038,8 @@ int wfaStopPing(dutCmdResponse_t *stpResp, int streamid)
     char strout[256];
     FILE *tmpfile = NULL;
     char cmdStr[128];
-    printf("\nwfa_cs.c wfaStopPing:: stream id=%d\n", streamid);
+    printf("\nIn wfaStopPing....");
+ /*   printf("\nwfa_cs.c wfaStopPing:: stream id=%d\n", streamid);
     sprintf(cmdStr, "getpid.sh /tmp/spout_%d.txt /tmp/pid.txt",streamid);
     sret = system(cmdStr);
 
@@ -3039,7 +3085,7 @@ int wfaStopPing(dutCmdResponse_t *stpResp, int streamid)
     printf("wfaStopPing after scan replied count %i\n", stpResp->cmdru.pingStp.repliedCnt);
 
     fclose(tmpfile);
-
+*/
     return WFA_SUCCESS;
 }
 
