@@ -14,6 +14,9 @@ if(CONFIG_WPA_SUPP)
 set(WPA_SUPP_BASE ${WEST_TOPDIR}/modules/lib/hostap)
 endif()
 
+
+target_include_directories(app PUBLIC ${ZEPHYR_BASE}/subsys/net/ip)
+
 # TODO: MbedTLS Remove this workaround
 target_include_directories(mbedcrypto_common
 	INTERFACE
