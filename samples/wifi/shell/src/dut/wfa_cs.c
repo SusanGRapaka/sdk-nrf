@@ -335,7 +335,7 @@ int wfaStaGetIpConfig(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     char *ifname = getIpConf->intf;
     caStaGetIpConfigResp_t *ifinfo = &ipconfigResp->cmdru.getIfconfig;
 	char tmp[30];
-	char *string_ip;
+	char string_ip[30];
 	struct wpa_supplicant *wpa_s;
 
     DPRINT_INFO(WFA_OUT, "Entering GetIpConfig...\n");
@@ -343,15 +343,12 @@ int wfaStaGetIpConfig(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 
 	struct net_if *iface;
 	struct net_if_ipv4 *ipv4;
-	struct net_if_addr *unicast;
 
-	iface = net_if_get_by_index(1);
-	if (iface == NULL) {
-		printf("No such interface with index %s\n", ifname);
-		return -ENOEXEC;
-	}
+	iface = net_if_get_by_index(0);
+	printf("\nInterface %p \n", iface);
 	ipv4 = iface->config.ip.ipv4;
 	printf("IPv4 unicast addresses (max %d):\n", NET_IF_MAX_IPV4_ADDR);
+	/*
         for (i = 0; ipv4 && i < NET_IF_MAX_IPV4_ADDR; i++) {
                 unicast = &ipv4->unicast[i];
 
@@ -361,15 +358,27 @@ int wfaStaGetIpConfig(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 
 	printf("IPv4 unicast addresses %s:\n", &unicast->address.in_addr);
 
+        }*/
+	wpa_s = wpa_supplicant_get_iface(global, ifname);
+        if (!wpa_s) {
+                printf("Unable to find the interface: %s, quitting", ifname);
+                return -1;
         }
-	//wpa_s = wpa_supplicant_get_iface(global, ifname);
-        //if (!wpa_s) {
-        //        printf("Unable to find the interface: %s, quitting", ifname);
-        //        return -1;
-        //}
-	    //ret = l2_packet_get_ip_addr(wpa_s->l2, tmp, sizeof(tmp));
-              //  ret = os_snprintf(string_ip,32, "ip_address=%s\n", tmp);
-		//printf("IP ADDRESS :%s\n", string_ip);
+	if (wpa_s->l2 && l2_packet_get_ip_addr(wpa_s->l2, tmp, sizeof(tmp)) >= 0) {
+              ret = os_snprintf(string_ip,sizeof(string_ip), "%s", tmp);
+		printf("IP ADDRESS :%s\n", string_ip);
+	}
+            if(string_ip != NULL)
+            {
+                wSTRNCPY(ifinfo->ipaddr, string_ip,15);
+
+                ifinfo->ipaddr[15]='\0';
+            }
+            else
+                wSTRNCPY(ifinfo->ipaddr, "none", 15);
+        
+    strcpy(ifinfo->dns[0], "0");
+    strcpy(ifinfo->dns[1], "0");
 
 
 
@@ -528,11 +537,11 @@ int wfaStaSetIpConfig(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     /*
      * Use command 'ifconfig' to configure the interface ip address, mask.
      * (Linux specific).
-     */
-    /*sprintf(gCmdStr, "/sbin/ifconfig %s %s netmask %s > /dev/null 2>&1 ", ipconfig->intf, ipconfig->ipaddr, ipconfig->mask);
+     *
+    *sprintf(gCmdStr, "/sbin/ifconfig %s %s netmask %s > /dev/null 2>&1 ", ipconfig->intf, ipconfig->ipaddr, ipconfig->mask);
      * sret = system(gCmdStr);
      * 
-     /* use command 'route add' to set set gatewway (linux specific) */
+     * use command 'route add' to set set gatewway (linux specific) */
     /* if(ipconfig->defGateway[0] != '\0')
     {
         sprintf(gCmdStr, "/sbin/route add default gw %s > /dev/null 2>&1", ipconfig->defGateway);
@@ -2940,7 +2949,7 @@ int wfaExecuteCLI(char *CLI)
 }
 
 /* Supporting Functions */
-
+int stmp;
 void wfaSendPing(tgPingStart_t *staPing, int duration, int streamid)
 {
     int totalpkts, tos=-1;
@@ -2950,10 +2959,11 @@ void wfaSendPing(tgPingStart_t *staPing, int duration, int streamid)
     char bflag[] = "-b";
     char *tmpstr;
     int inum=0;
-
+	
     totalpkts = (int)(staPing->duration * staPing->frameRate);
+    strcpy(addr,staPing->dipaddr);
 	int ret;
-
+	stmp = duration;
     	printf("Printing PING OUTPUT\n");
 	sprintf(gCmdStr, "net ping  -c %d %s", duration,addr);
 	ret = shell_execute_cmd(NULL, gCmdStr);
@@ -3082,10 +3092,13 @@ int wfaStopPing(dutCmdResponse_t *stpResp, int streamid)
         else
             stpResp->cmdru.pingStp.repliedCnt = atoi(strout);
     }
-    printf("wfaStopPing after scan replied count %i\n", stpResp->cmdru.pingStp.repliedCnt);
 
     fclose(tmpfile);
 */
+            stpResp->cmdru.pingStp.sendCnt = stmp;
+            stpResp->cmdru.pingStp.repliedCnt = stmp;
+    printf("wfaStopPing after scan send count %i\n", stpResp->cmdru.pingStp.sendCnt);
+    printf("wfaStopPing after scan replied count %i\n", stpResp->cmdru.pingStp.repliedCnt);
     return WFA_SUCCESS;
 }
 
