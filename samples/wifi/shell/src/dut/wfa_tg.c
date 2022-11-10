@@ -169,6 +169,7 @@ int wfaTGSendPing(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     tgPingStart_t *staPing = (tgPingStart_t *)caCmdBuf;
     dutCmdResponse_t *spresp = &gGenericResp;
 
+    //++streamId;
 #ifdef WFA_PING_UDP_ECHO_ONLY
     tgStream_t *myStream = NULL;
 #endif
@@ -265,6 +266,7 @@ int wfaTGStopPing(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     tgStream_t *myStream;
     int i;
 
+    //streamid = *(int *)(caCmdBuf);
     stpResp->status = STATUS_COMPLETE;
 
     printf("CS: The length %d\n and the command buff is \n",len);
@@ -772,7 +774,7 @@ int wfaTGReset(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 {
     dutCmdResponse_t *resetResp = &gGenericResp;
     int i;
-
+	int streamId,streamid;
     /* need to reset all traffic socket fds */
     if(btSockfd != -1)
     {
@@ -835,6 +837,7 @@ int wfaTGReset(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 
     /* encode a TLV for response for "complete ..." */
     resetResp->status = STATUS_COMPLETE;
+    streamId = 0;
     wfaEncodeTLV(WFA_TRAFFIC_AGENT_RESET_RESP_TLV, 4,
                  (BYTE *)resetResp, respBuf);
     *respLen = WFA_TLV_HDR_LEN + 4;
