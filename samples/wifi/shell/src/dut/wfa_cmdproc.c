@@ -865,7 +865,8 @@ int xcCmdProcStaGetIpConfig(char *pcmdStr, BYTE *aBuf, int *aLen)
     dutCommand_t getipconf;
     memset(&getipconf, 0, sizeof(dutCommand_t));
 
-#if 0
+    printf("Entering xcCmdProcStaGetIpConfig ...\n");
+#if 1
     DPRINT_INFO(WFA_OUT, "Entering xcCmdProcStaGetIpConfig ...\n");
 
     if(aBuf == NULL)
