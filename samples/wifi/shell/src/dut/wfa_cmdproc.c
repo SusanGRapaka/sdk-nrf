@@ -588,8 +588,8 @@ int xcCmdProcAgentReset(char *pcmdStr, BYTE *aBuf, int *aLen)
     hdr->len = 0;  /* multiple 4s if more streams */
 
     //add clear cache with ip (for arp)
-    sprintf(cmdstr, "ip -s -s neigh flush all");
-    cret = system(cmdstr);
+    //sprintf(cmdstr, "ip -s -s neigh flush all");
+    //cret = system(cmdstr);
 
     *aLen = 4;
 
