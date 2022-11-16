@@ -25,7 +25,7 @@
 #ifdef WFA_WMM_VOICE
 #define WFA_INFO_BUFSIZE       128   /* used to upload test data */
 #else
-#define WFA_INFO_BUFSIZE       128
+#define WFA_INFO_BUFSIZE       128   /* used to upload test data */
 #endif
 
 typedef struct _tg_ping_stop_resp
