@@ -780,7 +780,6 @@ void * wfa_wmm_thread(void *thr_param)
                             if(wfaSendShortFile(mySock, myStreamId,
                                 trafficBuf, 0, respBuf, &respLen) == DONE)
                             {
-                                //if(wfaCtrlSend(gxcSockfd, respBuf, respLen) != respLen) //susan added
                                 if(wfaCtrlSend(gxcSockfd, (BYTE *)respBuf, respLen) != respLen)
                                 {
                                     DPRINT_INFO(WFA_OUT, "wfa_wmm_thread SEND,PROF_TRANSC::wfaCtrlSend Error for wfaSendShortFile\n");
@@ -795,7 +794,7 @@ void * wfa_wmm_thread(void *thr_param)
                                 sendCount++;
                             }
 
-                            //sentTranPkts++; /* send routine already incresed this counter  */
+                            //sentTranPkts++; // send routine already incresed this counter  
 
                             if((myProfile->maxcnt>0) &&(sendCount == myProfile->maxcnt))
                             {
@@ -1067,8 +1066,8 @@ void * wfa_wmm_thread(void *thr_param)
 #endif /* WFA_VOICE_EXT */
                     wfaSetThreadPrio(myId, TG_WMM_AC_BE); /* put it back down */
                 } /* while */
-		wFREE(recvBuf);
                 my_wmm->thr_flag = 0;
+		wFREE(recvBuf);
 
 #ifdef WFA_VOICE_EXT
                 if(myProfile->profile == PROF_IPTV)

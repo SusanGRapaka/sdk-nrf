@@ -54,6 +54,7 @@ void init_thr_flag()
 void wfa_dut_init(BYTE **tBuf, BYTE **rBuf, BYTE **paBuf, BYTE **cBuf, struct timeval **timerp)
 {
     /* allocate the traffic stream table */
+        printf("In wfa_dut_init.......!\n");
     gStreams = (tgStream_t *) malloc(WFA_MAX_TRAFFIC_STREAMS*sizeof(tgStream_t));
     if(gStreams == NULL)
     {

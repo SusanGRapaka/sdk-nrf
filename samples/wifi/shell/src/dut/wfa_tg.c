@@ -62,7 +62,6 @@ extern void wfaSendPing(tgPingStart_t *staPing, float *interval, int streamid);
 extern int wfaStopPing(dutCmdResponse_t *stpResp, int streamid);
 extern unsigned short wfa_defined_debug;
 extern int tgSockfds[];
-
 extern tgWMM_t wmm_thr[];
 
 extern double min_rttime;
@@ -519,10 +518,17 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
     tgProfile_t *theProfile;
     tgStream_t *myStream=NULL;
     dutCmdResponse_t statResp;
-    BYTE dutRspBuf[WFA_RESP_BUF_SZ];
+    //BYTE dutRspBuf[WFA_RESP_BUF_SZ];
+    BYTE *dutRspBuf;
     int id_cnt = 0;
 
     DPRINT_INFO(WFA_OUT, "entering tgRecvStop with length %d\n",len);
+    dutRspBuf = (BYTE *)malloc(WFA_RESP_BUF_SZ);
+    if(!dutRspBuf)
+    {
+        DPRINT_ERR(WFA_ERR, "Failed to malloc dut response buffer\n");
+     	exit(1);
+    }
 
     /* in case that send-stream not done yet, an optional delay */
     while(sendThrId != 0)
@@ -555,7 +561,8 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
             status = STATUS_INVALID;
             wfaEncodeTLV(WFA_TRAFFIC_AGENT_RECV_STOP_RESP_TLV, 4, (BYTE *)&status, respBuf);
             *respLen = WFA_TLV_HDR_LEN + 4;
-
+        printf(" In recv profile = NULL free dutRspbuf\n");
+    		wFREE(dutRspBuf);
             return WFA_SUCCESS;
         }
 
@@ -564,7 +571,9 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
             status = STATUS_INVALID;
             wfaEncodeTLV(WFA_TRAFFIC_AGENT_RECV_STOP_RESP_TLV, 4, (BYTE *)&status, respBuf);
             *respLen = WFA_TLV_HDR_LEN + 4;
+        printf(" In recv profile is not = RECV free Rspbuf\n");
 
+    		wFREE(dutRspBuf);
             return WFA_SUCCESS;
         }
 
@@ -642,13 +651,6 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 
     /* done here */
     *respLen = WFA_TLV_HDR_LEN + numStreams * sizeof(dutCmdResponse_t);
-
-   /* printf("In recv stop buf**********respLen = %i sizeof hdrlen = %d numStreams= %d dutsize=%d\n",respLen,WFA_TLV_HDR_LEN,numStreams,sizeof(dutCmdResponse_t));
-    for (i = 0; i < 1049; i++) {
-        printf("%02x", respBuf[i]);
-    }
-    printf("complted buf\n");
-    */
     return WFA_SUCCESS;
 }
 
@@ -774,7 +776,6 @@ int wfaTGReset(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 {
     dutCmdResponse_t *resetResp = &gGenericResp;
     int i;
-	int streamId,streamid;
     /* need to reset all traffic socket fds */
     if(btSockfd != -1)
     {
@@ -808,7 +809,9 @@ int wfaTGReset(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 
     runLoop = 0;
 
+#if 0
     usedThread = 0;
+#endif
 #ifdef WFA_WMM_PS_EXT
     gtgWmmPS = 0;
     gtgPsPktRecvd = 0;
@@ -837,7 +840,6 @@ int wfaTGReset(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 
     /* encode a TLV for response for "complete ..." */
     resetResp->status = STATUS_COMPLETE;
-    streamId = 0;
     wfaEncodeTLV(WFA_TRAFFIC_AGENT_RESET_RESP_TLV, 4,
                  (BYTE *)resetResp, respBuf);
     *respLen = WFA_TLV_HDR_LEN + 4;
@@ -1164,7 +1166,7 @@ int wfaSendLongFile(int mySockfd, int streamid, BYTE *aRespBuf, int *aRespLen)
     wMEMCPY(&sendResp.cmdru.stats, &myStream->stats, sizeof(tgStats_t));
 
 #if 1
-    DPRINT_INFO(WFA_OUT, "stream Id %u tx %u total %llu\n", myStream->id, myStream->stats.txFrames, myStream->stats.txPayloadBytes);
+    DPRINT_INFO(WFA_OUT, "In wfaSendLong file  stream Id %u tx %u total %llu\n", myStream->id, myStream->stats.txFrames, myStream->stats.txPayloadBytes);
 #endif
 
     wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, sizeof(dutCmdResponse_t),
@@ -1271,6 +1273,9 @@ int wfaSendShortFile(int mySockfd, int streamid, BYTE *sendBuf, int pksize, BYTE
 
     sentTranPkts++;
 
+#if 1
+    DPRINT_INFO(WFA_OUT, "In wfaSendShort file  stream Id %u tx %u total %llu\n", myStream->id, myStream->stats.txFrames, myStream->stats.txPayloadBytes);
+#endif
     return WFA_SUCCESS;
 }
 
