@@ -704,34 +704,28 @@ int wfaStaGetMacAddress(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     dutCommand_t *getMac = (dutCommand_t *)caCmdBuf;
     dutCmdResponse_t *getmacResp = &gGenericResp;
     char *ifname = getMac->intf;
-	int mac_addr_len = 6;
-	int idx = 1;
-	//uint8_t mac_buf[sizeof("xx:xx:xx:xx:xx:xx")];
-	static char mac_buf[sizeof("xx:xx:xx:xx:xx:xx:xx:xx")];
+	int mac_addr_len ;
+	int idx = 1, ret;
+	static char mac_buf[sizeof("%02x:%02x:%02x:%02x:%02x:%02x")];
     DPRINT_INFO(WFA_OUT, "Entering wfaStaGetMacAddress ...\n");
-	struct net_if *iface;	
-	iface = net_if_get_by_index(idx);
                 
-    if (net_if_get_link_addr(iface)) 
-    	{
-		//net_sprint_ll_addr_buf(ifname,mac_addr_len,mac_buf,sizeof(mac_buf));
-		printf("***************addr = %s\n",iface->if_dev->link_addr.addr);
-		printf("***************len = %d\n",iface->if_dev->link_addr.len);
-		net_sprint_ll_addr_buf(ifname,mac_addr_len,mac_buf,sizeof(mac_buf));
+	struct wpa_supplicant *wpa_s;
+
+	wpa_s = wpa_supplicant_get_iface(global, ifname);
+	if (!wpa_s) {
+		printf("Unable to find the interface: %s, quitting", ifname);
+		return -1;
 	}
-/*
- 	
-		printf("MAC ADDRESS OF THE DEVICE : %s\n",net_sprint_ll_addr(net_if_get_link_addr(iface)->addr,net_if_get_link_addr(iface)->len));
-	//printf("MAC ADDRESS OF THE DEVICE = %s\n",net_sprint_ll_addr(net_if_get_link_addr(iface)->addr,net_if_get_link_addr(iface)->len));
- 
-*/
-    printf("%s:MAC ADDRESSmac buf = %s\n",__func__,mac_buf);
+	ret = os_snprintf(mac_buf,sizeof(mac_buf), "address=" MACSTR "\n",MAC2STR(wpa_s->own_addr));
+		printf("***************MAC BUF SUPP = %s\n",mac_buf);
+
+    		printf("%s:MAC ADDRESS mac buf = %s size = %d\n",__func__,mac_buf,sizeof(mac_buf));
+    		printf("%s:MAC ADDRESS = %s\n",__func__,getmacResp->cmdru.mac);
 
 
 	strcpy(getmacResp->cmdru.mac, mac_buf);
         getmacResp->status = STATUS_COMPLETE;
 
-    printf("%s:MAC ADDRESS = %s\n",__func__,getmacResp->cmdru.mac);
 
 
     wfaEncodeTLV(WFA_STA_GET_MAC_ADDRESS_RESP_TLV, sizeof(dutCmdResponse_t), (BYTE *)getmacResp, respBuf);
