@@ -18,7 +18,7 @@
 #include <zephyr/init.h>
 #include "wfa_main.h"
 #include "wfa_debug.h"
-
+extern int dut_init;
 
 
 static int cmd_wfa_dut_test(const struct shell *shell,
@@ -35,10 +35,14 @@ unsigned char cmdBuf[WFA_BUFF_512] = {0};
 static int wfa_dut_execute(const struct shell *shell,
 			  size_t argc,
 			  const char *argv[])
-{
+{	int ret;
 	printf("arg0: %s\n", argv[0]);
 	int status = -1;
-
+	if(dut_init == 0)
+		{
+			printf("DUT is not Initialized....Initializing the DUT first\n");
+			ret = shell_execute_cmd(NULL,"wfa_dut dut_test_setup wlan0 8000");
+		}
 #if COMMAND_BYTE_STREAM
 	hex_str_to_val(cmdBuf, sizeof(cmdBuf), argv[1]);
 #else

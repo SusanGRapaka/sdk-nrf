@@ -5232,8 +5232,7 @@ int xcCmdProcStaPresetTestParameters(char *pcmdStr, BYTE *aBuf, int *aLen)
             DPRINT_INFO(WFA_OUT, "Ch_Pref  %d\n", presetTestParams->Ch_Pref);
 
         }
-
-    else if (strcasecmp(str, "Ch_Op_Class")==0)
+	else if (strcasecmp(str, "Ch_Op_Class")==0)
         {
              str = strtok_r(NULL, ",", &pcmdStr);
              presetTestParams->Ch_Op_Class= atoi(str);
@@ -5241,15 +5240,13 @@ int xcCmdProcStaPresetTestParameters(char *pcmdStr, BYTE *aBuf, int *aLen)
 //      DPRINT_INFO(WFA_OUT, "-----------KRANTHI--------------------------%d\n",  presetTestParams->Ch_Op_Class);
 
         }
-     else if (strcasecmp(str, "Ch_Reason_Code")==0)
+	else if (strcasecmp(str, "Ch_Reason_Code")==0)
         {
             str = strtok_r(NULL, ",", &pcmdStr);
             presetTestParams->Ch_Reason_Code= atoi(str);
             DPRINT_INFO(WFA_OUT, "Ch_Reason_Code  %d\n", presetTestParams->Ch_Reason_Code);
 
         }
-
-
         else if(strcasecmp(str, "EDID") == 0)
         {
             presetTestParams->wfdEDIDFlag= 1;
@@ -5327,27 +5324,30 @@ int xcCmdProcStaPresetTestParameters(char *pcmdStr, BYTE *aBuf, int *aLen)
             {
                 presetTestParams->program=PROG_TYPE_PMF;
             }
-			else if (strcasecmp(str, "General") == 0)
-			{
-				presetTestParams->program=PROG_TYPE_GEN;
-			}
-			else if (strcasecmp(str, "TDLS") == 0)
-			{
-				presetTestParams->program=PROG_TYPE_TDLS;
-			}
-			else if (strcasecmp(str, "VOE") == 0)
-			{
-				presetTestParams->program=PROG_TYPE_VENT;
-			}
-			else if (strcasecmp(str, "WFD") == 0)
-			{
-				presetTestParams->program=PROG_TYPE_WFD;
-			}
-			else if (strcasecmp(str, "WFDS") == 0)
-			{
-				presetTestParams->program=PROG_TYPE_WFDS;
-			}
-			
+	    else if (strcasecmp(str, "General") == 0)
+	    {
+		    presetTestParams->program=PROG_TYPE_GEN;
+	    }
+	    else if (strcasecmp(str, "TDLS") == 0)
+	    {
+		    presetTestParams->program=PROG_TYPE_TDLS;
+	    }
+	    else if (strcasecmp(str, "VOE") == 0)
+	    {
+		    presetTestParams->program=PROG_TYPE_VENT;
+	    }
+	    else if (strcasecmp(str, "WFD") == 0)
+	    {
+		    presetTestParams->program=PROG_TYPE_WFD;
+	    }
+	    else if (strcasecmp(str, "WFDS") == 0)
+	    {
+		    presetTestParams->program=PROG_TYPE_WFDS;
+	    }
+	    else if (strcasecmp(str, "MBO") == 0)
+	    {
+		    presetTestParams->program=PROG_TYPE_MBO;
+	    }
         }
         else if(strcasecmp(str, "CoupledCap") == 0)
         {
@@ -5370,48 +5370,52 @@ int xcCmdProcStaPresetTestParameters(char *pcmdStr, BYTE *aBuf, int *aLen)
                 presetTestParams->supplicant = eWpaSupplicant;
             }
         }
-		else if(strcasecmp(str, "type") == 0)
+	else if(strcasecmp(str, "type") == 0)
+	{
+		str = strtok_r(NULL, ",", &pcmdStr);
+		if(strcasecmp(str, "AcceptPD") == 0)
 		{
-		   str = strtok_r(NULL, ",", &pcmdStr);
-		   if(strcasecmp(str, "AcceptPD") == 0)
-		   {
-			  presetTestParams->wfdsType= eAcceptPD;
-		   }
-		   else if (strcasecmp(str, "RejectPD") == 0)
-		   {
-			  presetTestParams->wfdsType= eRejectPD;
-		   }
-		   else if (strcasecmp(str, "IgnorePD") == 0)
-		   {
-			  presetTestParams->wfdsType= eIgnorePD;
-		   }
-
+			presetTestParams->wfdsType= eAcceptPD;
 		}
-		else if(strcasecmp(str, "connectionCapabilityInfo") == 0)
+		else if (strcasecmp(str, "RejectPD") == 0)
 		{
-		   presetTestParams->wfdsConnectionCapabilityFlag=1;	
-		   str = strtok_r(NULL, ",", &pcmdStr);
-		   if(strcasecmp(str, "GO") == 0)
-		   {
-			  presetTestParams->wfdsConnectionCapability= eWfdsGO;
-		   }
-		   else if (strcasecmp(str, "CLI") == 0)
-		   {
-			  presetTestParams->wfdsConnectionCapability= eWfdsCLI;
-		   }
-		   else if (strcasecmp(str, "NewGO") == 0)
-		   {
-			  presetTestParams->wfdsConnectionCapability= eWfdsNewGO;
-		   }
-		   else if (strcasecmp(str, "New") == 0)
-		   {
-			  presetTestParams->wfdsConnectionCapability= eWfdsNew;
-		   }
-		   else if (strcasecmp(str, "CliGO") == 0)
-		   {
-			  presetTestParams->wfdsConnectionCapability= eWfdsCliGO;
-		   }
+			presetTestParams->wfdsType= eRejectPD;
 		}
+		else if (strcasecmp(str, "IgnorePD") == 0)
+		{
+			presetTestParams->wfdsType= eIgnorePD;
+		}
+	}
+	else if(strcasecmp(str, "connectionCapabilityInfo") == 0)
+	{
+		presetTestParams->wfdsConnectionCapabilityFlag=1;
+		str = strtok_r(NULL, ",", &pcmdStr);
+		if(strcasecmp(str, "GO") == 0)
+		{
+			presetTestParams->wfdsConnectionCapability= eWfdsGO;
+		}
+		else if (strcasecmp(str, "CLI") == 0)
+		{
+			presetTestParams->wfdsConnectionCapability= eWfdsCLI;
+		}
+		else if (strcasecmp(str, "NewGO") == 0)
+		{
+			presetTestParams->wfdsConnectionCapability= eWfdsNewGO;
+		}
+		else if (strcasecmp(str, "New") == 0)
+		{
+			presetTestParams->wfdsConnectionCapability= eWfdsNew;
+		}
+		else if (strcasecmp(str, "CliGO") == 0)
+		{
+			presetTestParams->wfdsConnectionCapability= eWfdsCliGO;
+		}
+	}
+	else if(strcasecmp(str, "Cellular_Data_Cap") == 0)
+        {
+		str = strtok_r(NULL, ",", &pcmdStr);
+		presetTestParams->CellularDataCap = atoi(str);
+        }
     }
 
     wfaEncodeTLV(WFA_STA_PRESET_PARAMETERS_TLV, sizeof(caStaPresetParameters_t), (BYTE *)presetTestParams, aBuf);
@@ -5906,10 +5910,30 @@ int xcCmdProcStaSetRFeature(char *pcmdStr, BYTE *aBuf, int *aLen)
             str = strtok_r(NULL, ",", &pcmdStr);
             strncpy(rfeat->secchoffset, str, sizeof(rfeat->secchoffset));
         }
-	 else if(strcasecmp(str, "Cellular_Data_Cap") == 0)
+	else if(strcasecmp(str, "Cellular_Data_Cap") == 0)
         {
             str = strtok_r(NULL, ",", &pcmdStr);
             rfeat->cellulardatacap = atoi(str);
+        }
+	else if(strcasecmp(str, "Ch_Op_Class") == 0)
+        {
+            str = strtok_r(NULL, ",", &pcmdStr);
+            rfeat->ch_op_class = atoi(str);
+        }
+	else if(strcasecmp(str, "Ch_Pref_Num") == 0)
+        {
+            str = strtok_r(NULL, ",", &pcmdStr);
+            rfeat->ch_pref_num = atoi(str);
+        }
+	else if(strcasecmp(str, "Ch_Pref") == 0)
+        {
+            str = strtok_r(NULL, ",", &pcmdStr);
+            strncpy(rfeat->ch_pref, str, sizeof(rfeat->ch_pref));
+        }
+	else if(strcasecmp(str, "Ch_Reason_Code") == 0)
+        {
+            str = strtok_r(NULL, ",", &pcmdStr);
+            rfeat->ch_reason_code = atoi(str);
         }
 
     }

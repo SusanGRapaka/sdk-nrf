@@ -129,7 +129,7 @@ int wfaStaAssociate(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     caStaAssociate_t *setassoc = &assoc->cmdsu.assoc;
     char *ifname = assoc->intf;
     dutCmdResponse_t *staAssocResp = &gGenericResp;
-
+	int ret;
     DPRINT_INFO(WFA_OUT, "entering wfaStaAssociate ...\n");
     /*
      * if bssid appears, station should associate with the specific
@@ -179,13 +179,11 @@ int wfaStaAssociate(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     printf("\n%d\n",k);
     if(k!='\0')
     {
-    sprintf(gCmdStr, "wpa_cli bssid 0 %s",setassoc->bssid);
-    sret=system(gCmdStr);
-    printf("\n %s \n", gCmdStr);
+	sprintf(gCmdStr, "wpa_cli bssid 0 '\"%s\"'", setassoc->bssid);
+	ret = shell_execute_cmd(NULL, gCmdStr);
+    	printf("\n %s \n", gCmdStr);
     }
-   sprintf(gCmdStr, "wpa_cli select_network 0", ifname);
-                printf("\n %s \n", gCmdStr);
-   sret = system(gCmdStr);
+    ret = shell_execute_cmd(NULL, "wpa_cli select_network 0");
     staAssocResp->status = STATUS_COMPLETE;
     wfaEncodeTLV(WFA_STA_ASSOCIATE_RESP_TLV, 4, (BYTE *)staAssocResp, respBuf);
     *respLen = WFA_TLV_HDR_LEN + 4;
@@ -203,7 +201,7 @@ int wfaStaReAssociate(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     dutCommand_t *assoc = (dutCommand_t *)caCmdBuf;
     char *ifname = assoc->intf;
     dutCmdResponse_t *staAssocResp = &gGenericResp;
-
+	 int ret;
     DPRINT_INFO(WFA_OUT, "entering wfaStaAssociate ...\n");
     /*
      * if bssid appears, station should associate with the specific
@@ -239,9 +237,7 @@ int wfaStaReAssociate(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
         //sret = system(gCmdStr);
     }
 
-        sprintf(gCmdStr, "wpa_cli -i%s reassociate", ifname);
-	printf("\n %s \n", gCmdStr);
-        sret = system(gCmdStr);
+	ret = shell_execute_cmd(NULL, "wpa_cli reassociate");
     /*
      * Then report back to control PC for completion.
      * This does not have failed/error status. The result only tells
@@ -267,7 +263,7 @@ int wfaStaIsConnected(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     FILE *tmpfile = NULL;
     char result[32];
     struct wpa_supplicant *wpa_s;
-
+	int ret;
     DPRINT_INFO(WFA_OUT, "Entering isConnected ...\n");
 
 #ifdef WFA_NEW_CLI_FORMAT
@@ -283,28 +279,22 @@ int wfaStaIsConnected(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
      * use 'wpa_cli' command to check the interface status
      * none, scanning or complete (wpa_supplicant specific)
      */
-    sprintf(gCmdStr, "wpa_cli status");
-    sret = system(gCmdStr);
-    printf("In func %s in line %d ifname = %s\n",__func__,__LINE__,ifname);
+	ret = shell_execute_cmd(NULL, "wpa_cli status");
 	wpa_s = wpa_supplicant_get_iface(global, ifname);
 	if (!wpa_s) {
 		printf("Unable to find the interface: %s, quitting", ifname);
 		return -1;
 	}
-	int ret;	
 	ret = os_snprintf(result, 9,"%s",wpa_supplicant_state_txt(wpa_s->wpa_state));
-    printf("In func %s in line %d\n",__func__,__LINE__);
     /*
      * the status is saved in a file.  Open the file and check it.
      */
-    printf("In func %s in line %d result = %s\n",__func__,__LINE__,result);
     if(strncmp(result, "COMPLETE", 9) == 0)
         staConnectResp->cmdru.connected = 1;
     else
         staConnectResp->cmdru.connected = 0;
 #endif
 
-    printf("In func %s in line %d connected = %d\n",__func__,__LINE__,staConnectResp->cmdru.connected);
     /*
      * Report back the status: Complete or Failed.
      */
@@ -590,6 +580,7 @@ int wfaStaVerifyIpConnection(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBu
     }
 
     /* execute the ping command  and pipe the result to a tmp file */
+#if 1
     sprintf(gCmdStr, "ping %s -c 3 -W %u | grep loss | cut -f3 -d, 1>& /tmp/pingout.txt", verip->cmdsu.verifyIp.dipaddr, verip->cmdsu.verifyIp.timeout);
     sret = system(gCmdStr);
 
@@ -604,7 +595,7 @@ int wfaStaVerifyIpConnection(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBu
         DPRINT_ERR(WFA_ERR, "file open failed\n");
         return WFA_FAILURE;
     }
-
+#endif
     verifyIpResp->status = STATUS_COMPLETE;
     if(fscanf(tmpfile, "%s", strout) == EOF)
         verifyIpResp->cmdru.connected = 0;
@@ -716,7 +707,7 @@ int wfaStaGetMacAddress(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 		printf("Unable to find the interface: %s, quitting", ifname);
 		return -1;
 	}
-	ret = os_snprintf(mac_buf,sizeof(mac_buf), "address=" MACSTR "\n",MAC2STR(wpa_s->own_addr));
+	ret = os_snprintf(mac_buf,sizeof(mac_buf), "" MACSTR "\n",MAC2STR(wpa_s->own_addr));
 		printf("***************MAC BUF SUPP = %s\n",mac_buf);
 
     		printf("%s:MAC ADDRESS mac buf = %s size = %d\n",__func__,mac_buf,sizeof(mac_buf));
@@ -1011,8 +1002,8 @@ if(setsec->type == SEC_TYPE_PSKSAE)
 
 		if(setsec->ecGroupID[0] != '\0')
 		{
-			sprintf(gCmdStr, "wpa_cli SET sae_groups %s", ifname, setsec->ecGroupID);
-			sret = system(gCmdStr);
+			sprintf(gCmdStr, "wpa_cli SET sae_groups %s", setsec->ecGroupID);
+			ret = shell_execute_cmd(NULL, gCmdStr);
 			printf("\n %s \n", gCmdStr);
 		}
 	
@@ -1810,13 +1801,13 @@ int wfaStaGetBSSID(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 	int ret;	
 	ret = shell_execute_cmd(NULL, "wpa_cli status");
 
-    	sret = system(gCmdStr);
+
 	wpa_s = wpa_supplicant_get_iface(global, ifname);
 	if (!wpa_s) {
 		printf("Unable to find the interface: %s, quitting", ifname);
 		return -1;
 	}
-		ret = os_snprintf(string_bssid,64, "bssid=" MACSTR "\n",MAC2STR(wpa_s->bssid));
+		ret = os_snprintf(string_bssid,64, "" MACSTR "\n",MAC2STR(wpa_s->bssid));
 		//ret = os_snprintf(string_bssid,64,"%s",MAC2STR(wpa_s->bssid));
 		//os_memcpy(string_bssid, wpa_s->bssid, ETH_ALEN);
 		printf("...string BSSID = %s",string_bssid);
@@ -2522,10 +2513,10 @@ int wfaStaResetDefault(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     //sret = system(gCmdStr);
     //printf("\n %s \n",gCmdStr);
     sprintf(gCmdStr, " 'wpa_cli disconnect'", reset->intf);
-    sret = system(gCmdStr);
+    sret = shell_execute_cmd(NULL, gCmdStr);
     printf("\n %s \n",gCmdStr);
     sprintf(gCmdStr, " 'wpa_cli set mbo_cell_capa 1'", reset->intf);
-    sret = system(gCmdStr);
+    sret = shell_execute_cmd(NULL, gCmdStr);
     printf("\n %s \n",gCmdStr);
 
 
@@ -3627,23 +3618,26 @@ int wfaStaSetRFeature(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     dutCommand_t *dutCmd = (dutCommand_t *)caCmdBuf;
     caStaRFeat_t *rfeat = &dutCmd->cmdsu.rfeat;
     dutCmdResponse_t *caResp = &gGenericResp;
-   char *ifname = dutCmd->intf;
+    char *ifname = dutCmd->intf;
+
     if(strcasecmp(rfeat->prog, "tdls") == 0)
     {
 
-
     }
- if(strcasecmp(rfeat->prog, "mbo") == 0)
+
+    if(strcasecmp(rfeat->prog, "mbo") == 0)
     {
         printf("\n------------INSIDE MBO--------\n");
         printf("\n------------rfeat->cellulardatacap =%d--------\n", rfeat->cellulardatacap);
        sprintf(gCmdStr, "wpa_cli set mbo_cell_capa %d", ifname, rfeat->cellulardatacap);
-       sret = system(gCmdStr);
+       sret = shell_execute_cmd(NULL, gCmdStr);
        printf("\n %s \n ",gCmdStr);
-        sleep(5);
-       printf(gCmdStr, "wpa_cli set non_pref_chan 115:48:0:0 115:44:1:1", ifname); //AJAY
+       sleep(5);
+       sprintf(gCmdStr, "wpa_cli set non_pref_chan %d:%d:%s:%d",
+		rfeat->ch_op_class, rfeat->ch_pref_num, rfeat->ch_pref,
+		rfeat->ch_reason_code);//AJAY
 //      sprintf(gCmdStr, "wpa_cli set non_pref_chan 115:48:0:0", ifname);
-        sret = system(gCmdStr);
+        sret = shell_execute_cmd(NULL, gCmdStr);
 //      sprintf(gCmdStr, "wpa_cli set non_pref_chan 115:44:1:1", ifname);
 //      sret = system(gCmdStr);
       printf("\n %s \n", gCmdStr);
