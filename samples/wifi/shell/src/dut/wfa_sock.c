@@ -102,10 +102,11 @@ int wfaCreateUDPSock(char *ipaddr, unsigned short port)
 {
     int udpsock;                        /* socket to create */
     struct sockaddr_in servAddr; /* Local address */
+    int errno;
 
     if((udpsock = wSOCKET(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
     {
-        DPRINT_ERR(WFA_ERR, "createUDPSock socket() failed");
+        DPRINT_ERR(WFA_ERR, "createUDPSock socket() failed err: %d\n",errno);
         return WFA_FAILURE;
     }
 

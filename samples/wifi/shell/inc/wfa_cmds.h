@@ -426,10 +426,11 @@ enum
     PROG_TYPE_TDLS,
     PROG_TYPE_VENT,
     PROG_TYPE_WFD,
-	PROG_TYPE_WFDS,
+    PROG_TYPE_WFDS,
+    PROG_TYPE_MBO,
     PROG_TYPE_HS2,
     PROG_TYPE_HS2_R2,
-	PROG_TYPE_NAN,
+    PROG_TYPE_NAN,
 };
 
 typedef struct ca_sta_dev_sendframe
@@ -1307,6 +1308,7 @@ typedef struct ca_sta_preset_parameters
    BYTE Ch_Pref;
    BYTE Ch_Op_Class;
    BYTE Ch_Reason_Code;  
+   BYTE CellularDataCap;
    
 } caStaPresetParameters_t;
 
@@ -1523,6 +1525,10 @@ typedef struct ca_sta_rfeature
     int cellulardatacap;
     int offchnum;
     char secchoffset[16];
+    int ch_op_class;
+    char ch_pref[16];
+    int ch_pref_num;
+    int ch_reason_code;
 } caStaRFeat_t;
 
 typedef struct ca_sta_exec_action

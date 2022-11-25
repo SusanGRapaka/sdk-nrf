@@ -46,7 +46,6 @@ tgWMM_t wmm_thr[WFA_THREADS_NUM];
 extern int resetsnd;
 extern int resetrcv;
 extern int newCmdOn;
-
 extern tgStream_t *findStreamProfile(int id);
 extern int gxcSockfd;
 int vend;
@@ -293,7 +292,8 @@ void  wfaSentStatsResp(int sock, BYTE *buf)
     int i, total=0, pkLen;
     tgStream_t *allStreams = gStreams;
     dutCmdResponse_t *sendStatsResp = (dutCmdResponse_t *)buf, *first;
-    char buff[WFA_RESP_BUF_SZ];
+    //char buff[WFA_RESP_BUF_SZ];
+    char *buff = NULL;
 
     if(sendStatsResp == NULL)
         return;
@@ -322,6 +322,12 @@ void  wfaSentStatsResp(int sock, BYTE *buf)
            first->cmdru.stats.txPayloadBytes,
            first->cmdru.stats.rxPayloadBytes);
 #endif
+        buff = malloc(1 + WFA_TLV_HDR_LEN + total*sizeof(dutCmdResponse_t));
+
+    if (!buff) {
+        DPRINT_ERR(WFA_WNG, "Failed to allocate buff\n");
+        return;
+    }
 
     wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, total*sizeof(dutCmdResponse_t),
                  (BYTE *)first, (BYTE *)buff);
@@ -340,7 +346,11 @@ void  wfaSentStatsResp(int sock, BYTE *buf)
     {
         DPRINT_WARNING(WFA_WNG, "wfaCtrlSend Error\n");
     }
-
+    if (buff) 
+    {
+        free(buff);
+        buff = NULL;
+    }
     return;
 }
 
@@ -960,7 +970,7 @@ void * wfa_wmm_thread(void *thr_param)
                 char e2eResults[124];
                 int le2eCnt = 0;
 #endif
-
+	printf("In THREAD myProfile->dipaddr= %s myProfile->dport = %d\n",myProfile->dipaddr, myProfile->dport);
                 mySock = wfaCreateUDPSock(myProfile->dipaddr, myProfile->dport);
                 if(mySock == -1)
                 {
@@ -1009,12 +1019,12 @@ void * wfa_wmm_thread(void *thr_param)
 
                 wfaSetThreadPrio(myId, TG_WMM_AC_VO);   /* try to raise the receiver higher priority than sender */
                 char *recvBuf;
-		recvBuf =(char* )malloc(MAX_RCV_BUF_LEN+1);
-		if (!recvBuf) {
-			printf("malloc failed\n");
-			/* TODO: Inform CA */
-			continue;
-		}
+			recvBuf =(char* )malloc(MAX_RCV_BUF_LEN+1);
+			if (!recvBuf) {
+				printf("malloc failed\n");
+				/* TODO: Inform CA */
+				continue;
+				}
 		wMEMSET(recvBuf, 0, MAX_RCV_BUF_LEN);
                 for(;;)
                 {
@@ -1155,6 +1165,7 @@ void * wfa_wmm_thread(void *thr_param)
                         }
                     }
                 }
+
 
                 my_wmm->thr_flag = 0;
                //////////////////// Wifi Alliance Added
