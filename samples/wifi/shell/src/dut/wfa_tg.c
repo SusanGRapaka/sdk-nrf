@@ -167,7 +167,7 @@ int wfaTGSendPing(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     float interval;      /* it could be subseconds/100s minisecond */
     tgPingStart_t *staPing = (tgPingStart_t *)caCmdBuf;
     dutCmdResponse_t *spresp = &gGenericResp;
-
+    int duration;
     //++streamId;
 #ifdef WFA_PING_UDP_ECHO_ONLY
     tgStream_t *myStream = NULL;
@@ -193,10 +193,9 @@ int wfaTGSendPing(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     {
     case WFA_PING_ICMP_ECHO:
 #ifndef WFA_PING_UDP_ECHO_ONLY
-        
+       	duration = staPing->duration; 
         //wfaSendPing(staPing, &interval, streamId);
-        wfaSendPing(staPing,staPing->duration,streamId);
-
+        wfaSendPing(staPing,duration,streamId);
         spresp->status = STATUS_COMPLETE;
         spresp->streamId = streamid;
 #else
@@ -540,11 +539,11 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
      * while it starts receiving for raising priority level.
      */
     wMEMSET(dutRspBuf, 0, WFA_RESP_BUF_SZ);
-        printf(" In recv stop numstreams = %i\n", numStreams);
+        //printf(" In recv stop numstreams = %i\n", numStreams);
     for(i=0; i<numStreams; i++)
     {
         wMEMCPY(&streamid, parms+(4*i), 4);
-        printf(" stop stream id %i\n", streamid);
+       // printf(" stop stream id %i\n", streamid);
         myStream = findStreamProfile(streamid);
         if(myStream == NULL)
         {
@@ -561,7 +560,7 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
             status = STATUS_INVALID;
             wfaEncodeTLV(WFA_TRAFFIC_AGENT_RECV_STOP_RESP_TLV, 4, (BYTE *)&status, respBuf);
             *respLen = WFA_TLV_HDR_LEN + 4;
-        printf(" In recv profile = NULL free dutRspbuf\n");
+       // printf(" In recv profile = NULL free dutRspbuf\n");
     		wFREE(dutRspBuf);
             return WFA_SUCCESS;
         }
@@ -571,7 +570,7 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
             status = STATUS_INVALID;
             wfaEncodeTLV(WFA_TRAFFIC_AGENT_RECV_STOP_RESP_TLV, 4, (BYTE *)&status, respBuf);
             *respLen = WFA_TLV_HDR_LEN + 4;
-        printf(" In recv profile is not = RECV free Rspbuf\n");
+        //printf(" In recv profile is not = RECV free Rspbuf\n");
 
     		wFREE(dutRspBuf);
             return WFA_SUCCESS;
@@ -620,6 +619,7 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
             wMEMSET(&wmmps_info, 0, sizeof(wfaWmmPS_t));
 
             wfaSetDUTPwrMgmt(PS_OFF);
+	    printf("In uapsd sleep\n");
             wSLEEP(3);
             gtgWmmPS = 0;
             gtgPsPktRecvd = 0;
@@ -632,7 +632,7 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
         statResp.status = STATUS_COMPLETE;
         statResp.streamId = streamid;
 
-#if 1
+#if 0
         DPRINT_INFO(WFA_OUT, "stream Id %u rx %u total %llu\n", streamid, myStream->stats.rxFrames, myStream->stats.rxPayloadBytes);
 #endif
         wMEMCPY(&statResp.cmdru.stats, &myStream->stats, sizeof(tgStats_t));
