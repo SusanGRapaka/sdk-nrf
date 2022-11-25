@@ -106,7 +106,7 @@ extern void *wfa_wmm_thread(void *thr_param);
 extern void *wfa_wmmps_thread();
 
 extern double gtgPktRTDelay;
-
+int dut_init = 0;
 int gxcSockfd = -1;
 static pthread_t main_thread;
 #define DEBUG 0
@@ -190,40 +190,39 @@ void *main_thread_handler()
         if (FD_ISSET(gagtSockfd, &sockSet))
         {
             /* Incoming connection request */
-            gxcSockfd = wfaAcceptTCPConn(gagtSockfd);
+    /*        gxcSockfd = wfaAcceptTCPConn(gagtSockfd);
             if(gxcSockfd == -1)
             {
                 DPRINT_ERR(WFA_ERR, "Failed to open control link socket\n");
                 exit(1);
-            }
+            }*/
         }
-
+	gxcSockfd = 1;
         /* Control Link port event*/
-        if(gxcSockfd >= 0 && FD_ISSET(gxcSockfd, &sockSet))
+        //if(gxcSockfd >= 0 && FD_ISSET(gxcSockfd, &sockSet))
+        if(gxcSockfd >= 0 )
         {
-            memset(xcCmdBuf, 0, WFA_BUFF_1K);  /* reset the buffer */
+            memset(xcCmdBuf, 0, WFA_BUFF_1K);   //reset the buffer
             nbytes = wfaCtrlRecv(gxcSockfd, xcCmdBuf);
 
             if(nbytes <=0)
             {
-                /* errors at the port, close it */
                 shutdown(gxcSockfd, SHUT_WR);
                 close(gxcSockfd);
                 gxcSockfd = -1;
             }
             else
             {
-	       /* command received */
                 wfaDecodeTLV(xcCmdBuf, nbytes, &xcCmdTag, &cmdLen, parmsVal);
                 memset(respBuf, 0, WFA_RESP_BUF_SZ);
                 respLen = 0;
 
-                /* reset two commond storages used by control functions */
+                // reset two commond storages used by control functions 
                 memset(gCmdStr, 0, WFA_CMD_STR_SZ);
                 memset(&gGenericResp, 0, sizeof(dutCmdResponse_t));
 printf("%s DDEBUG: command rcv on dut %s, %d, xcCmdTag = %d\n", __FILE__,  __func__,  __LINE__, xcCmdTag);
 
-                /* command process function defined in wfa_ca.c and wfa_tg.c */
+                 //command process function defined in wfa_ca.c and wfa_tg.c 
                 if(xcCmdTag != 0 && gWfaCmdFuncTbl[xcCmdTag] != NULL)
                 {
 printf("%s DDEBUG: command defined %s, %d\n", __FILE__,  __func__,  __LINE__);
@@ -247,7 +246,7 @@ printf("%s DDEBUG: no command defined  %s, %d\n", __FILE__,  __func__,  __LINE__
                       DPRINT_WARNING(WFA_WNG, "wfa-dut main:wfaCtrlSend returned value %d != respLen %d\n", ret, respLen);
                  }
                }
-            }
+           }
 
         }
 
@@ -274,8 +273,8 @@ printf("%s DDEBUG: no command defined  %s, %d\n", __FILE__,  __func__,  __LINE__
     wFREE(parmsVal);
 
     /* Close sockets */
-    wCLOSE(gagtSockfd);
-    wCLOSE(gxcSockfd);
+    //wCLOSE(gagtSockfd);
+    //wCLOSE(gxcSockfd);
     wCLOSE(btSockfd);
 
     for(i= 0; i< WFA_MAX_TRAFFIC_STREAMS; i++)
@@ -476,12 +475,12 @@ dut_main(int argc, char **argv)
     wfa_dut_init(&trafficBuf, &respBuf, &parmsVal, &xcCmdBuf, &toutvalp);
 
     /* 4create listening TCP socket */
-    gagtSockfd = wfaCreateTCPServSock(locPortNo);
+    /*gagtSockfd = wfaCreateTCPServSock(locPortNo);
     if(gagtSockfd == -1)
     {
         DPRINT_ERR(WFA_ERR, "Failed to open socket\n");
         exit(1);
-    }
+    }*/
 
         printf("%s:%d\n", __func__, __LINE__);
 #if 0
@@ -536,6 +535,6 @@ dut_main(int argc, char **argv)
 #endif
 
    // pthread_create(&main_thread, &ptAttr, main_thread_handler, NULL);
-   
+	dut_init = 1;   
     return 0;
 }
