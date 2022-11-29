@@ -83,6 +83,8 @@ void create_apts_msg(int msg, unsigned int txbuf[],int id);
 
 int sret = 0;
 
+extern char chan_buf1[32];
+extern char chan_buf2[32];
 extern char e2eResults[];
 
 FILE *e2efp = NULL;
@@ -3633,13 +3635,19 @@ int wfaStaSetRFeature(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
        sret = shell_execute_cmd(NULL, gCmdStr);
        printf("\n %s \n ",gCmdStr);
        sleep(5);
-       sprintf(gCmdStr, "wpa_cli set non_pref_chan %d:%d:%s:%d",
+       if (chan_buf2 != NULL)
+       {
+               sprintf(gCmdStr, "wpa_cli set non_pref_chan %s %s",
+                       chan_buf1, chan_buf2);
+	       sret = shell_execute_cmd(NULL, gCmdStr);
+	}
+      /* sprintf(gCmdStr, "wpa_cli set non_pref_chan %d:%d:%s:%d",
 		rfeat->ch_op_class, rfeat->ch_pref_num, rfeat->ch_pref,
 		rfeat->ch_reason_code);//AJAY
 //      sprintf(gCmdStr, "wpa_cli set non_pref_chan 115:48:0:0", ifname);
         sret = shell_execute_cmd(NULL, gCmdStr);
 //      sprintf(gCmdStr, "wpa_cli set non_pref_chan 115:44:1:1", ifname);
-//      sret = system(gCmdStr);
+//      sret = system(gCmdStr);*/
       printf("\n %s \n", gCmdStr);
 
     }

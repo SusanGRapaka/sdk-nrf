@@ -322,8 +322,9 @@ void  wfaSentStatsResp(int sock, BYTE *buf)
            first->cmdru.stats.txPayloadBytes,
            first->cmdru.stats.rxPayloadBytes);
 #endif
-        buff = malloc(1 + WFA_TLV_HDR_LEN + total*sizeof(dutCmdResponse_t));
-
+        buff = malloc(64 + WFA_TLV_HDR_LEN + total*sizeof(dutCmdResponse_t));
+	printf("Size of allocated memory for buff = %d\n",1 + WFA_TLV_HDR_LEN + total*sizeof(dutCmdResponse_t));
+    memset(buff, 0, 64 + WFA_TLV_HDR_LEN + total*sizeof(dutCmdResponse_t));
     if (!buff) {
         DPRINT_ERR(WFA_WNG, "Failed to allocate buff\n");
         return;

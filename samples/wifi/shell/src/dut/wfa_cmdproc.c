@@ -36,6 +36,8 @@
 #include "wfa_miscs.h"
 #include "wfa_agtctrl.h"
 
+char chan_buf1[32];
+char chan_buf2[32];
 extern int gSock;
 extern void printProfile(tgProfile_t *);
 extern char  *strtok_r(char *str, const char *sep, char **state);
@@ -5936,6 +5938,15 @@ int xcCmdProcStaSetRFeature(char *pcmdStr, BYTE *aBuf, int *aLen)
             rfeat->ch_reason_code = atoi(str);
         }
 
+    }
+
+    if (chan_buf1 == NULL)
+    {
+            sprintf(chan_buf1,"%d:%d:%s:%d", rfeat->ch_op_class,
+                    rfeat->ch_pref_num,rfeat->ch_pref,rfeat->ch_reason_code);
+    } else {
+            sprintf(chan_buf2,"%d:%d:%s:%d", rfeat->ch_op_class,
+                    rfeat->ch_pref_num,rfeat->ch_pref,rfeat->ch_reason_code);
     }
 
     wfaEncodeTLV(WFA_STA_SET_RFEATURE_TLV, sizeof(caStaRFeat_t), (BYTE *)rfeat, aBuf);
