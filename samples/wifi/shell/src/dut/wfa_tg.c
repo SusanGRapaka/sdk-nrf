@@ -1002,6 +1002,10 @@ int wfaSendLongFile(int mySockfd, int streamid, BYTE *aRespBuf, int *aRespLen)
 
     /* allocate a buf */
     packBuf = (char *)malloc(packLen+1);
+    if (!packBuf) {
+        DPRINT_ERR(WFA_ERR, "Mem alloc failed\n");
+        return WFA_FAILURE;
+    }
     wMEMSET(packBuf, 0, packLen);
 
     /* fill in the header */
