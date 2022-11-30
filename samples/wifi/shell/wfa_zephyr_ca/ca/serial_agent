@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+# encoding:utf-8
+
+import serial 
+import re
+import time
+import argparse
+from serial.tools import list_ports
+
+
+class SERIALClient():
+    """Client class to communicate with DUT via Serial"""
+
+    def __init__(self, port=None, baudrate=115200):
+        self.port = port 
+        self.baudrate = baudrate
+         
+    @property
+    def os_type(self):
+        return 'serial_type'
+
+    def connect(self) -> str:
+        """
+        Establish connection with the device
+
+        :return: an error message
+        """
+        #print('SERIAL Access to %s', self.host)
+        self.serial_conn = serial.Serial('/dev/ttyACM1', self.baudrate, timeout=5)
+        return 'CONNECTED'
+
+    def close(self) -> None:
+        """Close connection with the device"""
+        #print('Closing Serial connection')
+        self.serial_conn.close()
+
+    def execute_command(self, cmd: str, timeout=50):
+        """Send command to the device"""
+        #print(cmd)
+        self.serial_conn.flush()
+        self.serial_conn.flushOutput()
+        self.serial_conn.flushInput()
+        self.serial_conn.inWaiting()
+
+        if 'ssid' in cmd:
+            parts = cmd.split('ssid')
+            ssid = parts[1].strip()
+            cmd =parts[0]+f' ssid \'{ssid}\''
+        if 'psk' in cmd:
+            parts = cmd.split('psk')
+            psk = parts[1].strip()
+            cmd =parts[0]+f' psk \'{psk}\''
+        #elif 'ssid' in cmd:
+        #    parts = cmd.split('ssid')
+        #    ssid = parts[1].strip()
+        #    cmd =parts[0]+f' ssid \'{ssid}\''
+
+        #print(cmd)
+        cmd = f'{cmd}\n'.encode(encoding='UTF-8')
+        try:
+            self.serial_conn.write(cmd)
+        except Exception:
+            raise 
+
+    def read(self, size=1) -> str:
+        """Read data from the device"""
+        #self.serial_conn.reset_input_buffer()
+        out = self.serial_conn.readall()
+        #out = self.serial_conn.read(4000)
+        return out
+
+        out = bytes()
+        try:
+            while True:
+                data = self.serial_conn.inWaiting()
+                #read_data = self.serial_conn.read(data)
+                #if not read_data:
+                #    return out
+                #out = out + read_data
+                #time.sleep(1)
+                if not data:
+                    return out
+                out = out + self.serial_conn.read(data)
+                time.sleep(1)
+            
+        except Exception:
+            raise
+        return out
+
+    def get_mac_address(self, data):
+        match = re.compile("ether ([\dA-Fa-f:]*)")
+        if match.findall(ifconfig_data):
+            dut_mac_addr = match.findall(data)[0]
+            print("dut_mac_addr : %s", dut_mac_addr)
+        else:
+            dut_mac_addr = "NO_MAC_ADDRESS"
+        return dut_mac_addr
+
+    def get_bssid(self, data):
+        match = re.compile("bssid=([\dA-Fa-f:]*)")
+        ap_mac_addr = match.findall(data)[0]
+        print("ap_mac_addr : %s", ap_mac_addr)
+        return ap_mac_addr
+
+    def connection_status(self, data):
+        if ssid in data and "wpa_state=COMPLETED" in data:
+            return True
+        return False
+
+if __name__ == '__main__':
+    parser  = argparse.ArgumentParser()
+    parser.add_argument(dest='cmd')
+    #parser.add_argument(dest='get_info')
+    args = parser.parse_args()
+    ser = SERIALClient()
+    status = ser.connect()
+    ser.execute_command(args.cmd)
+    #print(f"connection status :{status} ")
+    #ser.execute_command('iwconfig')
+    print (f"####################### {args.cmd} ##########################\n")
+    time.sleep(1)
+    if(1):
+    #try:
+        print ("DBG:1")
+        data = ser.read().decode('utf-8', errors='ignore').rstrip()
+        #data = data.replace(args.cmd, "")
+        #data = data.replace("#", "")
+        data = data.strip()
+        print (data)
+        if "Printing RespBuf START" in data:
+            print ("DBG:3")
+            try:
+                print ("DBG:4")
+                m=re.search("Printing RespBuf START[\r\n]*(.*)[\r\n]*Printing RespBuf DONE",data)
+                buff_data = m.group(1)
+                print (buff_data)
+                f_buf = open('/tmp/tembbuff.txt','w')
+                f_buf.write(buff_data)
+                print ("DBG:5")
+                f_buf.close()
+            except:
+                print ("DBG:6")
+                pass
+        else:
+            pass
+    #except Exception:
+        #print ("DBG:2")
+        #pass
+    ser.close()
+    #return data
+    #time.sleep(2)
+    #import re
+    #l =re.search('inet addr:', data.decode('UTF-8'))
+    #print(l)
+    #if args.get_info == 'get_mac':
+    #    ser.get_mac_address(data)
+    #elif args.get_info == 'get_bssid':
+    #    ser.get_bssid(data)
+    #elif args.get_info == 'is_sta_connected':
+    #    ser.connection_status(data)
+

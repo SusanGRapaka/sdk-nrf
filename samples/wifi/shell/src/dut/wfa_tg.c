@@ -96,6 +96,7 @@ extern int runLoop;
 extern int sendThrId;
 
 char e2eResults[124];
+
 #if 0  /* for test purpose only */
 char *e2eResults = "/tmp/e2e1198798626.txt";
 #endif
@@ -979,6 +980,7 @@ int wfaSendLongFile(int mySockfd, int streamid, BYTE *aRespBuf, int *aRespLen)
     gettimeofday(&af,0);
 
     DPRINT_INFO(WFA_OUT, "Entering sendLongFile %i\n", streamid);
+//	    printf("In wfaSendLong udp sock = %d\n",mySock);
 
     /* find the profile */
     myStream = findStreamProfile(streamid);
@@ -1041,7 +1043,7 @@ int wfaSendLongFile(int mySockfd, int streamid, BYTE *aRespBuf, int *aRespLen)
         if (act_sleep_time <= 0)
             act_sleep_time = sleepTime;
 
-        printf("sleep time %i act_sleep_time %i\n", sleepTime, act_sleep_time);
+        //printf("sleep time %i act_sleep_time %i\n", sleepTime, act_sleep_time);
 
         runLoop=1;
         while(runLoop)
