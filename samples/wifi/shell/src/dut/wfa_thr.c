@@ -58,7 +58,7 @@ extern unsigned int recvThr;
 extern int tgWMMTestEnable;
 int num_stops=0;
 int num_hello=0;
-static struct k_work_delayable set_stop_alrm;
+//static struct k_work_delayable set_stop_alrm;
 
 BOOL gtgCaliRTD;
 
@@ -617,6 +617,7 @@ void * wfa_wmm_thread(void *thr_param)
     struct timeval lstime, lrtime;
     int asn = 1;  /* everytime it starts from 1, and to ++ */
 //#endif
+	struct k_work_delayable set_stop_alrm;
 
     wPT_ATTR_INIT(&tattr);
     wPT_ATTR_SETSCH(&tattr, SCHED_RR);
@@ -663,6 +664,7 @@ void * wfa_wmm_thread(void *thr_param)
         {
         case DIRECT_SEND:
             mySock = wfaCreateUDPSock(myProfile->sipaddr, myProfile->sport);
+	    printf("In Direct_send udp sock = %d\n",mySock);
             if (mySock < 0)
             {
                DPRINT_INFO(WFA_OUT, "wfa_wmm_thread SEND ERROR failed create UDP socket! \n");
@@ -670,6 +672,11 @@ void * wfa_wmm_thread(void *thr_param)
             }
 
             mySock = wfaConnectUDPPeer(mySock, myProfile->dipaddr, myProfile->dport);
+            if (mySock < 0)
+            {
+               DPRINT_INFO(WFA_OUT, "wfa_wmm_thread SEND ERROR failed bind UDP socket! \n");
+              // break;
+            }
             sendThrId = myId;
             /*
              * Set packet/socket priority TOS field
