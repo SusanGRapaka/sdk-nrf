@@ -1,0 +1,262 @@
+1661508736.133342: wpa_supplicant v2.10_fullmac
+1661508736.133391: random: Trying to read entropy from /dev/random
+1661508736.133409: Successfully initialized wpa_supplicant
+1661508736.133415: Initializing interface 'wlan0' conf '/etc/no_cfg.conf' driver 'nl80211' ctrl_interface 'N/A' bridge 'N/A'
+1661508736.133420: Configuration file '/etc/no_cfg.conf' -> '/etc/no_cfg.conf'
+1661508736.133425: Reading configuration file '/etc/no_cfg.conf'
+1661508736.133943: ctrl_interface='/var/run/wpa_supplicant'
+1661508736.133949: ctrl_interface_group='0'
+1661508736.133958: update_config=1
+1661508736.146774: nl80211: Supported cipher 00-0f-ac:1
+1661508736.146802: nl80211: Supported cipher 00-0f-ac:5
+1661508736.146805: nl80211: Supported cipher 00-0f-ac:2
+1661508736.146808: nl80211: Supported cipher 00-0f-ac:4
+1661508736.146811: nl80211: Supported cipher 00-0f-ac:10
+1661508736.146813: nl80211: Supported cipher 00-0f-ac:6
+1661508736.146816: nl80211: Supported cipher 00-14-72:1
+1661508736.146819: nl80211: Supported cipher 00-0f-ac:8
+1661508736.146822: nl80211: Supported cipher 00-0f-ac:9
+1661508736.146824: nl80211: Supported cipher 00-0f-ac:11
+1661508736.146827: nl80211: Supported cipher 00-0f-ac:12
+1661508736.146830: nl80211: Supported cipher 00-0f-ac:13
+1661508736.146832: nl80211: Using driver-based off-channel TX
+1661508736.146835: nl80211: TDLS supported
+1661508736.146838: nl80211: Supports Probe Response offload in AP mode
+1661508736.146841: nl80211: Driver-advertised extended capabilities(default) - hexdump(len=0):
+1661508736.146844: nl80211: Driver-advertised extended capabilities mask (default) - hexdump(len=0):
+1661508736.146847: nl80211: Driver-advertised extended capabilities for interface type STATION
+1661508736.146850: nl80211: Extended capabilities - hexdump(len=10): 04 00 48 00 00 00 00 40 00 20
+1661508736.146855: nl80211: Extended capabilities mask - hexdump(len=10): 04 00 48 00 00 00 00 40 00 20
+1661508736.146860: nl80211: key_mgmt=0x1ff0f enc=0xfef auth=0x7 flags=0x80410db63d8e0 rrm_flags=0x10 probe_resp_offloads=0x0 max_stations=0 max_remain_on_chan=5000 max_scan_ssids=2
+1661508736.146865: nl80211: interface wlan0 in phy img_mac80211
+1661508736.147460: nl80211: Set mode ifindex 5 iftype 2 (STATION)
+1661508736.147475: nl80211: nl80211_set_mode: sending NRF_WIFI_UMAC_CMD_SET_INTERFACE command
+
+1661508736.147668: nl80211: Subscribe to mgmt frames with non-AP handle (nil)
+1661508736.147674: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=0104 multicast=0
+1661508736.148201: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148226: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=040a multicast=0
+1661508736.148230: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148248: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=040b multicast=0
+1661508736.148251: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148269: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=040c multicast=0
+1661508736.148272: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148289: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=040d multicast=0
+1661508736.148292: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148335: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=090a multicast=0
+1661508736.148338: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148396: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=090b multicast=0
+1661508736.148399: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148455: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=090c multicast=0
+1661508736.148466: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148513: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=090d multicast=0
+1661508736.148516: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148572: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=0409506f9a09 multicast=0
+1661508736.148576: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148628: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=7f506f9a09 multicast=0
+1661508736.148631: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148685: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=0409506f9a1a multicast=0
+1661508736.148688: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148739: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=0801 multicast=0
+1661508736.148742: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148793: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=06 multicast=0
+1661508736.148796: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148850: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=0a07 multicast=0
+1661508736.148853: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148903: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=0a11 multicast=0
+1661508736.148906: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.148955: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=0a0b multicast=0
+1661508736.148959: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.149006: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=0a1a multicast=0
+1661508736.149009: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.149055: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=1101 multicast=0
+1661508736.149058: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.149105: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=1102 multicast=0
+1661508736.149109: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.149156: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=0505 multicast=0
+1661508736.149159: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.149204: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=0500 multicast=0
+1661508736.149207: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.149250: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=1301 multicast=0
+1661508736.149254: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.149297: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=1305 multicast=0
+1661508736.149300: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.149342: nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=(nil) match=7e506f9a1a multicast=0
+1661508736.149345: nl80211: nrf_wifi_cfg80211_mgmt_frame_reg: sending NRF_WIFI_UMAC_CMD_REGISTER_FRAME command
+
+1661508736.149388: netlink: Operstate: ifindex=5 linkmode=1 (userspace-control), operstate=5 (IF_OPER_DORMANT)
+1661508736.149419: Add interface wlan0 to a new radio img_mac80211
+1661508736.151504: nl80211: Regulatory information - country=00
+1661508736.151524: nl80211: 2402-2472 @ 40 MHz 20 mBm
+1661508736.151532: nl80211: 2457-2482 @ 20 MHz 20 mBm (no IR)
+1661508736.151537: nl80211: 2474-2494 @ 20 MHz 20 mBm (no OFDM) (no IR)
+1661508736.151540: nl80211: 5170-5250 @ 80 MHz 20 mBm (no IR)
+1661508736.151544: nl80211: 5250-5330 @ 80 MHz 20 mBm (DFS) (no IR)
+1661508736.151548: nl80211: 5490-5730 @ 160 MHz 20 mBm (DFS) (no IR)
+1661508736.151552: nl80211: 5735-5835 @ 80 MHz 20 mBm (no IR)
+1661508736.151555: nl80211: 57240-63720 @ 2160 MHz 0 mBm
+1661508736.151573: nl80211: Added 802.11b mode based on 802.11g information
+1661508736.151583: nl80211: Mode IEEE 802.11g: 2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462 2467 2472 2484[NO_IR]
+1661508736.151592: nl80211: Mode IEEE 802.11a: 5180 5200 5220 5240 5260[NO_IR][RADAR] 5280[NO_IR][RADAR] 5300[NO_IR][RADAR] 5320[NO_IR][RADAR] 5500[NO_IR][RADAR] 5520[NO_IR][RADAR] 5540[NO_IR][RADAR] 5560[NO_IR][RADAR] 5580[NO_IR][RADAR]
+1661508736.151599: nl80211: Mode IEEE 802.11b: 2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462 2467 2472 2484[NO_IR]
+1661508736.172043: wlan0: Own MAC address: 00:11:28:99:77:47
+1661508736.172113: wpa_driver_nl80211_set_key_cfg: ifindex=5 (wlan0) alg=0 addr=(nil) key_idx=0 set_tx=0 seq_len=0 key_len=0
+1661508736.172121: nl80211: wpa_driver_nl80211_set_key_cfg: nrf_wifi_fmac_del_key, valid_fields = 4
+
+1661508736.172127: nl80211: nrf_wifi_fmac_del_key: sending NRF_WIFI_UMAC_CMD_DEL_KEY command
+
+1661508736.172710: wpa_driver_nl80211_set_key_cfg: ifindex=5 (wlan0) alg=0 addr=(nil) key_idx=1 set_tx=0 seq_len=0 key_len=0
+1661508736.172715: nl80211: wpa_driver_nl80211_set_key_cfg: nrf_wifi_fmac_del_key, valid_fields = 4
+
+1661508736.172721: nl80211: nrf_wifi_fmac_del_key: sending NRF_WIFI_UMAC_CMD_DEL_KEY command
+
+1661508736.172784: wpa_driver_nl80211_set_key_cfg: ifindex=5 (wlan0) alg=0 addr=(nil) key_idx=2 set_tx=0 seq_len=0 key_len=0
+1661508736.172788: nl80211: wpa_driver_nl80211_set_key_cfg: nrf_wifi_fmac_del_key, valid_fields = 4
+
+1661508736.172793: nl80211: nrf_wifi_fmac_del_key: sending NRF_WIFI_UMAC_CMD_DEL_KEY command
+
+1661508736.172848: wpa_driver_nl80211_set_key_cfg: ifindex=5 (wlan0) alg=0 addr=(nil) key_idx=3 set_tx=0 seq_len=0 key_len=0
+1661508736.172852: nl80211: wpa_driver_nl80211_set_key_cfg: nrf_wifi_fmac_del_key, valid_fields = 4
+
+1661508736.172858: nl80211: nrf_wifi_fmac_del_key: sending NRF_WIFI_UMAC_CMD_DEL_KEY command
+
+1661508736.172913: wpa_driver_nl80211_set_key_cfg: ifindex=5 (wlan0) alg=0 addr=(nil) key_idx=4 set_tx=0 seq_len=0 key_len=0
+1661508736.172917: nl80211: wpa_driver_nl80211_set_key_cfg: nrf_wifi_fmac_del_key, valid_fields = 4
+
+1661508736.172924: nl80211: nrf_wifi_fmac_del_key: sending NRF_WIFI_UMAC_CMD_DEL_KEY command
+
+1661508736.172979: wpa_driver_nl80211_set_key_cfg: ifindex=5 (wlan0) alg=0 addr=(nil) key_idx=5 set_tx=0 seq_len=0 key_len=0
+1661508736.172983: nl80211: wpa_driver_nl80211_set_key_cfg: nrf_wifi_fmac_del_key, valid_fields = 4
+
+1661508736.172989: nl80211: nrf_wifi_fmac_del_key: sending NRF_WIFI_UMAC_CMD_DEL_KEY command
+
+1661508736.173041: wlan0: RSN: flushing PMKID list in the driver
+1661508736.173052: wlan0: State: DISCONNECTED -> INACTIVE
+1661508736.173109: wlan0: WPS: UUID based on MAC address: 544ed24b-546e-5c6b-9e2f-d164dd080d75
+1661508736.176701: ENGINE: Loading builtin engines
+1661508736.176883: ENGINE: Loading builtin engines
+1661508736.176951: EAPOL: SUPP_PAE entering state DISCONNECTED
+1661508736.176955: EAPOL: Supplicant port status: Unauthorized
+1661508736.176959: nl80211: Skip set_supp_port(unauthorized) while not associated
+1661508736.176966: EAPOL: KEY_RX entering state NO_KEY_RECEIVE
+1661508736.176969: EAPOL: SUPP_BE entering state INITIALIZE
+1661508736.176973: EAP: EAP entering state DISABLED
+1661508736.176988: Using existing control interface directory.
+1661508736.177412: ctrl_interface_group=0
+1661508736.177440: ctrl_iface bind(PF_UNIX) failed: Address already in use
+1661508736.177446: ctrl_iface exists, but does not allow connections - assuming it was leftover from forced program termination
+1661508736.177477: Successfully replaced leftover ctrl_iface socket '/var/run/wpa_supplicant/wlan0'
+1661508736.177497: P2P: Add operating class 81
+1661508736.177501: P2P: Channels - hexdump(len=13): 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d
+1661508736.177509: P2P: Add operating class 115
+1661508736.177512: P2P: Channels - hexdump(len=4): 24 28 2c 30
+1661508736.177517: P2P: Add operating class 124
+1661508736.177521: P2P: Channels - hexdump(len=4): 95 99 9d a1
+1661508736.177524: P2P: Add operating class 125
+1661508736.177528: P2P: Channels - hexdump(len=4): 95 99 9d a1
+1661508736.177545: P2P: Add operating class 130
+1661508736.177551: P2P: Channels - hexdump(len=8): 24 28 2c 30 95 99 9d a1
+1661508736.177644: P2P: Own listen channel: 81:11
+1661508736.177997: P2P: Random operating channel: 81:6
+1661508736.178092: P2P: initialized
+1661508736.178111: P2P: channels: 81:1,2,3,4,5,6,7,8,9,10,11,12,13 115:36,40,44,48 124:149,153,157,161 125:149,153,157,161 130:36,40,44,48,149,153,157,161
+1661508736.178117: P2P: cli_channels:
+1661508736.178124: MBO: Update non-preferred channels, non_pref_chan=N/A
+1661508736.178133: wlan0: Added interface wlan0
+1661508736.178139: wlan0: State: INACTIVE -> DISCONNECTED
+1661508736.178143: nl80211: Set wlan0 operstate 0->0 (DORMANT)
+1661508736.178148: netlink: Operstate: ifindex=5 linkmode=-1 (no change), operstate=5 (IF_OPER_DORMANT)
+1661508736.178164: wlan0: Determining shared radio frequencies (max len 1)
+1661508736.178170: wlan0: Shared frequencies (len=0): completed iteration
+1661508736.178175: P2P: Add operating class 81
+1661508736.178179: P2P: Channels - hexdump(len=13): 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d
+1661508736.178185: P2P: Add operating class 115
+1661508736.178188: P2P: Channels - hexdump(len=4): 24 28 2c 30
+1661508736.178192: P2P: Add operating class 124
+1661508736.178196: P2P: Channels - hexdump(len=4): 95 99 9d a1
+1661508736.178199: P2P: Add operating class 125
+1661508736.178203: P2P: Channels - hexdump(len=4): 95 99 9d a1
+1661508736.178217: P2P: Add operating class 130
+1661508736.178223: P2P: Channels - hexdump(len=8): 24 28 2c 30 95 99 9d a1
+1661508736.178228: P2P: Update channel list
+1661508736.178240: P2P: channels: 81:1,2,3,4,5,6,7,8,9,10,11,12,13 115:36,40,44,48 124:149,153,157,161 125:149,153,157,161 130:36,40,44,48,149,153,157,161
+1661508736.178246: P2P: cli_channels:
+1661508736.178268: random: Got 20/20 bytes from /dev/random
+1661508737.178068: EAPOL: disable timer tick
+1661508752.887622: wlan0: Control interface command 'DISPLAY_SCAN'
+
+DISPLAY-SCAN-TRIGGERED
+1661508752.898354: CTRL-DEBUG: ctrl_sock-sendto: sock=10 sndbuf=212992 outq=0 send_len=3
+1661508752.899004: nl80211: Drv Event 257 (NL80211_CMD_UNKNOWN) received for wlan0
+1661508752.899021: wlan0: nl80211: Scan trigger
+1661508752.899030: wlan0: Event SCAN_STARTED (47) received
+1661508752.899035: wlan0: External program started a scan
+1661508756.296434: nl80211: Drv Event 288 (NL80211_CMD_UNKNOWN) received for wlan0
+1661508756.296470: nl80211: Regulatory beacon hint
+1661508756.296474: nl80211: Channel (before): freq=5825 max_tx_power=2000 no-IR
+1661508756.296478: nl80211: Channel (after): freq=5825 max_tx_power=2000
+1661508756.296488: wlan0: Event CHANNEL_LIST_CHANGED (27) received
+1661508756.296500: wlan0: CTRL-EVENT-REGDOM-CHANGE init=BEACON_HINT type=UNKNOWN
+1661508756.296504: wlan0: Updating hw mode
+1661508756.298494: nl80211: Regulatory information - country=00
+1661508756.298525: nl80211: 2402-2472 @ 40 MHz 20 mBm
+1661508756.298531: nl80211: 2457-2482 @ 20 MHz 20 mBm (no IR)
+1661508756.298536: nl80211: 2474-2494 @ 20 MHz 20 mBm (no OFDM) (no IR)
+1661508756.298540: nl80211: 5170-5250 @ 80 MHz 20 mBm (no IR)
+1661508756.298544: nl80211: 5250-5330 @ 80 MHz 20 mBm (DFS) (no IR)
+1661508756.298548: nl80211: 5490-5730 @ 160 MHz 20 mBm (DFS) (no IR)
+1661508756.298552: nl80211: 5735-5835 @ 80 MHz 20 mBm (no IR)
+1661508756.298556: nl80211: 57240-63720 @ 2160 MHz 0 mBm
+1661508756.298564: nl80211: Added 802.11b mode based on 802.11g information
+1661508756.298586: nl80211: Mode IEEE 802.11g: 2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462 2467 2472 2484[NO_IR]
+1661508756.298595: nl80211: Mode IEEE 802.11a: 5180 5200 5220 5240 5260[NO_IR][RADAR] 5280[NO_IR][RADAR] 5300[NO_IR][RADAR] 5320[NO_IR][RADAR] 5500[NO_IR][RADAR] 5520[NO_IR][RADAR] 5540[NO_IR][RADAR] 5560[NO_IR][RADAR] 5580[NO_IR][RADAR]
+1661508756.298602: nl80211: Mode IEEE 802.11b: 2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462 2467 2472 2484[NO_IR]
+1661508756.298609: wlan0: Determining shared radio frequencies (max len 1)
+1661508756.298618: wlan0: Shared frequencies (len=0): completed iteration
+1661508756.298624: P2P: Add operating class 81
+1661508756.298628: P2P: Channels - hexdump(len=13): 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d
+1661508756.298636: P2P: Add operating class 115
+1661508756.298639: P2P: Channels - hexdump(len=4): 24 28 2c 30
+1661508756.298644: P2P: Add operating class 124
+1661508756.298647: P2P: Channels - hexdump(len=4): 95 99 9d a1
+1661508756.298651: P2P: Add operating class 125
+1661508756.298655: P2P: Channels - hexdump(len=5): 95 99 9d a1 a5
+1661508756.298671: P2P: Add operating class 130
+1661508756.298678: P2P: Channels - hexdump(len=9): 24 28 2c 30 95 99 9d a1 a5
+1661508756.298684: P2P: Update channel list
+1661508756.298700: P2P: channels: 81:1,2,3,4,5,6,7,8,9,10,11,12,13 115:36,40,44,48 124:149,153,157,161 125:149,153,157,161,165 130:36,40,44,48,149,153,157,161,165
+1661508756.298706: P2P: cli_channels:
+1661508756.429143: nl80211: Drv Event 259 (NL80211_CMD_UNKNOWN) received for wlan0
+1661508756.429175: Scan done received............Now get scan results
+1661508756.429178: DISPLAY Scan done received
+
+DISPLAY-SCAN-DONE
+1661508756.432419: nl80211: Received display scan results (49 BSSes)
+
+AUTO-RETRIEVE-DISPLAY-SCAN-RESULT
+1661508760.902447: wlan0: Control interface command 'DISPLAY_SCAN_RESULTS'
+1661508760.902488: CTRL-DEBUG: ctrl_sock-sendto: sock=10 sndbuf=212992 outq=0 send_len=3432
