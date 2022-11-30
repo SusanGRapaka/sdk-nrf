@@ -115,7 +115,12 @@ int wfaCreateUDPSock(char *ipaddr, unsigned short port)
     servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servAddr.sin_port        = htons(port);
 
-    wBIND(udpsock, (struct sockaddr *) &servAddr, sizeof(servAddr));
+    if (wBIND(udpsock, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
+    {
+        DPRINT_ERR(WFA_ERR, "bind() failed");
+	printf("udpsock bind failed for udpsock = %d\n",udpsock);
+        return WFA_FAILURE;
+    }
 
     return udpsock;
 }
