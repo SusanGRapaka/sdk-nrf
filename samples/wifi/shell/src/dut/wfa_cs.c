@@ -83,8 +83,9 @@ void create_apts_msg(int msg, unsigned int txbuf[],int id);
 
 int sret = 0;
 
-extern char chan_buf1[32];
-extern char chan_buf2[32];
+extern char *chan_buf1;
+extern char *chan_buf2;
+
 extern char e2eResults[];
 
 FILE *e2efp = NULL;
@@ -2555,227 +2556,8 @@ int wfaStaDevSendFrame(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 
     DPRINT_INFO(WFA_OUT, "Inside wfaStaDevSendFrame function ...\n");
     /* processing the frame */
-       // sprintf(gCmdStr, "wpa_cli wnm_bss_query 1",cmd->intf);
-        //sret = system(gCmdStr);
-        //printf("\n %s \n", gCmdStr);
+    sret = shell_execute_cmd("wpa_cli wnm_bss_query 1");
 
-    switch(sf->program)
-    {
-    case PROG_TYPE_PMF:
-    {
-        pmfFrame_t *pmf = &sf->frameType.pmf;
-        switch(pmf->eFrameName)
-        {
-        case PMF_TYPE_DISASSOC:
-        {
-            /* use the protected to set what type of key to send */
-
-        }
-        break;
-        case PMF_TYPE_DEAUTH:
-        {
-
-        }
-        break;
-        case PMF_TYPE_SAQUERY:
-        {
-
-        }
-        break;
-        case PMF_TYPE_AUTH:
-        {
-        }
-        break;
-        case PMF_TYPE_ASSOCREQ:
-        {
-        }
-        break;
-        case PMF_TYPE_REASSOCREQ:
-        {
-        }
-        break;
-        }
-    }
-    break;
-    case PROG_TYPE_TDLS:
-    {
-        tdlsFrame_t *tdls = &sf->frameType.tdls;
-        switch(tdls->eFrameName)
-        {
-        case TDLS_TYPE_DISCOVERY:
-            /* use the peer mac address to send the frame */
-            break;
-        case TDLS_TYPE_SETUP:
-            break;
-        case TDLS_TYPE_TEARDOWN:
-            break;
-        case TDLS_TYPE_CHANNELSWITCH:
-            break;
-        case TDLS_TYPE_NULLFRAME:
-            break;
-        }
-    }
-    break;
-    case PROG_TYPE_VENT:
-    {
-        ventFrame_t *vent = &sf->frameType.vent;
-        switch(vent->type)
-        {
-        case VENT_TYPE_NEIGREQ:
-            break;
-        case VENT_TYPE_TRANSMGMT:
-            break;
-        }
-    }
-    break;
-    case PROG_TYPE_WFD:
-    {
-        wfdFrame_t *wfd = &sf->frameType.wfd;
-        switch(wfd->eframe)
-        {
-        case WFD_FRAME_PRBREQ:
-        {
-            /* send probe req */
-        }
-        break;
-
-        case WFD_FRAME_PRBREQ_TDLS_REQ:
-        {
-            /* send tunneled tdls probe req  */
-        }
-        break;
-
-        case WFD_FRAME_11V_TIMING_MSR_REQ:
-        {
-            /* send 11v timing mearurement request */
-        }
-        break;
-
-        case WFD_FRAME_RTSP:
-        {
-            /* send WFD RTSP messages*/
-            // fetch the type of RTSP message and send it.
-            switch(wfd->eRtspMsgType)
-            {
-            case WFD_RTSP_PAUSE:
-                break;
-            case WFD_RTSP_PLAY:
-                //send RTSP PLAY
-                break;
-            case WFD_RTSP_TEARDOWN:
-                //send RTSP TEARDOWN
-                break;
-            case WFD_RTSP_TRIG_PAUSE:
-                //send RTSP TRIGGER PAUSE
-                break;
-            case WFD_RTSP_TRIG_PLAY:
-                //send RTSP TRIGGER PLAY
-                break;
-            case WFD_RTSP_TRIG_TEARDOWN:
-                //send RTSP TRIGGER TEARDOWN
-                break;
-            case WFD_RTSP_SET_PARAMETER:
-                //send RTSP SET PARAMETER
-                if (wfd->eSetParams == WFD_CAP_UIBC_KEYBOARD)
-                {
-                    //send RTSP SET PARAMETER message for UIBC keyboard
-                }
-                if (wfd->eSetParams == WFD_CAP_UIBC_MOUSE)
-                {
-                    //send RTSP SET PARAMETER message for UIBC Mouse
-                }
-                else if (wfd->eSetParams == WFD_CAP_RE_NEGO)
-                {
-                    //send RTSP SET PARAMETER message Capability re-negotiation
-                }
-                else if (wfd->eSetParams == WFD_STANDBY)
-                {
-                    //send RTSP SET PARAMETER message for standby
-                }
-                else if (wfd->eSetParams == WFD_UIBC_SETTINGS_ENABLE)
-                {
-                    //send RTSP SET PARAMETER message for UIBC settings enable
-                }
-                else if (wfd->eSetParams == WFD_UIBC_SETTINGS_DISABLE)
-                {
-                    //send RTSP SET PARAMETER message for UIBC settings disable
-                }
-                else if (wfd->eSetParams == WFD_ROUTE_AUDIO)
-                {
-                    //send RTSP SET PARAMETER message for route audio
-                }
-                else if (wfd->eSetParams == WFD_3D_VIDEOPARAM)
-                {
-                    //send RTSP SET PARAMETER message for 3D video parameters
-                }
-                else if (wfd->eSetParams == WFD_2D_VIDEOPARAM)
-                {
-                    //send RTSP SET PARAMETER message for 2D video parameters
-                }
-                break;
-            }
-        }
-        break;
-        }
-    }
-    break;
-    /* not need to support HS2 release 1, due to very short time period  */
-    case PROG_TYPE_HS2_R2:
-    {
-        /* type of frames */
-        hs2Frame_t *hs2 = &sf->frameType.hs2_r2;
-        switch(hs2->eframe)
-        {
-        case HS2_FRAME_ANQPQuery:
-        {
-
-        }
-        break;
-        case HS2_FRAME_DLSRequest:
-        {
-
-        }
-        break;
-        case HS2_FRAME_GARPReq:
-        {
-
-        }
-        break;
-        case HS2_FRAME_GARPRes:
-        {
-        }
-        break;
-        case HS2_FRAME_NeighAdv:
-        {
-        }
-        case HS2_FRAME_ARPProbe:
-        {
-        }
-        case HS2_FRAME_ARPAnnounce:
-        {
-
-        }
-        break;
-        case HS2_FRAME_NeighSolicitReq:
-        {
-
-        }
-        break;
-        case HS2_FRAME_ARPReply:
-        {
-
-        }
-        break;
-        }
-
-        }/*  PROG_TYPE_HS2-R2  */
-    case PROG_TYPE_GEN:
-    {
-        /* General frames */
-    }
-
-
-    }
     devSendResp->status = STATUS_COMPLETE;
     wfaEncodeTLV(WFA_STA_DEV_SEND_FRAME_RESP_TLV, 4, (BYTE *)devSendResp, respBuf);
     *respLen = WFA_TLV_HDR_LEN + 4;
@@ -3617,21 +3399,19 @@ int wfaStaSetRadio(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 
 int wfaStaSetRFeature(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 {
-    dutCommand_t *dutCmd = (dutCommand_t *)caCmdBuf;
-    caStaRFeat_t *rfeat = &dutCmd->cmdsu.rfeat;
+    caStaRFeat_t *rfeat = (caStaRFeat_t *)caCmdBuf;
     dutCmdResponse_t *caResp = &gGenericResp;
-    char *ifname = dutCmd->intf;
 
     if(strcasecmp(rfeat->prog, "tdls") == 0)
     {
 
     }
 
-    if(strcasecmp(rfeat->prog, "mbo") == 0)
+    if(rfeat->prog == 7)
     {
-        printf("\n------------INSIDE MBO--------\n");
-        printf("\n------------rfeat->cellulardatacap =%d--------\n", rfeat->cellulardatacap);
-       sprintf(gCmdStr, "wpa_cli set mbo_cell_capa %d", ifname, rfeat->cellulardatacap);
+	    printf("\n------------INSIDE MBO--------\n");
+	    printf("\n------------rfeat->cellulardatacap =%d--------\n", rfeat->cellulardatacap);
+	    sprintf(gCmdStr, "wpa_cli set mbo_cell_capa %d", rfeat->cellulardatacap);
        sret = shell_execute_cmd(NULL, gCmdStr);
        printf("\n %s \n ",gCmdStr);
        sleep(5);
@@ -3639,7 +3419,12 @@ int wfaStaSetRFeature(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
        {
                sprintf(gCmdStr, "wpa_cli set non_pref_chan %s %s",
                        chan_buf1, chan_buf2);
+	       printf("\n %s \n", gCmdStr);
 	       sret = shell_execute_cmd(NULL, gCmdStr);
+	       free(chan_buf1);
+	       chan_buf1 = NULL;
+	       free(chan_buf2);
+	       chan_buf2 = NULL;
 	}
       /* sprintf(gCmdStr, "wpa_cli set non_pref_chan %d:%d:%s:%d",
 		rfeat->ch_op_class, rfeat->ch_pref_num, rfeat->ch_pref,
@@ -3648,7 +3433,6 @@ int wfaStaSetRFeature(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
         sret = shell_execute_cmd(NULL, gCmdStr);
 //      sprintf(gCmdStr, "wpa_cli set non_pref_chan 115:44:1:1", ifname);
 //      sret = system(gCmdStr);*/
-      printf("\n %s \n", gCmdStr);
 
     }
 
