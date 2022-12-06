@@ -39,6 +39,7 @@
 #include "wfa_types.h"
 #include "wfa_main.h"
 #include "wfa_sock.h"
+#include "wfa_tg.h"
 
 int wfaGetifAddr(char *ifname, struct sockaddr_in *sa);
 
@@ -46,6 +47,7 @@ extern unsigned short wfa_defined_debug;
 
 extern BOOL gtgTransac;
 extern char gnetIf[];
+extern int tgSockfds[];
 
 #define MAXPENDING 2    /* Maximum outstanding connection requests */
 
@@ -317,9 +319,9 @@ int wfaTrafficSendTo(int sock, char *buf, int bufLen, struct sockaddr *to)
  * wfaTrafficRecv(): Receive Traffic through through traffic interface.
  *  Note: the function used to wfaRecvSendTo().
  */
-int wfaTrafficRecv(int sock, char *buf, struct sockaddr *from)
+int wfaTrafficRecv(int sock, void* myStream, char *buf, struct sockaddr *from)
 {
-	int bytesRecvd =0;
+	int bytesRecvd = -1;
 
 #if 0
 	/* get current flags setting */
@@ -330,6 +332,18 @@ int wfaTrafficRecv(int sock, char *buf, struct sockaddr *from)
 #endif
 
 	bytesRecvd = recv(sock, buf, MAX_RCV_BUF_LEN, 0);
+	printf("Waiting for recv: %d\n", sock);
+	// select with socketset as sock
+	fd_set readfds;
+	FD_ZERO(&readfds);
+	FD_SET(sock, &readfds);
+	int num_fds = select (sock+1, &readfds, NULL, NULL, NULL);
+	printf("Received recv: %d\n", sock);
+	if (num_fds > 0 && FD_ISSET(sock, &readfds) && myStream && tgSockfds[((tgStream_t*)myStream)->tblidx] > 0) {
+		printf("Waiting for recv %d\n", sock);
+		bytesRecvd = recv(sock, buf, MAX_RCV_BUF_LEN, 0);
+		printf("Waiting for recv ----- DONE: %d\n", bytesRecvd);
+	}
 
 	return bytesRecvd;
 }

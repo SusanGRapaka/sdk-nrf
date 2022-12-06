@@ -662,7 +662,7 @@ int wfaStaVerifyIpConnection(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBu
             case POLLIN:
             case POLLPRI:
             case POLLOUT:
-                nbytes = wfaTrafficRecv(btSockfd, (char *)anyBuf, (struct sockaddr *)&toAddr);
+		nbytes = wfaTrafficRecv(btSockfd, NULL, (char *)anyBuf, (struct sockaddr *)&toAddr);
                 if(nbytes != 0)
                     verifyIpResp->cmdru.connected = 1;
                 done = 0;
