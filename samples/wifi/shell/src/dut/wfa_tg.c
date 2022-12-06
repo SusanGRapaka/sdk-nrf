@@ -57,7 +57,7 @@ int adj_latency;
 
 extern tgStream_t *findStreamProfile(int);
 extern int wfaTrafficSendTo(int, char *, int, struct sockaddr *);
-extern int wfaTrafficRecv(int, char *, struct sockaddr *);
+extern int wfaTrafficRecv(int, void*, char *, struct sockaddr *);
 extern void wfaSendPing(tgPingStart_t *staPing, float *interval, int streamid);
 extern int wfaStopPing(dutCmdResponse_t *stpResp, int streamid);
 extern unsigned short wfa_defined_debug;
@@ -589,8 +589,9 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 				gtgRecv = 0;
 				if(tgSockfds[myStream->tblidx] != -1)
 				{
-					wCLOSE(tgSockfds[myStream->tblidx]);
+					int sock = tgSockfds[myStream->tblidx];
 					tgSockfds[myStream->tblidx] = -1;
+					wCLOSE(sock);
 				}
 				break;
 
@@ -1329,7 +1330,7 @@ int wfaRecvFile(int mySockfd, int streamid, char *recvBuf)
 	/* it is always to receive at least one packet, in case more in the
 	   queue, just pick them up.
 	   */
-	bytesRecvd = wfaTrafficRecv(mySockfd, packBuf, (struct sockaddr *)&fromAddr);
+	bytesRecvd = wfaTrafficRecv(mySockfd, myStream, packBuf, (struct sockaddr *)&fromAddr);
 	if(bytesRecvd != -1)
 	{
 		myStream->stats.rxFrames++;
@@ -1549,28 +1550,26 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 	sendResp.status = STATUS_COMPLETE;
 	sendResp.streamId = myStream->id;
 
-	memcpy(&sendResp.cmdru.stats, &myStream->stats, sizeof(tgStats_t)); 
+	memcpy(&sendResp.cmdru.stats, &myStream->stats, sizeof(tgStats_t));
 
-	wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, sizeof(dutCmdResponse_t), 
-			(BYTE *)&sendResp, (BYTE *)pRespBuf);
+	wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, sizeof(dutCmdResponse_t),(BYTE *)&sendResp, (BYTE *)pRespBuf);
+			*pRespLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
 
-	*pRespLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
-
-	extraTimeSpendOnSending = extraTimeSpendOnSending/1000;
-	DPRINT_INFO(WFA_OUT, "*** wfg_tg.cpp wfaSendBitrateData Count=%i txFrames=%i totalByteSent=%i sleepTotal=%llu milSec extraTimeSpendOnSending=%llu nOverTimeCount=%d nOverSend=%i rate=%d nDuration=%d iSleep=%d ***\n", 
-			counter, (myStream->stats.txFrames),(unsigned int) (myStream->stats.txPayloadBytes), sleepTotal,extraTimeSpendOnSending, nOverTimeCount, nOverSend, theProf->rate , nDuration,iSleep);
-	wfaSleepMilsec(1000);
-	return ret;
+			extraTimeSpendOnSending = extraTimeSpendOnSending/1000;
+			DPRINT_INFO(WFA_OUT, "*** wfg_tg.cpp wfaSendBitrateData Count=%i txFrames=%i totalByteSent=%i sleepTotal=%llu milSec extraTimeSpendOnSending=%llu nOverTimeCount=%d nOverSend=%i rate=%d nDuration=%d iSleep=%d ***\n", 
+				counter, (myStream->stats.txFrames),(unsigned int) (myStream->stats.txPayloadBytes), sleepTotal,extraTimeSpendOnSending, nOverTimeCount, nOverSend, theProf->rate , nDuration,iSleep);
+			wfaSleepMilsec(1000);
+			return ret;
 
 errcleanup:
-	/* encode a TLV for response for "invalid ..." */
-	if (packBuf) free(packBuf);
+/* encode a TLV for response for "invalid ..." */
+if (packBuf) free(packBuf);
 
-	sendResp.status = STATUS_INVALID;
-	wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, 4, 
-			(BYTE *)&sendResp, (BYTE *)pRespBuf);
-	/* done here */
-	*pRespLen = WFA_TLV_HDR_LEN + 4; 
+sendResp.status = STATUS_INVALID;
+wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, 4, 
+	(BYTE *)&sendResp, (BYTE *)pRespBuf);
+/* done here */
+*pRespLen = WFA_TLV_HDR_LEN + 4; 
 
-	return ret;
+return ret;
 }/*  wfaSendBitrateData  */
