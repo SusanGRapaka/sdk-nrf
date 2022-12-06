@@ -332,17 +332,13 @@ int wfaTrafficRecv(int sock, void* myStream, char *buf, struct sockaddr *from)
 #endif
 
 	bytesRecvd = recv(sock, buf, MAX_RCV_BUF_LEN, 0);
-	printf("Waiting for recv: %d\n", sock);
 	// select with socketset as sock
 	fd_set readfds;
 	FD_ZERO(&readfds);
 	FD_SET(sock, &readfds);
 	int num_fds = select (sock+1, &readfds, NULL, NULL, NULL);
-	printf("Received recv: %d\n", sock);
 	if (num_fds > 0 && FD_ISSET(sock, &readfds) && myStream && tgSockfds[((tgStream_t*)myStream)->tblidx] > 0) {
-		printf("Waiting for recv %d\n", sock);
 		bytesRecvd = recv(sock, buf, MAX_RCV_BUF_LEN, 0);
-		printf("Waiting for recv ----- DONE: %d\n", bytesRecvd);
 	}
 
 	return bytesRecvd;
