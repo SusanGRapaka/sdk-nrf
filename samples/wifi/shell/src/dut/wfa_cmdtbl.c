@@ -51,101 +51,101 @@ extern unsigned short wfa_defined_debug;
 /* globally define the function table */
 xcCommandFuncPtr gWfaCmdFuncTbl[WFA_STA_COMMANDS_END] =
 {
-    /* Traffic Agent Commands */
-    NotDefinedYet,            /*    None                               (0) */
-    agtCmdProcGetVersion,     /*    WFA_GET_VERSION_TLV                (1) */
-    wfaTGSendPing,            /*    WFA_TRAFFIC_SEND_PING_TLV          (2) */
-    wfaTGStopPing,            /*    WFA_TRAFFIC_STOP_PING_TLV          (3) */
-    wfaTGConfig,              /*    WFA_TRAFFIC_AGENT_CONFIG_TLV       (4) */
-    wfaTGSendStart,           /*    WFA_TRAFFIC_AGENT_SEND_TLV         (5) */
-    wfaTGRecvStart,           /*    WFA_TRAFFIC_AGENT_RECV_START_TLV   (6) */
-    wfaTGRecvStop,            /*    WFA_TRAFFIC_AGENT_RECV_STOP_TLV    (7) */
-    wfaTGReset,               /*    WFA_TRAFFIC_AGENT_RESET_TLV        (8) */
-    NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (9) */
+	/* Traffic Agent Commands */
+	NotDefinedYet,            /*    None                               (0) */
+	agtCmdProcGetVersion,     /*    WFA_GET_VERSION_TLV                (1) */
+	wfaTGSendPing,            /*    WFA_TRAFFIC_SEND_PING_TLV          (2) */
+	wfaTGStopPing,            /*    WFA_TRAFFIC_STOP_PING_TLV          (3) */
+	wfaTGConfig,              /*    WFA_TRAFFIC_AGENT_CONFIG_TLV       (4) */
+	wfaTGSendStart,           /*    WFA_TRAFFIC_AGENT_SEND_TLV         (5) */
+	wfaTGRecvStart,           /*    WFA_TRAFFIC_AGENT_RECV_START_TLV   (6) */
+	wfaTGRecvStop,            /*    WFA_TRAFFIC_AGENT_RECV_STOP_TLV    (7) */
+	wfaTGReset,               /*    WFA_TRAFFIC_AGENT_RESET_TLV        (8) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (9) */
 
-    /* Control and Configuration Commands */
-    wfaStaGetIpConfig,        /*    WFA_STA_GET_IP_CONFIG_TLV          (10)*/
-    wfaStaSetIpConfig,        /*    WFA_STA_SET_IP_CONFIG_TLV          (11)*/
-    wfaStaGetMacAddress,      /*    WFA_STA_GET_MAC_ADDRESS_TLV        (12)*/
-    wfaStaSetMacAddr,         /*    WFA_STA_SET_MAC_ADDRESS_TLV        (13)*/
-    wfaStaIsConnected,        /*    WFA_STA_IS_CONNECTED_TLV           (14)*/
-    wfaStaVerifyIpConnection, /*    WFA_STA_VERIFY_IP_CONNECTION_TLV   (15)*/
-    wfaStaGetBSSID,           /*    WFA_STA_GET_BSSID_TLV              (16)*/
-    wfaStaGetStats,           /*    WFA_STA_GET_STATS_TLV              (17)*/
-    wfaSetEncryption,         /*    WFA_STA_SET_ENCRYPTION_TLV         (18)*/
-    wfaStaSetPSK,             /*    WFA_STA_SET_PSK_TLV                (19)*/
-    wfaStaSetEapTLS,          /*    WFA_STA_SET_EAPTLS_TLV             (20)*/
-    wfaStaSetUAPSD,           /*    WFA_STA_SET_UAPSD_TLV              (21)*/
-    wfaStaAssociate,          /*    WFA_STA_ASSOCIATE_TLV              (22)*/
-    wfaStaSetEapTTLS,         /*    WFA_STA_SET_EAPTTLS_TLV            (23)*/
-    wfaStaSetEapSIM,          /*    WFA_STA_SET_EAPSIM_TLV             (24)*/
-    wfaStaSetPEAP,            /*    WFA_STA_SET_PEAP_TLV               (25)*/
-    wfaStaSetIBSS,            /*    WFA_STA_SET_IBSS_TLV               (26)*/
-    wfaStaGetInfo,            /*    WFA_STA_GET_INFO_TLV               (27)*/
-    wfaDeviceGetInfo,         /*    WFA_DEVICE_GET_INFO_TLV            (28)*/
-    wfaDeviceListIF,          /*    WFA_DEVICE_LIST_IF_TLV]            (29)*/
-    wfaStaDebugSet,           /*    WFA_STA_DEBUG_SET                  (30)*/
-    wfaStaSetMode,            /*    WFA_STA_SET_MODE                   (31)*/
-    wfaStaUpload,             /*    WFA_STA_UPLOAD                     (32)*/
-    wfaStaSetWMM,             /*    WFA_STA_SETWMM                     (33)*/
-    wfaStaReAssociate,        /*    WFA_STA_REASSOCIATE                (34)*/
-    wfaStaSetPwrSave,         /*    WFA_STA_SET_PWRSAVE                (35)*/
+	/* Control and Configuration Commands */
+	wfaStaGetIpConfig,        /*    WFA_STA_GET_IP_CONFIG_TLV          (10)*/
+	wfaStaSetIpConfig,        /*    WFA_STA_SET_IP_CONFIG_TLV          (11)*/
+	wfaStaGetMacAddress,      /*    WFA_STA_GET_MAC_ADDRESS_TLV        (12)*/
+	wfaStaSetMacAddr,         /*    WFA_STA_SET_MAC_ADDRESS_TLV        (13)*/
+	wfaStaIsConnected,        /*    WFA_STA_IS_CONNECTED_TLV           (14)*/
+	wfaStaVerifyIpConnection, /*    WFA_STA_VERIFY_IP_CONNECTION_TLV   (15)*/
+	wfaStaGetBSSID,           /*    WFA_STA_GET_BSSID_TLV              (16)*/
+	wfaStaGetStats,           /*    WFA_STA_GET_STATS_TLV              (17)*/
+	wfaSetEncryption,         /*    WFA_STA_SET_ENCRYPTION_TLV         (18)*/
+	wfaStaSetPSK,             /*    WFA_STA_SET_PSK_TLV                (19)*/
+	wfaStaSetEapTLS,          /*    WFA_STA_SET_EAPTLS_TLV             (20)*/
+	wfaStaSetUAPSD,           /*    WFA_STA_SET_UAPSD_TLV              (21)*/
+	wfaStaAssociate,          /*    WFA_STA_ASSOCIATE_TLV              (22)*/
+	wfaStaSetEapTTLS,         /*    WFA_STA_SET_EAPTTLS_TLV            (23)*/
+	wfaStaSetEapSIM,          /*    WFA_STA_SET_EAPSIM_TLV             (24)*/
+	wfaStaSetPEAP,            /*    WFA_STA_SET_PEAP_TLV               (25)*/
+	wfaStaSetIBSS,            /*    WFA_STA_SET_IBSS_TLV               (26)*/
+	wfaStaGetInfo,            /*    WFA_STA_GET_INFO_TLV               (27)*/
+	wfaDeviceGetInfo,         /*    WFA_DEVICE_GET_INFO_TLV            (28)*/
+	wfaDeviceListIF,          /*    WFA_DEVICE_LIST_IF_TLV]            (29)*/
+	wfaStaDebugSet,           /*    WFA_STA_DEBUG_SET                  (30)*/
+	wfaStaSetMode,            /*    WFA_STA_SET_MODE                   (31)*/
+	wfaStaUpload,             /*    WFA_STA_UPLOAD                     (32)*/
+	wfaStaSetWMM,             /*    WFA_STA_SETWMM                     (33)*/
+	wfaStaReAssociate,        /*    WFA_STA_REASSOCIATE                (34)*/
+	wfaStaSetPwrSave,         /*    WFA_STA_SET_PWRSAVE                (35)*/
 #ifdef WFA_STA_TB
-    wfaStaSendNeigReq,        /*    WFA_STA_SEND_NEIGREQ               (36)*/
-    wfaStaPresetParams,       /*    WFA_STA_PRESET_PARAMETERS          (37)*/
+	wfaStaSendNeigReq,        /*    WFA_STA_SEND_NEIGREQ               (36)*/
+	wfaStaPresetParams,       /*    WFA_STA_PRESET_PARAMETERS          (37)*/
 #else
-    wfaStaTestBedCmd,         /*    WFA_STA_SEND_NEIGREQ               (36)*/
-    wfaStaTestBedCmd,         /*    WFA_STA_PRESET_PARAMETERS          (37)*/
+	wfaStaTestBedCmd,         /*    WFA_STA_SEND_NEIGREQ               (36)*/
+	wfaStaTestBedCmd,         /*    WFA_STA_PRESET_PARAMETERS          (37)*/
 #endif
-    wfaStaSetEapFAST,	      /*    WFA_STA_SET_EAPFAST_TLV	       (38)*/
-    wfaStaSetEapAKA,	      /*    WFA_STA_SET_EAPAKA_TLV             (49)*/
-    wfaStaSetSystime,	      /*    WFA_STA_SET_SYSTIME_TLV	       (40)*/
+	wfaStaSetEapFAST,	      /*    WFA_STA_SET_EAPFAST_TLV	       (38)*/
+	wfaStaSetEapAKA,	      /*    WFA_STA_SET_EAPAKA_TLV             (49)*/
+	wfaStaSetSystime,	      /*    WFA_STA_SET_SYSTIME_TLV	       (40)*/
 #ifdef WFA_STA_TB
-    wfaStaSet11n,  	      /*    WFA_STA_SET_11n_TLV	    	       (41)*/
-    wfaStaSetWireless,	      /*    WFA_STA_SET_WIRELESS_TLV	       (42)*/
-    wfaStaSendADDBA,	      /*    WFA_STA_SEND_ADDBA_TLV	       (43)*/
-    wfaStaSendCoExistMGMT,    /*    WFA_STA_SET_COEXIST_MGMT_TLV       (44)*/
-    wfaStaSetRIFS,            /*    WFA_STA_SET_RIFS_TEST_TLV          (45)*/
-    wfaStaResetDefault,       /*    WFA_STA_RESET_DEFAULT_TLV          (46)*/
-    wfaStaDisconnect,         /*    WFA_STA_DISCONNECT_TLV             (47)*/
+	wfaStaSet11n,  	      /*    WFA_STA_SET_11n_TLV	    	       (41)*/
+	wfaStaSetWireless,	      /*    WFA_STA_SET_WIRELESS_TLV	       (42)*/
+	wfaStaSendADDBA,	      /*    WFA_STA_SEND_ADDBA_TLV	       (43)*/
+	wfaStaSendCoExistMGMT,    /*    WFA_STA_SET_COEXIST_MGMT_TLV       (44)*/
+	wfaStaSetRIFS,            /*    WFA_STA_SET_RIFS_TEST_TLV          (45)*/
+	wfaStaResetDefault,       /*    WFA_STA_RESET_DEFAULT_TLV          (46)*/
+	wfaStaDisconnect,         /*    WFA_STA_DISCONNECT_TLV             (47)*/
 #else
-    wfaStaTestBedCmd,  	      /*    WFA_STA_SET_11n_TLV	    	       (41)*/
-    wfaStaTestBedCmd,	      /*    WFA_STA_SET_WIRELESS_TLV	       (42)*/
-    wfaStaTestBedCmd,	      /*    WFA_STA_SEND_ADDBA_TLV	       (43)*/
-    wfaStaTestBedCmd,         /*    WFA_STA_SET_COEXIST_MGMT_TLV       (44)*/
-    wfaStaTestBedCmd,         /*    WFA_STA_SET_RIFS_TEST_TLV          (45)*/
-    wfaStaTestBedCmd,         /*    WFA_STA_RESET_DEFAULT_TLV          (46)*/
-    wfaStaDisconnect,         /*    WFA_STA_DISCONNECT_TLV             (47)*/
+	wfaStaTestBedCmd,  	      /*    WFA_STA_SET_11n_TLV	    	       (41)*/
+	wfaStaTestBedCmd,	      /*    WFA_STA_SET_WIRELESS_TLV	       (42)*/
+	wfaStaTestBedCmd,	      /*    WFA_STA_SEND_ADDBA_TLV	       (43)*/
+	wfaStaTestBedCmd,         /*    WFA_STA_SET_COEXIST_MGMT_TLV       (44)*/
+	wfaStaTestBedCmd,         /*    WFA_STA_SET_RIFS_TEST_TLV          (45)*/
+	wfaStaTestBedCmd,         /*    WFA_STA_RESET_DEFAULT_TLV          (46)*/
+	wfaStaDisconnect,         /*    WFA_STA_DISCONNECT_TLV             (47)*/
 #endif
-    wfaStaDevSendFrame,          /*    WFA_STA_DEV_SEND_FRAME_TLV              (48)*/
-    wfaStaSetSecurity,        /*    WFA_STA_SET_SECURITY_TLV           (49)*/
-    wfaStaGetP2pDevAddress,   /*    WFA_STA_GET_P2P_DEV_ADDRESS_TLV    (50)*/
-    wfaStaSetP2p,	      /*    WFA_STA_SET_P2P_TLV	               (51)*/
-    wfaStaP2pConnect,         /*    WFA_STA_P2P_CONNECT_TLV            (52)*/
-    wfaStaStartAutoGo, 	      /* WFA_STA_START_AUTO_GO                 (53)*/
-    wfaStaP2pStartGrpFormation, /*    WFA_STA_P2P_START_GRP_FORMATION_TLV      (54)*/
+	wfaStaDevSendFrame,          /*    WFA_STA_DEV_SEND_FRAME_TLV              (48)*/
+	wfaStaSetSecurity,        /*    WFA_STA_SET_SECURITY_TLV           (49)*/
+	wfaStaGetP2pDevAddress,   /*    WFA_STA_GET_P2P_DEV_ADDRESS_TLV    (50)*/
+	wfaStaSetP2p,	      /*    WFA_STA_SET_P2P_TLV	               (51)*/
+	wfaStaP2pConnect,         /*    WFA_STA_P2P_CONNECT_TLV            (52)*/
+	wfaStaStartAutoGo, 	      /* WFA_STA_START_AUTO_GO                 (53)*/
+	wfaStaP2pStartGrpFormation, /*    WFA_STA_P2P_START_GRP_FORMATION_TLV      (54)*/
 
-    wfaStaP2pDissolve,          /*    WFA_STA_P2P_DISSOLVE_TLV                 (55)*/
-    wfaStaSendP2pInvReq,        /*    WFA_STA_SEND_P2P_INV_REQ_TLV             (56)*/
-    wfaStaAcceptP2pInvReq,	/*    WFA_STA_ACCEPT_P2P_INV_REQ_TLV           (57)*/
-    wfaStaSendP2pProvDisReq,    /*    WFA_STA_SEND_P2P_PROV_DIS_REQ_TLV    (58)*/
-    wfaStaSetWpsPbc,            /*    WFA_STA_SET_WPS_PBC_TLV              (59)*/
+	wfaStaP2pDissolve,          /*    WFA_STA_P2P_DISSOLVE_TLV                 (55)*/
+	wfaStaSendP2pInvReq,        /*    WFA_STA_SEND_P2P_INV_REQ_TLV             (56)*/
+	wfaStaAcceptP2pInvReq,	/*    WFA_STA_ACCEPT_P2P_INV_REQ_TLV           (57)*/
+	wfaStaSendP2pProvDisReq,    /*    WFA_STA_SEND_P2P_PROV_DIS_REQ_TLV    (58)*/
+	wfaStaSetWpsPbc,            /*    WFA_STA_SET_WPS_PBC_TLV              (59)*/
 
-    wfaStaWpsReadPin,           /*    WFA_STA_WPS_READ_PIN_TLV             (60)*/
-    wfaStaWpsEnterPin,          /*    WFA_STA_WPS_ENTER_PIN_TLV	           (61)*/
-    wfaStaGetPsk,               /*    WFA_STA_GET_PSK_TLV                  (62)*/
-    wfaStaP2pReset,             /*    WFA_STA_P2P_RESET_TLV                (63)*/
-    wfaStaWpsReadLabel,         /*    WFA_STA_WPS_READ_LABEL_TLV           (64)*/
-    wfaStaGetP2pIpConfig,       /*    WFA_STA_GET_P2P_IP_CONFIG_TLV        (65)*/
-    wfaStaSendServiceDiscoveryReq,    /*    WFA_STA_SEND_SERVICE_DISCOVERY_REQ_TLV                (66)*/
-    wfaStaSendP2pPresenceReq,         /*    WFA_STA_SEND_P2P_PRESENCE_REQ_TLV                     (67)*/
-    wfaStaSetSleepReq,                /*    WFA_STA_SEND_P2P_PRESENCE_REQ_TLV                     (68)*/
-    wfaStaSetOpportunisticPsReq,             /*    WFA_STA_SET_OPPORTUNISTIC_PS_TLV               (69)*/
+	wfaStaWpsReadPin,           /*    WFA_STA_WPS_READ_PIN_TLV             (60)*/
+	wfaStaWpsEnterPin,          /*    WFA_STA_WPS_ENTER_PIN_TLV	           (61)*/
+	wfaStaGetPsk,               /*    WFA_STA_GET_PSK_TLV                  (62)*/
+	wfaStaP2pReset,             /*    WFA_STA_P2P_RESET_TLV                (63)*/
+	wfaStaWpsReadLabel,         /*    WFA_STA_WPS_READ_LABEL_TLV           (64)*/
+	wfaStaGetP2pIpConfig,       /*    WFA_STA_GET_P2P_IP_CONFIG_TLV        (65)*/
+	wfaStaSendServiceDiscoveryReq,    /*    WFA_STA_SEND_SERVICE_DISCOVERY_REQ_TLV                (66)*/
+	wfaStaSendP2pPresenceReq,         /*    WFA_STA_SEND_P2P_PRESENCE_REQ_TLV                     (67)*/
+	wfaStaSetSleepReq,                /*    WFA_STA_SEND_P2P_PRESENCE_REQ_TLV                     (68)*/
+	wfaStaSetOpportunisticPsReq,             /*    WFA_STA_SET_OPPORTUNISTIC_PS_TLV               (69)*/
 
-    wfaStaAddArpTableEntry,    /*    WFA_STA_ADD_ARP_TABLE_ENTRY_TLV      (70)*/
-    wfaStaBlockICMPResponse,    /*    WFA_STA_BLOCK_ICMP_RESPONSE_TLV      (71)*/
-    wfaStaSetRadio,           /*    WFA_STA_SET_RADIO_TLV              (72)*/
-    wfaStaSetRFeature,        /*    WFA_STA_RFEATURE_TLV               (73)*/
+	wfaStaAddArpTableEntry,    /*    WFA_STA_ADD_ARP_TABLE_ENTRY_TLV      (70)*/
+	wfaStaBlockICMPResponse,    /*    WFA_STA_BLOCK_ICMP_RESPONSE_TLV      (71)*/
+	wfaStaSetRadio,           /*    WFA_STA_SET_RADIO_TLV              (72)*/
+	wfaStaSetRFeature,        /*    WFA_STA_RFEATURE_TLV               (73)*/
 
 	wfaStaStartWfdConnection,   /*    WFA_STA_START_WFD_CONNECTION_TLV               (74)*/
 	wfaStaCliCommand,         /*   WFA_STA_CLI_CMD_TLV            (75)*/
@@ -168,10 +168,10 @@ xcCommandFuncPtr gWfaCmdFuncTbl[WFA_STA_COMMANDS_END] =
  */
 int NotDefinedYet(int len, unsigned char *params, int *respLen, BYTE *respBuf)
 {
-    DPRINT_WARNING(WFA_WNG, "The command processing function not defined.\n");
+	DPRINT_WARNING(WFA_WNG, "The command processing function not defined.\n");
 
 
-    /* need to send back a response */
+	/* need to send back a response */
 
-    return WFA_SUCCESS;
+	return WFA_SUCCESS;
 }
