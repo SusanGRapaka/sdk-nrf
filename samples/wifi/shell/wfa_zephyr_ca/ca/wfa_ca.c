@@ -63,271 +63,271 @@ unsigned short dfd_lvl = WFA_DEBUG_DEFAULT | WFA_DEBUG_ERR | WFA_DEBUG_INFO;
  */
 stringconvert(unsigned char *hex_arr, unsigned int hex_arr_sz, unsigned char *str)
 {
-        int i = 0;
-        int j = 0;
-        unsigned char ch = 0;
-        unsigned char val = 0;
-        int len = 0;
+	int i = 0;
+	int j = 0;
+	unsigned char ch = 0;
+	unsigned char val = 0;
+	int len = 0;
 
-        len = strlen(str);
+	len = strlen(str);
 
-        if (len / 2 > hex_arr_sz) {
-                printf("ERROR: %s: String length (%d) greater than array size (%d)\n", __func__, len,
-                       hex_arr_sz);
-                return -1;
-        }
+	if (len / 2 > hex_arr_sz) {
+		printf("ERROR: %s: String length (%d) greater than array size (%d)\n", __func__, len,
+				hex_arr_sz);
+		return -1;
+	}
 
-        if (len % 2) {
-                printf("ERROR: %s:String length = %d, is not the multiple of 2\n", __func__, len);
-                return -1;
-        }
+	if (len % 2) {
+		printf("ERROR: %s:String length = %d, is not the multiple of 2\n", __func__, len);
+		return -1;
+	}
 
-        for (i = 0; i < len; i++) {
-                /* Convert to lower case */
-                ch = ((str[i] >= 'A' && str[i] <= 'Z') ? str[i] + 32 : str[i]);
+	for (i = 0; i < len; i++) {
+		/* Convert to lower case */
+		ch = ((str[i] >= 'A' && str[i] <= 'Z') ? str[i] + 32 : str[i]);
 
-                if ((ch < '0' || ch > '9') && (ch < 'a' || ch > 'f')) {
-                        printf("ERROR: %s: Invalid hex character in string %d\n", __func__, ch);
-                        return -1;
-                }
+		if ((ch < '0' || ch > '9') && (ch < 'a' || ch > 'f')) {
+			printf("ERROR: %s: Invalid hex character in string %d\n", __func__, ch);
+			return -1;
+		}
 
-                if (ch >= '0' && ch <= '9') {
-                        ch = ch - '0';
-                } else {
-                        ch = ch - 'a' + 10;
-                }
+		if (ch >= '0' && ch <= '9') {
+			ch = ch - '0';
+		} else {
+			ch = ch - 'a' + 10;
+		}
 
-                val += ch;
+		val += ch;
 
-                if (!(i % 2)) {
-                        val <<= 4;
-                } else {
-                        hex_arr[j] = val;
-                        j++;
-                        val = 0;
-                }
-        }
+		if (!(i % 2)) {
+			val <<= 4;
+		} else {
+			hex_arr[j] = val;
+			j++;
+			val = 0;
+		}
+	}
 
-        return j;
+	return j;
 
 }
 int main(int argc, char *argv[])
 {
-    int nfds;
-    struct sockaddr_in servAddr;
-    unsigned short servPort, myport;
-    char *servIP=NULL, *tstr=NULL;
-    int bytesRcvd;
-    fd_set sockSet;
-    char cmdName[WFA_BUFF_32];
-    int i, isFound = 0, nbytes, ret_status, slen;
-    WORD tag;
-    int tmsockfd, cmdLen = WFA_BUFF_1K;
-    int maxfdn1;
-    BYTE xcCmdBuf[WFA_BUFF_4K];
-    BYTE caCmdBuf[WFA_BUFF_4K];
-    BYTE pcmdBuf[WFA_BUFF_1K];
-    char *pcmdStr = NULL;
-    char respStr[WFA_BUFF_512];
-    unsigned char dutBuf[WFA_BUFF_4K];
-    //start of CLI handling variables
-    char wfaCliBuff[128];
-    FILE *wfaCliFd;
-    FILE *wfadutFd;
-    char * cliCmd,*tempCmdBuff;
-    if(argc < 3)
-        {
-            DPRINT_ERR(WFA_ERR, "Usage: %s <control interface> <local control agent port>\n", argv[0]);
-            exit(1);
-        }
+	int nfds;
+	struct sockaddr_in servAddr;
+	unsigned short servPort, myport;
+	char *servIP=NULL, *tstr=NULL;
+	int bytesRcvd;
+	fd_set sockSet;
+	char cmdName[WFA_BUFF_32];
+	int i, isFound = 0, nbytes, ret_status, slen;
+	WORD tag;
+	int tmsockfd, cmdLen = WFA_BUFF_1K;
+	int maxfdn1;
+	BYTE xcCmdBuf[WFA_BUFF_4K];
+	BYTE caCmdBuf[WFA_BUFF_4K];
+	BYTE pcmdBuf[WFA_BUFF_1K];
+	char *pcmdStr = NULL;
+	char respStr[WFA_BUFF_512];
+	unsigned char dutBuf[WFA_BUFF_4K];
+	//start of CLI handling variables
+	char wfaCliBuff[128];
+	FILE *wfaCliFd;
+	FILE *wfadutFd;
+	char * cliCmd,*tempCmdBuff;
+	if(argc < 3)
+	{
+		DPRINT_ERR(WFA_ERR, "Usage: %s <control interface> <local control agent port>\n", argv[0]);
+		exit(1);
+	}
 
-    myport = atoi(argv[2]);
+	myport = atoi(argv[2]);
 
-    if(argc > 3)
-        {
-            if(argc < 5)
-                {
-                    DPRINT_ERR(WFA_ERR, "Usage: %s <control interface> <local control agent port> <DUT IP ADDRESS> <DUT PORT>\n", argv[0]);
-                    exit(1);
-                }
-            servIP = argv[3];
-            if(isIpV4Addr(argv[3])== WFA_FAILURE)
-                return WFA_FAILURE;
-            if(isNumber(argv[4])== WFA_FAILURE)
-                return WFA_FAILURE;
-            servPort = atoi(argv[4]);
-            if(argc > 5)
-                {
-                    FILE *logfile;
-                    int fd;
-                    logfile = fopen(argv[5],"a");
-                    if(logfile != NULL)
-                        {
-                            fd = fileno(logfile);
-                            DPRINT_INFO(WFA_OUT,"redirecting the output to %s\n",argv[5]);
-                            dup2(fd,1);
-                            dup2(fd,2);
-                        }
-                    else
-                        {
-                            DPRINT_ERR(WFA_ERR, "Cant open the log file continuing without redirecting\n");
-                        }
-                }
-        }
-    else
-        {
-            if((tstr = getenv("WFA_ENV_AGENT_IPADDR")) == NULL)
-                {
-                    DPRINT_ERR(WFA_ERR, "Environment variable WFA_ENV_AGENT_IPADDR not set or specify DUT IP/PORT\n");
-                    exit(1);
-                }
-            if(isIpV4Addr(tstr)== WFA_FAILURE)
-                return WFA_FAILURE;
-            servIP= tstr;
-            if((tstr = getenv("WFA_ENV_AGENT_PORT")) == NULL)
-                {
-                    DPRINT_ERR(WFA_ERR, "Environment variable WFA_ENV_AGENT_PORT not set or specify DUT IP/PORT\n");
-                    exit(1);
-                }
-            if(isNumber(tstr)== WFA_FAILURE)
-                return WFA_FAILURE;
-            servPort = atoi(tstr);
-        }
+	if(argc > 3)
+	{
+		if(argc < 5)
+		{
+			DPRINT_ERR(WFA_ERR, "Usage: %s <control interface> <local control agent port> <DUT IP ADDRESS> <DUT PORT>\n", argv[0]);
+			exit(1);
+		}
+		servIP = argv[3];
+		if(isIpV4Addr(argv[3])== WFA_FAILURE)
+			return WFA_FAILURE;
+		if(isNumber(argv[4])== WFA_FAILURE)
+			return WFA_FAILURE;
+		servPort = atoi(argv[4]);
+		if(argc > 5)
+		{
+			FILE *logfile;
+			int fd;
+			logfile = fopen(argv[5],"a");
+			if(logfile != NULL)
+			{
+				fd = fileno(logfile);
+				DPRINT_INFO(WFA_OUT,"redirecting the output to %s\n",argv[5]);
+				dup2(fd,1);
+				dup2(fd,2);
+			}
+			else
+			{
+				DPRINT_ERR(WFA_ERR, "Cant open the log file continuing without redirecting\n");
+			}
+		}
+	}
+	else
+	{
+		if((tstr = getenv("WFA_ENV_AGENT_IPADDR")) == NULL)
+		{
+			DPRINT_ERR(WFA_ERR, "Environment variable WFA_ENV_AGENT_IPADDR not set or specify DUT IP/PORT\n");
+			exit(1);
+		}
+		if(isIpV4Addr(tstr)== WFA_FAILURE)
+			return WFA_FAILURE;
+		servIP= tstr;
+		if((tstr = getenv("WFA_ENV_AGENT_PORT")) == NULL)
+		{
+			DPRINT_ERR(WFA_ERR, "Environment variable WFA_ENV_AGENT_PORT not set or specify DUT IP/PORT\n");
+			exit(1);
+		}
+		if(isNumber(tstr)== WFA_FAILURE)
+			return WFA_FAILURE;
+		servPort = atoi(tstr);
+	}
 	printf("In CA servPort is %d\n",servPort);
-    tmsockfd = wfaCreateTCPServSock(myport);
+	tmsockfd = wfaCreateTCPServSock(myport);
 
-    maxfdn1 = tmsockfd + 1;
+	maxfdn1 = tmsockfd + 1;
 
-    FD_ZERO(&sockSet);
-    for(;;)
-        {
-	printf("In CA: line %d........start for loop!\n",__LINE__);
-            FD_ZERO(&sockSet);
-            FD_SET(tmsockfd, &sockSet);
-            maxfdn1 = tmsockfd + 1;
+	FD_ZERO(&sockSet);
+	for(;;)
+	{
+		printf("In CA: line %d........start for loop!\n",__LINE__);
+		FD_ZERO(&sockSet);
+		FD_SET(tmsockfd, &sockSet);
+		maxfdn1 = tmsockfd + 1;
 
-            if(gCaSockfd != -1)
-                {
-                    FD_SET(gCaSockfd, &sockSet);
-                    if(maxfdn1 < gCaSockfd)
-                        maxfdn1 = gCaSockfd +1;
-                }
-            if(gSock != -1)
-                {
-                    FD_SET(gSock, &sockSet);
-                    if(maxfdn1 < gSock)
-                        maxfdn1 = gSock +1;
-                }
-            if((nfds = select(maxfdn1, &sockSet, NULL, NULL, NULL)) < 0)
-                {
-                    if(errno == EINTR)
-                        continue;
-                    else
-                        DPRINT_WARNING(WFA_WNG, "select error %i", errno);
-                }
+		if(gCaSockfd != -1)
+		{
+			FD_SET(gCaSockfd, &sockSet);
+			if(maxfdn1 < gCaSockfd)
+				maxfdn1 = gCaSockfd +1;
+		}
+		if(gSock != -1)
+		{
+			FD_SET(gSock, &sockSet);
+			if(maxfdn1 < gSock)
+				maxfdn1 = gSock +1;
+		}
+		if((nfds = select(maxfdn1, &sockSet, NULL, NULL, NULL)) < 0)
+		{
+			if(errno == EINTR)
+				continue;
+			else
+				DPRINT_WARNING(WFA_WNG, "select error %i", errno);
+		}
 
-            DPRINT_INFO(WFA_OUT, "new event \n");
-            if(FD_ISSET(tmsockfd, &sockSet))
-                {
-	printf("In CA: line %d........!\n",__LINE__);
-                    gCaSockfd = wfaAcceptTCPConn(tmsockfd);
-                    DPRINT_INFO(WFA_OUT, "accept new connection\n");
-                    continue;
-                }
+		DPRINT_INFO(WFA_OUT, "new event \n");
+		if(FD_ISSET(tmsockfd, &sockSet))
+		{
+			printf("In CA: line %d........!\n",__LINE__);
+			gCaSockfd = wfaAcceptTCPConn(tmsockfd);
+			DPRINT_INFO(WFA_OUT, "accept new connection\n");
+			continue;
+		}
 
-	printf("In CA: line %d........!\n",__LINE__);
-            if(gCaSockfd > 0 && FD_ISSET(gCaSockfd, &sockSet))
-                {
-	printf("In CA: line %d........!\n",__LINE__);
-                    memset(xcCmdBuf, 0, WFA_BUFF_4K);
-                    memset(gRespStr, 0, WFA_BUFF_512);
+		printf("In CA: line %d........!\n",__LINE__);
+		if(gCaSockfd > 0 && FD_ISSET(gCaSockfd, &sockSet))
+		{
+			printf("In CA: line %d........!\n",__LINE__);
+			memset(xcCmdBuf, 0, WFA_BUFF_4K);
+			memset(gRespStr, 0, WFA_BUFF_512);
 
-                    nbytes = wfaCtrlRecv(gCaSockfd, xcCmdBuf);
-                    if(nbytes <=0)
-                        {
-	printf("In CA: line %d........!\n",__LINE__);
-                            shutdown(gCaSockfd, SHUT_WR);
-                            close(gCaSockfd);
-                            gCaSockfd = -1;
-                            continue;
-                        }
-
-                    /*
-                     * send back to command line or TM.
-                     */
-#if 1
-	printf("In CA: SOCK 1 .................!\n",__LINE__);
-                    memset(respStr, 0, WFA_BUFF_128);
-                    sprintf(respStr, "status,RUNNING\r\n");
-                    wfaCtrlSend(gCaSockfd, (BYTE *)respStr, strlen(respStr));
-	printf("In CA: line %d........!\n",__LINE__);
-#endif
-                    DPRINT_INFO(WFA_OUT, "%s\n", respStr);
-                    DPRINT_INFO(WFA_OUT, "message %s %i\n", xcCmdBuf, nbytes);
-                    slen = (int )strlen((char *)xcCmdBuf);
-
-                    DPRINT_INFO(WFA_OUT, "last %x last-1  %x last-2 %x last-3 %x\n", cmdName[slen], cmdName[slen-1], cmdName[slen-2], cmdName[slen-3]);
-
-                    xcCmdBuf[slen-3] = '\0';
-
-	printf("In CA: line %d........!\n",__LINE__);
-                    tempCmdBuff=(char* )malloc(sizeof(xcCmdBuf));
-                    memcpy(tempCmdBuff,xcCmdBuf,sizeof(xcCmdBuf));
-			printf("IN CA tempBUf = %s\n",tempCmdBuff);
-		    	int sret;
-			unsigned char gCmdStr[WFA_CMD_STR_SZ];
-      			sprintf(gCmdStr,"serial_agent 'wfa_dut dut_command \"%s\"'",tempCmdBuff);
-    			sret = system(gCmdStr);
-			wfadutFd=fopen("/tmp/tembbuff.txt","r");
-                    	printf("\nCA :Reading file from tembbuff\n");
-                    if(wfadutFd!= NULL)
-                        {
+			nbytes = wfaCtrlRecv(gCaSockfd, xcCmdBuf);
+			if(nbytes <=0)
+			{
 				printf("In CA: line %d........!\n",__LINE__);
-                            while(fgets(dutBuf, 4096, wfadutFd) != NULL)
-                                {
-                                    if(ferror(wfadutFd))
-                    			printf("\nwfa dut FD fail\n");
-                                        break;
-                                }
-                            fclose(wfadutFd);
-			int ret1 = remove("/tmp/tembbuff.txt");
-			if(ret1 == 0)
-  				printf("File deleted successfully");
-    				printf("%s", dutBuf);
+				shutdown(gCaSockfd, SHUT_WR);
+				close(gCaSockfd);
+				gCaSockfd = -1;
+				continue;
+			}
 
-                        }
-                } /* done with gCaSockfd */
-                    memset(caCmdBuf, 0, WFA_BUFF_4K);
-		    memcpy(caCmdBuf, (BYTE *)&dutBuf, sizeof(caCmdBuf));
-                    memcpy(cmdName, strtok_r((char *)tempCmdBuff, ",", (char **)&pcmdStr), 32);
-                    memset(respStr, 0, WFA_BUFF_128);
-                    memset(caCmdBuf, 0, WFA_BUFF_4K);
-		    stringconvert(caCmdBuf, sizeof(caCmdBuf), dutBuf);
-				
-    			printf("%s", caCmdBuf);
-                    memset(dutBuf, 0, WFA_BUFF_4K);
-#if 0
-                    for(i = 0; i < bytesRcvd; i++)
-                        printf("%02x ", caCmdBuf[i]);
-                    printf("\n");
+			/*
+			 * send back to command line or TM.
+			 */
+#if 1
+			printf("In CA: SOCK 1 .................!\n",__LINE__);
+			memset(respStr, 0, WFA_BUFF_128);
+			sprintf(respStr, "status,RUNNING\r\n");
+			wfaCtrlSend(gCaSockfd, (BYTE *)respStr, strlen(respStr));
+			printf("In CA: line %d........!\n",__LINE__);
 #endif
-                    tag = ((wfaTLV *)caCmdBuf)->tag;
-                    memcpy(&ret_status, caCmdBuf+4, 4);
+			DPRINT_INFO(WFA_OUT, "%s\n", respStr);
+			DPRINT_INFO(WFA_OUT, "message %s %i\n", xcCmdBuf, nbytes);
+			slen = (int )strlen((char *)xcCmdBuf);
 
-                    DPRINT_INFO(WFA_OUT, "tag %i \n", tag);
-                    if(tag != 0 && wfaCmdRespProcFuncTbl[tag] != NULL)
-                        {
-                           wfaCmdRespProcFuncTbl[tag](caCmdBuf);
-                        }
-                    else
-		    {
-                        DPRINT_WARNING(WFA_WNG, "function not defined\n");
-		    }
-	printf("In CA: line %d........!end fror \n",__LINE__);
+			DPRINT_INFO(WFA_OUT, "last %x last-1  %x last-2 %x last-3 %x\n", cmdName[slen], cmdName[slen-1], cmdName[slen-2], cmdName[slen-3]);
 
-        } /* for */
+			xcCmdBuf[slen-3] = '\0';
+
+			printf("In CA: line %d........!\n",__LINE__);
+			tempCmdBuff=(char* )malloc(sizeof(xcCmdBuf));
+			memcpy(tempCmdBuff,xcCmdBuf,sizeof(xcCmdBuf));
+			printf("IN CA tempBUf = %s\n",tempCmdBuff);
+			int sret;
+			unsigned char gCmdStr[WFA_CMD_STR_SZ];
+			sprintf(gCmdStr,"serial_agent 'wfa_dut dut_command \"%s\"'",tempCmdBuff);
+			sret = system(gCmdStr);
+			wfadutFd=fopen("/tmp/tembbuff.txt","r");
+			printf("\nCA :Reading file from tembbuff\n");
+			if(wfadutFd!= NULL)
+			{
+				printf("In CA: line %d........!\n",__LINE__);
+				while(fgets(dutBuf, 4096, wfadutFd) != NULL)
+				{
+					if(ferror(wfadutFd))
+						printf("\nwfa dut FD fail\n");
+					break;
+				}
+				fclose(wfadutFd);
+				int ret1 = remove("/tmp/tembbuff.txt");
+				if(ret1 == 0)
+					printf("File deleted successfully");
+				printf("%s", dutBuf);
+
+			}
+		} /* done with gCaSockfd */
+		memset(caCmdBuf, 0, WFA_BUFF_4K);
+		memcpy(caCmdBuf, (BYTE *)&dutBuf, sizeof(caCmdBuf));
+		memcpy(cmdName, strtok_r((char *)tempCmdBuff, ",", (char **)&pcmdStr), 32);
+		memset(respStr, 0, WFA_BUFF_128);
+		memset(caCmdBuf, 0, WFA_BUFF_4K);
+		stringconvert(caCmdBuf, sizeof(caCmdBuf), dutBuf);
+
+		printf("%s", caCmdBuf);
+		memset(dutBuf, 0, WFA_BUFF_4K);
+#if 0
+		for(i = 0; i < bytesRcvd; i++)
+			printf("%02x ", caCmdBuf[i]);
+		printf("\n");
+#endif
+		tag = ((wfaTLV *)caCmdBuf)->tag;
+		memcpy(&ret_status, caCmdBuf+4, 4);
+
+		DPRINT_INFO(WFA_OUT, "tag %i \n", tag);
+		if(tag != 0 && wfaCmdRespProcFuncTbl[tag] != NULL)
+		{
+			wfaCmdRespProcFuncTbl[tag](caCmdBuf);
+		}
+		else
+		{
+			DPRINT_WARNING(WFA_WNG, "function not defined\n");
+		}
+		printf("In CA: line %d........!end fror \n",__LINE__);
+
+	} /* for */
 
 	printf("In CA: line %d........! before close gsock\n",__LINE__);
-//    close(gSock);
-  //  exit(0);
+	//    close(gSock);
+	//  exit(0);
 }
