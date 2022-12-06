@@ -62,7 +62,7 @@ extern int wfaCtrlSend(int sock, unsigned char *buf, int bufLen);
 #endif
 extern int wfaCtrlRecv(int sock, unsigned char *buf);
 extern int wfaTrafficSendTo(int sock, char *buf, int bufLen, struct sockaddr *to);
-extern int wfaTrafficRecv(int sock, char *buf, struct sockaddr *from);
+extern int wfaTrafficRecv(int sock, void*, char *buf, struct sockaddr *from);
 extern int wfaGetifAddr(char *ifname, struct sockaddr_in *sa);
 extern struct timeval *wfaSetTimer(int, int, struct timeval *);
 extern int wfaSetSockMcastRecvOpt(int, char*);
