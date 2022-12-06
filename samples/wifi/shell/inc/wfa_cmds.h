@@ -418,6 +418,22 @@ typedef struct hs2_frame
     char sSenderIp[IPV6_ADDRESS_STRING_LEN];
 } hs2Frame_t;
 
+enum {
+    MBO_FRAME_ANQPQuery=1,
+    MBO_FRAME_BTMQuery,
+    MBO_FRAME_BTMReq,
+    MBO_FRAME_BcnRptReq,
+    MBO_FRAME_WNM_Notify,
+    MBO_FRAME_disassoc,
+};
+
+typedef struct mbo_frame
+{
+    char sDestMac[WFA_MAC_ADDR_STR_LEN];
+    char sDevName[WFA_SSID_NAME_LEN];
+    BYTE eframe;
+    int CandList;
+} mboFrame_t;
 
 enum
 {
@@ -443,7 +459,10 @@ typedef struct ca_sta_dev_sendframe
         ventFrame_t vent;
         wfdFrame_t  wfd;
         hs2Frame_t  hs2_r2;
+        mboFrame_t  mbo;
     } frameType;
+    BYTE BTMQuery_Reason_Code;
+    char WNM_Notify_Element;
 } caStaDevSendFrame_t;
 
 typedef struct ca_sta_start_wfd_conn
@@ -1517,18 +1536,19 @@ typedef struct ca_sta_set_radio
 
 typedef struct ca_sta_rfeature
 {
-    char prog[8];
+    char intf[WFA_IF_NAME_LEN];
+    WORD prog;
     wfaEnableType uapsd;
     char peer[18]; /* peer mac addr */
     wfaEnableType tpktimer;
     char chswitchmode[16];
-    int cellulardatacap;
-    int offchnum;
+    BYTE cellulardatacap;
+    BYTE offchnum;
     char secchoffset[16];
-    int ch_op_class;
+    BYTE ch_op_class;
     char ch_pref[16];
-    int ch_pref_num;
-    int ch_reason_code;
+    BYTE ch_pref_num;
+    BYTE ch_reason_code;
 } caStaRFeat_t;
 
 typedef struct ca_sta_exec_action
