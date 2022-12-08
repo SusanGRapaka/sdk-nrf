@@ -39,7 +39,7 @@
 
 #define MAX_UDP_LEN       1470
 #define MAX_RCV_BUF_LEN   (8*1024)
-//#define MAX_RCV_BUF_LEN   (32*1024)
+//#define MAX_RCV_BUF_LEN   (12*1024)
 
 struct sockfds
 {

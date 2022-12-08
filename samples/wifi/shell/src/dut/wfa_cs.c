@@ -2548,15 +2548,14 @@ int wfaStaTestBedCmd(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
  */
 int wfaStaDevSendFrame(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 {
-    dutCommand_t *cmd = (dutCommand_t *)caCmdBuf;
     /* uncomment it if needed */
     // char *ifname = cmd->intf;
     dutCmdResponse_t *devSendResp = &gGenericResp;
-    caStaDevSendFrame_t *sf = &cmd->cmdsu.sf;
+    caStaDevSendFrame_t *sf = (caStaDevSendFrame_t *)caCmdBuf;
 
     DPRINT_INFO(WFA_OUT, "Inside wfaStaDevSendFrame function ...\n");
     /* processing the frame */
-    sret = shell_execute_cmd("wpa_cli wnm_bss_query 1");
+    sret = shell_execute_cmd(NULL, "wpa_cli wnm_bss_query 1");
 
     devSendResp->status = STATUS_COMPLETE;
     wfaEncodeTLV(WFA_STA_DEV_SEND_FRAME_RESP_TLV, 4, (BYTE *)devSendResp, respBuf);

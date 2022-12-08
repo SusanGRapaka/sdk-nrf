@@ -35,6 +35,7 @@
 #include "wfa_stdincs.h"
 #include "wfa_debug.h"
 #include "wfa_main.h"
+#include "wfa_miscs.h"
 #include "wfa_types.h"
 #include "wfa_tg.h"
 

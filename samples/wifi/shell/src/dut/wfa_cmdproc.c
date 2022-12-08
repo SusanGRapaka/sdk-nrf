@@ -4066,25 +4066,25 @@ int xcCmdProcStaSendNeigReq(char *pcmdStr, BYTE *aBuf, int *aLen)
 int xcCmdProcStaDevSendFrame(char *pcmdStr, BYTE *aBuf, int *aLen)
 {
 	char *str;
-	dutCommand_t *cmd = (dutCommand_t *) (aBuf+sizeof(wfaTLV));
-	caStaDevSendFrame_t *sf = &cmd->cmdsu.sf;
+	caStaDevSendFrame_t *sf= (caStaDevSendFrame_t *) (aBuf+sizeof(wfaTLV));;
 
 	if(aBuf == NULL)
 		return WFA_FAILURE;
 
 	memset(aBuf, 0, *aLen);
+	memset(sf, 0, sizeof(caStaDevSendFrame_t));
 
 	for(;;)
 	{
-		str = strtok_r(NULL, ",", &pcmdStr);
+		str = strtok_r(pcmdStr, ",", &pcmdStr);
 		if(str == NULL || str[0] == '\0')
 			break;
 
 		if(strcasecmp(str, "interface") == 0)
 		{
 			str = strtok_r(NULL, ",", &pcmdStr);
-			strncpy(cmd->intf, str, 15);
-			DPRINT_INFO(WFA_OUT, "interface %s\n", cmd->intf);
+			strncpy(sf->intf, str, 15);
+			DPRINT_INFO(WFA_OUT, "interface %s\n", sf->intf);
 		}
 		else if(strcasecmp(str, "BTMQuery_Reason_Code") == 0)
 		{
@@ -4722,7 +4722,7 @@ int xcCmdProcStaDevSendFrame(char *pcmdStr, BYTE *aBuf, int *aLen)
 							mbo->eframe= MBO_FRAME_disassoc;
 						}
 					}
-					else if(strcasecmp(str, "Name ") == 0)
+					else if(strcasecmp(str, "Name") == 0)
 					{
 						str = strtok_r(NULL, ",", &pcmdStr);
 						memset( mbo->sDevName, 0, WFA_SSID_NAME_LEN);
@@ -4745,9 +4745,9 @@ int xcCmdProcStaDevSendFrame(char *pcmdStr, BYTE *aBuf, int *aLen)
 		}/* program  */
 	} /* for loop : each programs*/
 
-	wfaEncodeTLV(WFA_STA_DEV_SEND_FRAME_TLV, sizeof(dutCommand_t), (BYTE *)cmd, aBuf);
+	wfaEncodeTLV(WFA_STA_DEV_SEND_FRAME_TLV, sizeof(caStaDevSendFrame_t), (BYTE *)sf, aBuf);
 
-	*aLen = 4 + sizeof(dutCommand_t);
+	*aLen = 4 + sizeof(caStaDevSendFrame_t);
 
 	return WFA_SUCCESS;
 }
