@@ -451,6 +451,7 @@ enum
 
 typedef struct ca_sta_dev_sendframe
 {
+    char intf[WFA_IF_NAME_LEN];
     BYTE program;
     union _frametype
     {
