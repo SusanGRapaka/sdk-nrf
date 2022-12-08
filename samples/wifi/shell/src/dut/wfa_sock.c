@@ -331,7 +331,6 @@ int wfaTrafficRecv(int sock, void* myStream, char *buf, struct sockaddr *from)
 	wFCNTL(sock, F_SETFL, ioflags | O_NONBLOCK);
 #endif
 
-	bytesRecvd = recv(sock, buf, MAX_RCV_BUF_LEN, 0);
 	// select with socketset as sock
 	fd_set readfds;
 	FD_ZERO(&readfds);
@@ -340,7 +339,6 @@ int wfaTrafficRecv(int sock, void* myStream, char *buf, struct sockaddr *from)
 	if (num_fds > 0 && FD_ISSET(sock, &readfds) && myStream && tgSockfds[((tgStream_t*)myStream)->tblidx] > 0) {
 		bytesRecvd = recv(sock, buf, MAX_RCV_BUF_LEN, 0);
 	}
-
 	return bytesRecvd;
 }
 
