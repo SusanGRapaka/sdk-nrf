@@ -1183,11 +1183,11 @@ void * wfa_wmm_thread(void *thr_param)
 						mySock = -1;
 					}
 					//////////////////// Wifi Alliance Added
-					printf("Printing RespBuf START\n");
+#if 0
 					for (i = 0; i < respLen; i++) {
 						printf("%02x", respBuf[i]);
 					}
-					printf("Printing RespBuf DONE\n");
+#endif
 				}
 				break;
 			default:
