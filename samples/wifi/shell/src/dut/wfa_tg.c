@@ -443,7 +443,7 @@ int wfaTGRecvStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 				wPT_MUTEX_LOCK(&wmm_thr[usedThread].thr_flag_mutex);
 				wPT_COND_SIGNAL(&wmm_thr[usedThread].thr_flag_cond);
 				wPT_MUTEX_UNLOCK(&wmm_thr[usedThread].thr_flag_mutex);
-				printf("Recv Start in thread %i for streamid %i\n", usedThread, streamid);
+				//printf("Recv Start in thread %i for streamid %i\n", usedThread, streamid);
 				usedThread++;
 				break;
 #endif
@@ -497,7 +497,6 @@ int wfaTGRecvStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 	}
 
 	/* encode a TLV for response for "complete/error ..." */
-	printf("IN WFA_DUT:In func %s in line %d before resPBuf\n",__func__,__LINE__);
 	wfaEncodeTLV(WFA_TRAFFIC_AGENT_RECV_START_RESP_TLV, sizeof(int),
 			(BYTE *)&status, respBuf);
 	*respLen = WFA_TLV_HDR_LEN + sizeof(int);
@@ -648,7 +647,7 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 	// mark the stream inactive
 	myStream->state = WFA_STREAM_INACTIVE;
 
-	printf("Sending back the statistics at recvstop\n");
+//	printf("Sending back the statistics at recvstop\n");
 	wfaEncodeTLV(WFA_TRAFFIC_AGENT_RECV_STOP_RESP_TLV, id_cnt * sizeof(dutCmdResponse_t), dutRspBuf, respBuf);
 
 	/* done here */
@@ -1171,7 +1170,7 @@ int wfaSendLongFile(int mySockfd, int streamid, BYTE *aRespBuf, int *aRespLen)
 	sendResp.streamId = myStream->id;
 	wMEMCPY(&sendResp.cmdru.stats, &myStream->stats, sizeof(tgStats_t));
 
-#if 1
+#if 0
 	DPRINT_INFO(WFA_OUT, "In wfaSendLong file  stream Id %u tx %u total %llu\n", myStream->id, myStream->stats.txFrames, myStream->stats.txPayloadBytes);
 #endif
 
@@ -1199,7 +1198,7 @@ int wfaSendShortFile(int mySockfd, int streamid, BYTE *sendBuf, int pksize, BYTE
 		gtgTransac = 0;
 		gtgRecv = 0;
 		gtgSend = 0;
-		printf("stop short traffic\n");
+//		printf("stop short traffic\n");
 
 		myStream = findStreamProfile(streamid);
 		if(myStream != NULL)
@@ -1279,7 +1278,7 @@ int wfaSendShortFile(int mySockfd, int streamid, BYTE *sendBuf, int pksize, BYTE
 
 	sentTranPkts++;
 
-#if 1
+#if 0
 	DPRINT_INFO(WFA_OUT, "In wfaSendShort file  stream Id %u tx %u total %llu\n", myStream->id, myStream->stats.txFrames, myStream->stats.txPayloadBytes);
 #endif
 	return WFA_SUCCESS;
@@ -1399,7 +1398,7 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 
 	if ( theProf == NULL || myStream == NULL)
 	{
-		DPRINT_INFO(WFA_OUT, "wfaSendBitrateData parameter err in NULL pt theProf=%ld myStream=%ld \n",
+		DPRINT_INFO(WFA_OUT, "wfaSendBitrateData parameter err in NULL pt theProf=%ld myStream=%d \n",
 				theProf, myStream);
 		ret= WFA_FAILURE;
 		goto errcleanup;
@@ -1420,7 +1419,7 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 	/* calculate bitrate asked */
 	if ( (rate = theProf->pksize * theProf->rate * 8) > WFA_SEND_FIX_BITRATE_MAX)
 	{
-		DPRINT_INFO(WFA_OUT, "wfaSendBitrateData over birate can do in the routine, req bitrate=%ld \n",rate);
+		DPRINT_INFO(WFA_OUT, "wfaSendBitrateData over birate can do in the routine, req bitrate=%d \n",rate);
 		ret= WFA_FAILURE;
 		goto errcleanup;
 	}
