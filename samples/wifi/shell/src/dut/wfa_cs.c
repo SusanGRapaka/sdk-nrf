@@ -2614,7 +2614,7 @@ int wfaExecuteCLI(char *CLI)
 }
 
 /* Supporting Functions */
-void wfaSendPing(tgPingStart_t *staPing, int duration, int streamid)
+void wfaSendPing(tgPingStart_t *staPing, float *interval, int streamid)
 {
     int totalpkts, tos=-1;
     char cmdStr[256];
@@ -2623,13 +2623,17 @@ void wfaSendPing(tgPingStart_t *staPing, int duration, int streamid)
     char bflag[] = "-b";
     char *tmpstr;
     int inum=0;
+    int duration,frameSize;
 	
+	duration = (int)staPing->duration;
+	frameSize = (int)staPing->frameSize;
     totalpkts = (int)(staPing->duration * staPing->frameRate);
     strcpy(addr,staPing->dipaddr);
 	int ret;
-	stmp = duration;
+	printf("duration = %d frameRate = %d\n",staPing->duration,staPing->frameSize);
+	stmp = (int)staPing->duration;
     	printf("Printing PING OUTPUT\n");
-	sprintf(gCmdStr, "net ping  -c %d %s", duration,addr);
+	sprintf(gCmdStr, "net ping -s %d -c %d %s",frameSize,duration,addr);
 	ret = shell_execute_cmd(NULL, gCmdStr);
     	printf("Printing PING OUTPUT DONE\n");
 }
