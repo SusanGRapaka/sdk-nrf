@@ -195,8 +195,8 @@ int wfaTGSendPing(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 		case WFA_PING_ICMP_ECHO:
 #ifndef WFA_PING_UDP_ECHO_ONLY
 			duration = staPing->duration; 
-			//wfaSendPing(staPing, &interval, streamId);
-			wfaSendPing(staPing,duration,streamId);
+			//wfaSendPing(staPing,frameRate,duration,streamId);
+			wfaSendPing(staPing, &interval, streamId);
 			spresp->status = STATUS_COMPLETE;
 			spresp->streamId = streamid;
 #else
