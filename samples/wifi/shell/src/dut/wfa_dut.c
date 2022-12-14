@@ -299,6 +299,10 @@ int cmd_to_hex(char *cmd, unsigned char *pcmdBuf)
 
 
 	tempCmdBuff=(char* )malloc(strlen(cmd));
+	if (!tempCmdBuff) {
+		printf("Failed to allocate tempCmdBuff: %d\n", strlen(cmd));
+		return -1;
+	}
 #if 1 //susan
 	int s = 0;
 	while(cmd[s] != '\0')
