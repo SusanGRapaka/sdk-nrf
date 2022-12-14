@@ -85,7 +85,17 @@ extern void wfaWmmpsInitFlag();
 
 #endif
 
+K_THREAD_STACK_DEFINE(async_ping_stack, 4096);
+typedef struct async_ping {
+	//staPing, &interval, streamId
+	tgPingStart_t *staPing;
+	float *interval;
+	int streamId;
+	struct k_thread thread;
+	bool thread_active;
+} async_ping_t;
 
+async_ping_t async_ping = {0};
 
 static int streamId = 0;
 static int totalTranPkts = 0, sentTranPkts = 0;
@@ -158,6 +168,12 @@ int convertDscpToTos(int dscp)// return >=0 as TOS, otherwise error.
 	}
 	return  -1;
 }
+
+int wfaSendPingAsync(void *, void *, void *)
+{
+	printf("Start ASYNC ping\n");
+	wfaSendPing(async_ping.staPing, async_ping.interval, async_ping.streamId);
+}
 /*
  * wfaTGSendPing(): Instruct Traffic Generator to send ping packets
  *
@@ -187,16 +203,34 @@ int wfaTGSendPing(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 
 	if(staPing->duration == 0)
 		staPing->duration = 30;
-	printf("framerate %f interval %f streamID %d duration %d\n", 
+	printf("framerate %f interval %f streamID %d duration %d\n",
 			staPing->frameRate, interval, streamId,staPing->duration);
 
 	switch(staPing->type)
 	{
 		case WFA_PING_ICMP_ECHO:
 #ifndef WFA_PING_UDP_ECHO_ONLY
-			duration = staPing->duration; 
+			duration = staPing->duration;
 			//wfaSendPing(staPing,frameRate,duration,streamId);
-			wfaSendPing(staPing, &interval, streamId);
+			if (staPing->duration < 100) {
+				wfaSendPing(staPing, &interval, streamId);
+			} else {
+
+				async_ping.staPing = malloc(sizeof(*async_ping.staPing));
+				if (!async_ping.staPing) {
+					printf("MALLOC failed: size: %d\n", sizeof(*async_ping.staPing));
+					break;
+				}
+				memcpy(async_ping.staPing, staPing, sizeof(*async_ping.staPing));
+				async_ping.interval = &interval;
+				async_ping.streamId = streamId;
+				async_ping.thread_active = true;
+				k_tid_t async_ping_thread = k_thread_create(&async_ping.thread, async_ping_stack,
+						K_THREAD_STACK_SIZEOF(async_ping_stack),
+						wfaSendPingAsync, NULL, NULL, NULL,
+						K_PRIO_PREEMPT(5), 0, K_FOREVER);
+				k_thread_start(async_ping_thread);
+			}
 			spresp->status = STATUS_COMPLETE;
 			spresp->streamId = streamid;
 #else
@@ -302,6 +336,11 @@ int wfaTGStopPing(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 			*respLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
 		}
 #endif
+		if (async_ping.thread_active) {
+			k_thread_join(&async_ping.thread, K_FOREVER);
+			free(async_ping.staPing);
+			async_ping.thread_active = false;
+		}
 		wfaStopPing(stpResp, streamid);
 	}
 
@@ -1361,7 +1400,7 @@ void wfaSleepMilsec(int milSec)
 		usleep(milSec * 1000);
 }
 
-/* send limite bitrate data only 
+/* send limite bitrate data only
    Condition under Win7:
    payload <= 1000
    rate    <= 3500
@@ -1374,7 +1413,7 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 	tgStream_t            *myStream =findStreamProfile(streamId);
 	int                   ret = WFA_SUCCESS;
 	struct sockaddr_in    toAddr;
-	char                  *packBuf=NULL; 
+	char                  *packBuf=NULL;
 	int                   packLen, bytesSent, rate;
 	int                   sleepTimePerSent = 0, nOverTimeCount = 0, nDuration=0, nOverSend=0;
 	unsigned long long int sleepTotal=0, extraTimeSpendOnSending=0;   /* sleep mil-sec per sending  */
@@ -1383,11 +1422,11 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 	dutCmdResponse_t      sendResp;
 
 	//int throttledRate = 0;
-	struct timeval        before, after, stime; 
+	struct timeval        before, after, stime;
 
 	DPRINT_INFO(WFA_OUT, "wfaSendBitrateData entering\n");
 	/* error check section  */
-	if ( (mySockfd < 0) || (streamId < 0) || ( pRespBuf == NULL) 
+	if ( (mySockfd < 0) || (streamId < 0) || ( pRespBuf == NULL)
 			|| ( pRespLen == NULL) )
 	{
 		DPRINT_INFO(WFA_OUT, "wfaSendBitrateData pass-in parameter err mySockfd=%i streamId=%i pRespBuf=0x%hhn pRespLen=0x%ls\n",
@@ -1405,7 +1444,7 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 	}
 	if (theProf->rate == 0 || theProf->duration == 0)
 	{  /*  rate == 0 means unlimited to push data out which is not this routine to do */
-		DPRINT_INFO(WFA_OUT, "wfaSendBitrateData usage error, bitrate=%i or duration=%i \n" , 
+		DPRINT_INFO(WFA_OUT, "wfaSendBitrateData usage error, bitrate=%i or duration=%i \n" ,
 				theProf->rate, theProf->duration);
 		ret= WFA_FAILURE;
 		goto errcleanup;
@@ -1441,11 +1480,11 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 	memset(&toAddr, 0, sizeof(toAddr));
 	toAddr.sin_family = AF_INET;
 	inet_pton(toAddr.sin_family, theProf->dipaddr, &toAddr.sin_addr);
-	toAddr.sin_port = htons(theProf->dport); 
+	toAddr.sin_port = htons(theProf->dport);
 
 	/*  set sleep time per sending */
 	if ( theProf->rate < 100  )
-		sleepTimePerSent =  WFA_SEND_FIX_BITRATE_SLEEP_PER_SEND  +1; 
+		sleepTimePerSent =  WFA_SEND_FIX_BITRATE_SLEEP_PER_SEND  +1;
 	else sleepTimePerSent = WFA_SEND_FIX_BITRATE_SLEEP_PER_SEND;
 
 	runLoop=1; /* global defined share with thread routine, should remove it later  */
@@ -1465,13 +1504,13 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 			 */
 			wGETTIMEOFDAY(&stime, NULL);
 			int2BuffBigEndian(stime.tv_sec, &((tgHeader_t *)packBuf)->hdr[12]);
-			int2BuffBigEndian(stime.tv_usec, &((tgHeader_t *)packBuf)->hdr[16]);		   
+			int2BuffBigEndian(stime.tv_usec, &((tgHeader_t *)packBuf)->hdr[16]);
 
-			bytesSent = wfaTrafficSendTo(mySockfd, packBuf, packLen, 
+			bytesSent = wfaTrafficSendTo(mySockfd, packBuf, packLen,
 					(struct sockaddr *)&toAddr);
 			if(bytesSent != -1)
 			{
-				myStream->stats.txPayloadBytes += bytesSent; 
+				myStream->stats.txPayloadBytes += bytesSent;
 				myStream->stats.txFrames++ ;
 			}
 			else
@@ -1525,7 +1564,7 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 			else
 			{  /* usec used to   */
 				difftime =(unsigned long)( difftime - extraTimeSpendOnSending);
-				extraTimeSpendOnSending = 0; 
+				extraTimeSpendOnSending = 0;
 			}
 		}
 
@@ -1555,7 +1594,7 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 			*pRespLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
 
 			extraTimeSpendOnSending = extraTimeSpendOnSending/1000;
-			DPRINT_INFO(WFA_OUT, "*** wfg_tg.cpp wfaSendBitrateData Count=%i txFrames=%i totalByteSent=%i sleepTotal=%llu milSec extraTimeSpendOnSending=%llu nOverTimeCount=%d nOverSend=%i rate=%d nDuration=%d iSleep=%d ***\n", 
+			DPRINT_INFO(WFA_OUT, "*** wfg_tg.cpp wfaSendBitrateData Count=%i txFrames=%i totalByteSent=%i sleepTotal=%llu milSec extraTimeSpendOnSending=%llu nOverTimeCount=%d nOverSend=%i rate=%d nDuration=%d iSleep=%d ***\n",
 				counter, (myStream->stats.txFrames),(unsigned int) (myStream->stats.txPayloadBytes), sleepTotal,extraTimeSpendOnSending, nOverTimeCount, nOverSend, theProf->rate , nDuration,iSleep);
 			wfaSleepMilsec(1000);
 			return ret;
@@ -1565,10 +1604,10 @@ errcleanup:
 if (packBuf) free(packBuf);
 
 sendResp.status = STATUS_INVALID;
-wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, 4, 
+wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, 4,
 	(BYTE *)&sendResp, (BYTE *)pRespBuf);
 /* done here */
-*pRespLen = WFA_TLV_HDR_LEN + 4; 
+*pRespLen = WFA_TLV_HDR_LEN + 4;
 
 return ret;
 }/*  wfaSendBitrateData  */

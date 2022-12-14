@@ -2624,7 +2624,6 @@ void wfaSendPing(tgPingStart_t *staPing, float *interval, int streamid)
     char *tmpstr;
     int inum=0;
     int duration,frameSize;
-	
 	duration = (int)staPing->duration;
 	frameSize = (int)staPing->frameSize;
     totalpkts = (int)(staPing->duration * staPing->frameRate);
@@ -2633,9 +2632,9 @@ void wfaSendPing(tgPingStart_t *staPing, float *interval, int streamid)
 	printf("duration = %d frameRate = %d\n",staPing->duration,staPing->frameSize);
 	stmp = (int)staPing->duration;
     	printf("Printing PING OUTPUT\n");
-	sprintf(gCmdStr, "net ping -s %d -c %d %s",frameSize,duration,addr);
+	sprintf(gCmdStr, "net ping -s %d -c %d %s", frameSize, duration, addr);
 	ret = shell_execute_cmd(NULL, gCmdStr);
-    	printf("Printing PING OUTPUT DONE\n");
+    	printf("Printing PING OUTPUT DONE: %d\n", ret);
 }
 
 int wfaStopPing(dutCmdResponse_t *stpResp, int streamid)
