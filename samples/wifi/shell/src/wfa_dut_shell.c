@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <malloc.h>
 
 #include <zephyr/zephyr.h>
 #include <zephyr/shell/shell.h>
@@ -62,6 +63,10 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 			NULL,
 			"\"Sets Traffic params or runs traffic\"",
 			wfa_dut_execute),
+		SHELL_CMD(malloc_stats,
+			NULL,
+			"\"Malloc debugging stats\"",
+			malloc_stats),
 		SHELL_SUBCMD_SET_END
 		);
 
