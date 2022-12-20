@@ -322,7 +322,7 @@ void  wfaSentStatsResp(int sock, BYTE *buf)
 			first->cmdru.stats.txPayloadBytes,
 			first->cmdru.stats.rxPayloadBytes);
 #endif
-	buff = malloc(64 + WFA_TLV_HDR_LEN + total*sizeof(dutCmdResponse_t));
+	buff = wMALLOC(64 + WFA_TLV_HDR_LEN + total*sizeof(dutCmdResponse_t));
 	printf("Size of allocated memory for buff = %d\n",1 + WFA_TLV_HDR_LEN + total*sizeof(dutCmdResponse_t));
 	memset(buff, 0, 64 + WFA_TLV_HDR_LEN + total*sizeof(dutCmdResponse_t));
 	if (!buff) {
@@ -349,7 +349,7 @@ void  wfaSentStatsResp(int sock, BYTE *buf)
 	}
 	if (buff) 
 	{
-		free(buff);
+		wFREE(buff);
 		buff = NULL;
 	}
 	return;
@@ -1006,7 +1006,7 @@ void * wfa_wmm_thread(void *thr_param)
 					printf("init E2Cnt %i\n", totalE2Cnt);
 					if(myProfile->profile == PROF_IPTV)
 					{
-						e2esp = malloc(totalE2Cnt * sizeof(tgE2EStats_t));
+						e2esp = wMALLOC(totalE2Cnt * sizeof(tgE2EStats_t));
 
 						if(e2esp == NULL)
 						{
@@ -1027,7 +1027,7 @@ void * wfa_wmm_thread(void *thr_param)
 
 					wfaSetThreadPrio(myId, TG_WMM_AC_VO);   /* try to raise the receiver higher priority than sender */
 					char *recvBuf;
-					recvBuf =(char* )malloc(MAX_RCV_BUF_LEN+1);
+					recvBuf =(char* )wMALLOC(MAX_RCV_BUF_LEN+1);
 					if (!recvBuf) {
 						printf("malloc failed\n");
 						/* TODO: Inform CA */
@@ -1108,7 +1108,7 @@ void * wfa_wmm_thread(void *thr_param)
 						}
 
 						if(e2esp != NULL)
-							free(e2esp);
+							wFREE(e2esp);
 					}
 #endif
 				}

@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include "wfa_portall.h"
 #include "wfa_debug.h"
 #include "wfa_types.h"
 #include "wfa_tlv.h"
@@ -6012,12 +6013,12 @@ int xcCmdProcStaSetRFeature(char *pcmdStr, BYTE *aBuf, int *aLen)
 	if (chan_buf1 == NULL)
 	{
 		if (rfeat->ch_op_class != 0) {
-			chan_buf1 = malloc(16);
+			chan_buf1 = wMALLOC(16);
 			sprintf(chan_buf1,"%d:%d:%s:%d", rfeat->ch_op_class,
 					rfeat->ch_pref_num,rfeat->ch_pref,rfeat->ch_reason_code);
 		}
 	} else if(chan_buf1 != NULL && chan_buf2 == NULL) {
-		chan_buf2 = malloc(32);
+		chan_buf2 = wMALLOC(32);
 		sprintf(chan_buf2,"%d:%d:%s:%d", rfeat->ch_op_class,
 				rfeat->ch_pref_num,rfeat->ch_pref,rfeat->ch_reason_code);
 	}

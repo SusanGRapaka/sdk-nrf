@@ -21,6 +21,7 @@
 #include <pthread.h>
 #include <time.h>
 
+#include "wfa_portall.h"
 #include "wfa_debug.h"
 #include "wfa_main.h"
 #include "wfa_types.h"
@@ -55,7 +56,7 @@ void wfa_dut_init(BYTE **tBuf, BYTE **rBuf, BYTE **paBuf, BYTE **cBuf, struct ti
 {
 	/* allocate the traffic stream table */
 	printf("In wfa_dut_init.......!\n");
-	gStreams = (tgStream_t *) malloc(WFA_MAX_TRAFFIC_STREAMS*sizeof(tgStream_t));
+	gStreams = (tgStream_t *) wMALLOC(WFA_MAX_TRAFFIC_STREAMS*sizeof(tgStream_t));
 	if(gStreams == NULL)
 	{
 		DPRINT_ERR(WFA_ERR, "Failed to malloc theStreams\n");
@@ -63,7 +64,7 @@ void wfa_dut_init(BYTE **tBuf, BYTE **rBuf, BYTE **paBuf, BYTE **cBuf, struct ti
 	}
 
 	/* a buffer used to carry receive and send test traffic */
-	*tBuf = (BYTE *) malloc(MAX_UDP_LEN+1); /* alloc a traffic buffer */
+	*tBuf = (BYTE *) wMALLOC(MAX_UDP_LEN+1); /* alloc a traffic buffer */
 	if(*tBuf == NULL)
 	{
 		DPRINT_ERR(WFA_ERR, "Failed to malloc traffic buffer\n");
@@ -71,7 +72,7 @@ void wfa_dut_init(BYTE **tBuf, BYTE **rBuf, BYTE **paBuf, BYTE **cBuf, struct ti
 	}
 
 	/* a buffer used for response of control command */
-	*rBuf = (BYTE *)malloc(WFA_RESP_BUF_SZ);
+	*rBuf = (BYTE *)wMALLOC(WFA_RESP_BUF_SZ);
 	if(*rBuf == NULL)
 	{
 		DPRINT_ERR(WFA_ERR, "Failed to malloc response buffer\n");
@@ -79,7 +80,7 @@ void wfa_dut_init(BYTE **tBuf, BYTE **rBuf, BYTE **paBuf, BYTE **cBuf, struct ti
 	}
 
 	/* timer used in select call */
-	*timerp = malloc(sizeof(struct timeval));
+	*timerp = wMALLOC(sizeof(struct timeval));
 	if(*timerp == NULL)
 	{
 		DPRINT_ERR(WFA_ERR, "Failed to malloc timer val\n");
@@ -87,7 +88,7 @@ void wfa_dut_init(BYTE **tBuf, BYTE **rBuf, BYTE **paBuf, BYTE **cBuf, struct ti
 	}
 
 	/* control command buf */
-	*cBuf = malloc(WFA_BUFF_1K);
+	*cBuf = wMALLOC(WFA_BUFF_1K);
 	if(*cBuf == NULL)
 	{
 		DPRINT_ERR(WFA_ERR, "Failed to malloc control command buf\n");
@@ -95,7 +96,7 @@ void wfa_dut_init(BYTE **tBuf, BYTE **rBuf, BYTE **paBuf, BYTE **cBuf, struct ti
 	}
 
 	/* parameters buff */
-	*paBuf = malloc(MAX_PARMS_BUFF);
+	*paBuf = wMALLOC(MAX_PARMS_BUFF);
 	if(*paBuf == NULL)
 	{
 		DPRINT_ERR(WFA_ERR, "Failed to malloc parms value buff\n");
