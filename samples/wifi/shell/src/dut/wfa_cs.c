@@ -3423,9 +3423,9 @@ int wfaStaSetRFeature(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
                        chan_buf1, chan_buf2);
 	       printf("\n %s \n", gCmdStr);
 	       sret = shell_execute_cmd(NULL, gCmdStr);
-	       free(chan_buf1);
+	       wFREE(chan_buf1);
 	       chan_buf1 = NULL;
-	       free(chan_buf2);
+	       wFREE(chan_buf2);
 	       chan_buf2 = NULL;
 	}
       /* sprintf(gCmdStr, "wpa_cli set non_pref_chan %d:%d:%s:%d",
