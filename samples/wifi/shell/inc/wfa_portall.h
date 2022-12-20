@@ -91,7 +91,7 @@
                            ioctl(fd, cmd, intf)
 
 #define wMALLOC(size)  \
-                           malloc(size)
+                           k_malloc(size)
 
 #define wMEMCPY(dp, sp, size) \
                            memcpy(dp, sp, size)
@@ -100,7 +100,7 @@
                            memset(memp, val, size)
 
 #define wFREE(memp)      \
-                           free(memp);
+                           k_free(memp);
 
 #define wGETTIMEOFDAY(tmval, zone) \
                            gettimeofday(tmval, zone)
