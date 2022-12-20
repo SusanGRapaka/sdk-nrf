@@ -427,7 +427,7 @@ int wfaTGRecvStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 		}
 
 		theProfile = &myStream->profile;
-		if(theProfile == NULL)
+		if(theProfile == NULL || usedThread >= WFA_THREADS_NUM)
 		{
 			status = STATUS_INVALID;
 			return status;
@@ -729,7 +729,7 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 
 		//printf("%s:%d\n", __func__, __LINE__);
 		theProfile = &myStream->profile;
-		if(theProfile == NULL)
+		if(theProfile == NULL || usedThread >= WFA_THREADS_NUM)
 		{
 			//printf("%s:%d\n", __func__, __LINE__);
 			staSendResp.status = STATUS_INVALID;
