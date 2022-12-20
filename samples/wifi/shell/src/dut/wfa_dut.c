@@ -297,7 +297,7 @@ int cmd_to_hex(char *cmd, unsigned char *pcmdBuf)
 	char respStr[WFA_BUFF_512];
 	char *tempCmdBuff;
 
-	tempCmdBuff=(char* )malloc(strlen(cmd) + 1);
+	tempCmdBuff=(char* )wMALLOC(strlen(cmd) + 1);
 	if (!tempCmdBuff) {
 		printf("Failed to allocate tempCmdBuff: %d\n", strlen(cmd));
 		return -1;

@@ -216,7 +216,7 @@ int wfaTGSendPing(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 				wfaSendPing(staPing, &interval, streamId);
 			} else {
 
-				async_ping.staPing = malloc(sizeof(*async_ping.staPing));
+				async_ping.staPing = wMALLOC(sizeof(*async_ping.staPing));
 				if (!async_ping.staPing) {
 					printf("MALLOC failed: size: %d\n", sizeof(*async_ping.staPing));
 					break;
@@ -338,7 +338,7 @@ int wfaTGStopPing(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 #endif
 		if (async_ping.thread_active) {
 			k_thread_join(&async_ping.thread, K_FOREVER);
-			free(async_ping.staPing);
+			wFREE(async_ping.staPing);
 			async_ping.thread_active = false;
 		}
 		wfaStopPing(stpResp, streamid);
@@ -561,7 +561,7 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 	int id_cnt = 0;
 
 	DPRINT_INFO(WFA_OUT, "entering tgRecvStop with length %d\n",len);
-	dutRspBuf = (BYTE *)malloc(WFA_RESP_BUF_SZ);
+	dutRspBuf = (BYTE *)wMALLOC(WFA_RESP_BUF_SZ);
 	if(!dutRspBuf)
 	{
 		DPRINT_ERR(WFA_ERR, "Failed to malloc dut response buffer\n");
@@ -1041,7 +1041,7 @@ int wfaSendLongFile(int mySockfd, int streamid, BYTE *aRespBuf, int *aRespLen)
 	packLen = theProf->pksize;
 
 	/* allocate a buf */
-	packBuf = (char *)malloc(packLen+1);
+	packBuf = (char *)wMALLOC(packLen+1);
 	if (!packBuf) {
 		DPRINT_ERR(WFA_ERR, "Mem alloc failed\n");
 		return WFA_FAILURE;
@@ -1465,7 +1465,7 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 	/* alloc sending buff  */
 	//packLen = (theProf->pksize * theProf->rate)/ WFA_SEND_FIX_BITRATE_FRAMERATE ;
 	packLen = theProf->pksize;
-	packBuf = (char *)malloc(packLen+4);
+	packBuf = (char *)wMALLOC(packLen+4);
 	if ( packBuf == NULL)
 	{
 		DPRINT_INFO(WFA_OUT, "wfaSendBitrateData malloc err \n");
@@ -1583,7 +1583,7 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 
 	}// while loop
 
-	if (packBuf) free(packBuf);
+	if (packBuf) wFREE(packBuf);
 	/* return statistics */
 	sendResp.status = STATUS_COMPLETE;
 	sendResp.streamId = myStream->id;
@@ -1601,7 +1601,7 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 
 errcleanup:
 /* encode a TLV for response for "invalid ..." */
-if (packBuf) free(packBuf);
+if (packBuf) wFREE(packBuf);
 
 sendResp.status = STATUS_INVALID;
 wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, 4,
