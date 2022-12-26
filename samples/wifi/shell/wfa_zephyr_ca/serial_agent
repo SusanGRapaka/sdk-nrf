@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
-import serial 
+import serial
 import time
 import re
 import argparse
 from serial.tools import list_ports
 
 
-class SERIALClient():
+class SERIALClient:
     """Client class to communicate with DUT via Serial"""
 
     def __init__(self, port=None, baudrate=115200):
-        self.port = port 
+        self.port = port
         self.baudrate = baudrate
-         
+
     @property
     def os_type(self):
-        return 'serial_type'
+        return "serial_type"
 
     def connect(self, timeout) -> str:
         """
@@ -23,75 +23,75 @@ class SERIALClient():
 
         :return: an error message
         """
-        #print('SERIAL Access to %s', self.host)
-        self.serial_conn = serial.Serial('/dev/ttyACM1', self.baudrate, timeout=timeout)
-        return 'CONNECTED'
+        # print('SERIAL Access to %s', self.host)
+        self.serial_conn = serial.Serial("/dev/ttyACM1", self.baudrate, timeout=timeout)
+        return "CONNECTED"
 
     def close(self) -> None:
         """Close connection with the device"""
-        #print('Closing Serial connection')
+        # print('Closing Serial connection')
         self.serial_conn.close()
 
     def execute_command(self, cmd: str, timeout=1):
         """Send command to the device"""
-        #print(cmd)
-        if ' ssid' in cmd:
-            parts = cmd.split('ssid')
+        # print(cmd)
+        if " ssid" in cmd:
+            parts = cmd.split("ssid")
             ssid = parts[1].strip()
-            cmd =parts[0]+f' ssid \'{ssid}\''
-        if ' psk' in cmd:
-            parts = cmd.split('psk')
+            cmd = parts[0] + f" ssid '{ssid}'"
+        if " psk" in cmd:
+            parts = cmd.split("psk")
             psk = parts[1].strip()
-            cmd =parts[0]+f' psk \'{psk}\''
+            cmd = parts[0] + f" psk '{psk}'"
         if "ping -c" in cmd:
             timeout = int(re.search("-c ([\d]+)", cmd).group(1))
-        #elif 'ssid' in cmd:
+        # elif 'ssid' in cmd:
         #    parts = cmd.split('ssid')
         #    ssid = parts[1].strip()
         #    cmd =parts[0]+f' ssid \'{ssid}\''
 
-        #print(cmd)
-        cmd = f'{cmd}\n'.encode(encoding='UTF-8')
+        # print(cmd)
+        cmd = f"{cmd}\n".encode(encoding="UTF-8")
         try:
             self.serial_conn.flush()
             self.serial_conn.flushOutput()
             self.serial_conn.flushInput()
             self.serial_conn.write(cmd)
-            #time.sleep(timeout)
+            # time.sleep(timeout)
         except Exception:
-            raise 
+            raise
 
     def read(self, size=1) -> str:
         """Read data from the device"""
-        #self.serial_conn.reset_input_buffer()
-        #out = bytes()
-        #out = self.serial_conn.read(8000)
-        #out = self.serial_conn.readall()
-        #out = self.serial_conn.readall()
-        #out = self.serial_conn.inWaiting()
-        #return out
-        out=bytes()
+        # self.serial_conn.reset_input_buffer()
+        # out = bytes()
+        # out = self.serial_conn.read(8000)
+        # out = self.serial_conn.readall()
+        # out = self.serial_conn.readall()
+        # out = self.serial_conn.inWaiting()
+        # return out
+        out = bytes()
         try:
             while True:
                 data = self.serial_conn.read(self.serial_conn.inWaiting())
-                #read_data = self.serial_conn.read(data)
-                #if not read_data:
+                # read_data = self.serial_conn.read(data)
+                # if not read_data:
                 #    return out
-                #out = out + read_data
+                # out = out + read_data
                 time.sleep(5)
                 if not data:
-                    f_debug = open('/tmp/debug_log.txt', 'a')
-                    f_debug.write(out.decode('utf-8'))
+                    f_debug = open("/tmp/debug_log.txt", "a")
+                    f_debug.write(out.decode("utf-8"))
                     f_debug.close()
                     return out
-                out+= data
+                out += data
                 time.sleep(1)
-                print(out.decode('utf-8'))
-            
+                print(out.decode("utf-8"))
+
         except Exception:
             raise
-        f_debug = open('/tmp/debug_log.txt', 'a')
-        f_debug.write(out.decode('utf-8'))
+        f_debug = open("/tmp/debug_log.txt", "a")
+        f_debug.write(out.decode("utf-8"))
         f_debug.close()
         return out
 
@@ -116,31 +116,31 @@ class SERIALClient():
         return False
 
 
-if __name__ == '__main__':
-    parser  = argparse.ArgumentParser()
-    parser.add_argument(dest='cmd')
-    #parser.add_argument(dest='get_info')
-    timeout = 2 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(dest="cmd")
+    # parser.add_argument(dest='get_info')
+    timeout = 2
     args = parser.parse_args()
     ser = SERIALClient()
     status = ser.connect(timeout=timeout)
     ser.execute_command(args.cmd)
-    #print(f"connection status :{status} ")
-    #ser.execute_command('iwconfig')
-    print (f"####################### {args.cmd} ##########################\n")
+    # print(f"connection status :{status} ")
+    # ser.execute_command('iwconfig')
+    print(f"####################### {args.cmd} ##########################\n")
     wait_time = 1
     if "duration" in args.cmd:
-        f_wait_time = open('/tmp/wait_time', 'w')
+        f_wait_time = open("/tmp/wait_time", "w")
         wait_time_from_cmd = re.search("duration,([\d]+)", args.cmd).group(1)
         f_wait_time.write(wait_time_from_cmd)
         time.sleep(1)
         f_wait_time.close()
     if "traffic_agent_send" in args.cmd:
-        f_wait_time_read = open('/tmp/wait_time', 'r')
+        f_wait_time_read = open("/tmp/wait_time", "r")
         wait_time = f_wait_time_read.read().rstrip()
         f_wait_time_read.close()
     print(wait_time)
-    #if "traffic_send_ping" in args.cmd:
+    # if "traffic_send_ping" in args.cmd:
     #    f_wait_time_read = open('/tmp/wait_time', 'r')
     #    wait_time = f_wait_time_read.read().rstrip()
     #    f_wait_time_read.close()
@@ -148,40 +148,43 @@ if __name__ == '__main__':
         timeout = int(re.search("-c ([\d]+)", args.cmd).group(1))
     print(wait_time)
     time.sleep(int(wait_time))
-    if(1):
-    #try:
-        data = ser.read().decode('utf-8', errors='ignore').rstrip()
-        #data = data.replace(args.cmd, "")
-        #data = data.replace("#", "")
+    if 1:
+        # try:
+        data = ser.read().decode("utf-8", errors="ignore").rstrip()
+        # data = data.replace(args.cmd, "")
+        # data = data.replace("#", "")
         data = data.strip()
-        #print ("========================")
-       # print ("========================")
-        #if "Printing PING OUTPUT" in data:
-            #try:
-            #if 1:
-            #    m=re.search("Printing PING OUTPUT([\s\r\n.\w\W0-9A-Za-z]*)Printing PING OUTPUT DONE",data)
-                #m=re.search("traffic_send_ping([\s\r\n.\w\W0-9A-Za-z]*)Printing RespBuf START",data)
-             #   buff_data1 = m.group()
-                #buff_data = m.group()
-              #  print ("$$$$$$$$$$$$$$$$$$$$$$$$")  
-              #  print (buff_data1)
-              #  print ("$$$$$$$$$$$$$$$$$$$$$$$$")  
-              #  f_buf = open('/tmp/pingbuff.txt','w')
-              #  f_buf.write(buff_data1)
-              #  f_buf.close()
-            #except:
-            #    pass
-        #else:
+        # print ("========================")
+        # print ("========================")
+        # if "Printing PING OUTPUT" in data:
+        # try:
+        # if 1:
+        #    m=re.search("Printing PING OUTPUT([\s\r\n.\w\W0-9A-Za-z]*)Printing PING OUTPUT DONE",data)
+        # m=re.search("traffic_send_ping([\s\r\n.\w\W0-9A-Za-z]*)Printing RespBuf START",data)
+        #   buff_data1 = m.group()
+        # buff_data = m.group()
+        #  print ("$$$$$$$$$$$$$$$$$$$$$$$$")
+        #  print (buff_data1)
+        #  print ("$$$$$$$$$$$$$$$$$$$$$$$$")
+        #  f_buf = open('/tmp/pingbuff.txt','w')
+        #  f_buf.write(buff_data1)
+        #  f_buf.close()
+        # except:
+        #    pass
+        # else:
         #    pass
         if "Printing RespBuf START" in data:
             try:
-                m=re.search("Printing RespBuf START[\r\n]*(.*)[\r\n]*Printing RespBuf DONE",data)
+                m = re.search(
+                    "Printing RespBuf START[\r\n]*(.*)[\r\n]*Printing RespBuf DONE",
+                    data,
+                )
                 if m is not None:
                     buff_data = m.group(1)
-                    #logging.info (f"#######################IN SERIAL_AGENT##########################\n")
-                    logging.info (buff_data)
+                    # logging.info (f"#######################IN SERIAL_AGENT##########################\n")
+                    logging.info(buff_data)
                     if buff_data is not None:
-                        f_buf = open('/tmp/tembbuff.txt','w')
+                        f_buf = open("/tmp/tembbuff.txt", "w")
                         f_buf.write(buff_data)
                         f_buf.close()
                     else:
@@ -193,19 +196,18 @@ if __name__ == '__main__':
 
         else:
             pass
-    #except Exception:
-        #print ("DBG:2")
-        #pass
+    # except Exception:
+    # print ("DBG:2")
+    # pass
     ser.close()
-    #return data
-    #time.sleep(2)
-    #import re
-    #l =re.search('inet addr:', data.decode('UTF-8'))
-    #print(l)
-    #if args.get_info == 'get_mac':
+    # return data
+    # time.sleep(2)
+    # import re
+    # l =re.search('inet addr:', data.decode('UTF-8'))
+    # print(l)
+    # if args.get_info == 'get_mac':
     #    ser.get_mac_address(data)
-    #elif args.get_info == 'get_bssid':
+    # elif args.get_info == 'get_bssid':
     #    ser.get_bssid(data)
-    #elif args.get_info == 'is_sta_connected':
+    # elif args.get_info == 'is_sta_connected':
     #    ser.connection_status(data)
-
