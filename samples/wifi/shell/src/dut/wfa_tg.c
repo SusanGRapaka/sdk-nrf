@@ -408,7 +408,7 @@ int wfaTGRecvStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 	tgProfile_t *theProfile;
 	tgStream_t *myStream;
 
-	DPRINT_INFO(WFA_OUT, "entering tgRecvStart\n");
+	DPRINT_INFO(WFA_OUT, "entering tgRecvStart: %d\n", numStreams);
 
 	/*
 	 * The function wfaSetProcPriority called here is to enhance the real-time
@@ -419,6 +419,7 @@ int wfaTGRecvStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 	for(i=0; i<numStreams; i++)
 	{
 		wMEMCPY(&streamid, parms+(4*i), 4); /* changed from 2 to 4, bug reported by n.ojanen */
+		DPRINT_INFO(WFA_OUT, "Stream ID: %d\n", streamid);
 		myStream = findStreamProfile(streamid);
 		if(myStream == NULL)
 		{
@@ -430,6 +431,12 @@ int wfaTGRecvStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 		if(theProfile == NULL || usedThread >= WFA_THREADS_NUM)
 		{
 			status = STATUS_INVALID;
+			if (!theProfile) {
+				DPRINT_ERR(WFA_OUT, "Profile not found\n");
+			} else {
+				DPRINT_ERR(WFA_OUT, "Threads exhausted: %d\n", usedThread);
+			}
+
 			return status;
 		}
 
@@ -442,6 +449,7 @@ int wfaTGRecvStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 		if(theProfile->direction != DIRECT_RECV)
 		{
 			status = STATUS_INVALID;
+			DPRINT_ERR(WFA_OUT,  "Invalid direction: %d\n", theProfile->direction);
 			return status;
 		}
 
@@ -672,9 +680,7 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 		statResp.status = STATUS_COMPLETE;
 		statResp.streamId = streamid;
 
-#if 0
 		DPRINT_INFO(WFA_OUT, "stream Id %u rx %u total %llu\n", streamid, myStream->stats.rxFrames, myStream->stats.rxPayloadBytes);
-#endif
 		wMEMCPY(&statResp.cmdru.stats, &myStream->stats, sizeof(tgStats_t));
 		wMEMCPY((dutRspBuf + i * sizeof(dutCmdResponse_t)), (BYTE *)&statResp, sizeof(dutCmdResponse_t));
 		id_cnt++;
@@ -686,7 +692,6 @@ int wfaTGRecvStop(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 	// mark the stream inactive
 	myStream->state = WFA_STREAM_INACTIVE;
 
-//	printf("Sending back the statistics at recvstop\n");
 	wfaEncodeTLV(WFA_TRAFFIC_AGENT_RECV_STOP_RESP_TLV, id_cnt * sizeof(dutCmdResponse_t), dutRspBuf, respBuf);
 
 	/* done here */
