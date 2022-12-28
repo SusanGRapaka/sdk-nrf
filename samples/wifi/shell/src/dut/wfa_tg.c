@@ -853,7 +853,7 @@ int wfaTGReset(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 	totalTranPkts = 0;
 
 	runLoop = 0;
-	usedThread = 1;
+	usedThread = 0;
 #ifdef WFA_WMM_PS_EXT
 	gtgWmmPS = 0;
 	gtgPsPktRecvd = 0;
