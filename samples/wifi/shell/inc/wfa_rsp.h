@@ -316,25 +316,6 @@ typedef struct dut_cmd_response
         char grpid[WFA_P2P_GRP_ID_LEN];
         char p2presult[8];
         char wpsPin[WFA_WPS_PIN_LEN];
-        caP2pStaGetPskResp_t pskInfo;
-        caP2pStartGrpFormResp_t grpFormInfo;
-        /* P2P */
-        /* WFD */
-        caStaStartWfdConnResp_t	wfdConnInfo;
-        caStaGetParameterResp_t getParamValue;
-
-/* WFD */
-/* NFC */
-	   caStaNfcActionResp_t staNfcAction;
-/* NFC */
-/* WFDS */
-	   caStaInvokeCmdResp_t staInvokeCmd;
-	   caStaConnSessCmdResp_t staManageServ;
-	   caStaGetEventListCmdResp_t staGetEvents;	   
-	   caStaGetEventDetailsCmdResp_t staGetEventDetails;	   
-
-/* WFDS */
-
        int connected;
    } cmdru;
 }dutCmdResponse_t;
