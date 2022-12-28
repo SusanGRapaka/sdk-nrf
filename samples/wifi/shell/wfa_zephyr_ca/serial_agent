@@ -163,11 +163,11 @@ if __name__ == "__main__":
         data = data.strip()
         # logging.info ("========================")
         # logging.info ("========================")
-        # if "logging.infoing PING OUTPUT" in data:
+        # if "Printing PING OUTPUT" in data:
         # try:
         # if 1:
-        #    m=re.search("logging.infoing PING OUTPUT([\s\r\n.\w\W0-9A-Za-z]*)logging.infoing PING OUTPUT DONE",data)
-        # m=re.search("traffic_send_ping([\s\r\n.\w\W0-9A-Za-z]*)logging.infoing RespBuf START",data)
+        #    m=re.search("Printing PING OUTPUT([\s\r\n.\w\W0-9A-Za-z]*)Printing PING OUTPUT DONE",data)
+        # m=re.search("traffic_send_ping([\s\r\n.\w\W0-9A-Za-z]*)Printing RespBuf START",data)
         #   buff_data1 = m.group()
         # buff_data = m.group()
         #  logging.info ("$$$$$$$$$$$$$$$$$$$$$$$$")
@@ -180,10 +180,10 @@ if __name__ == "__main__":
         #    pass
         # else:
         #    pass
-        if "logging.infoing RespBuf START" in data:
+        if "Printing RespBuf START" in data:
             try:
                 m = re.search(
-                    "logging.infoing RespBuf START[\r\n]*(.*)[\r\n]*logging.infoing RespBuf DONE",
+                    "Printing RespBuf START[\r\n]*(.*)[\r\n]*Printing RespBuf DONE",
                     data,
                 )
                 if m is not None:
