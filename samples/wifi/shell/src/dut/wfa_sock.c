@@ -270,8 +270,10 @@ int wfaCtrlSend(int sock, unsigned char *buf, int bufLen)
 	int bytesSent = 0;
 	int i = 0;
 
-	if(bufLen == 0)
+	if(bufLen == 0) {
+		printf("Invalid message with zero length\n");
 		return WFA_FAILURE;
+	}
 
 	// bytesSent = wSEND(sock, buf, bufLen, 0);
 
@@ -279,6 +281,7 @@ int wfaCtrlSend(int sock, unsigned char *buf, int bufLen)
 	//{
 	//   DPRINT_WARNING(WFA_WNG, "Error sending tcp packet\n");
 	//}
+	printk("Sending RESP to CA: %d\n", bufLen);
 	printf("Printing RespBuf START\n");
 	for (i = 0; i < bufLen; i++) {
 		printf("%02x", buf[i]);
