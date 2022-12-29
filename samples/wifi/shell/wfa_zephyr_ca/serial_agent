@@ -142,15 +142,11 @@ if __name__ == "__main__":
         f_wait_time.write(wait_time_from_cmd)
         time.sleep(1)
         f_wait_time.close()
-    if "traffic_agent_send" in args.cmd:
+    if "traffic_agent_send" in args.cmd or "traffic_send_ping" in args.cmd:
         f_wait_time_read = open("/tmp/wait_time", "r")
         wait_time = f_wait_time_read.read().rstrip()
         f_wait_time_read.close()
     logging.info(wait_time)
-    # if "traffic_send_ping" in args.cmd:
-    #    f_wait_time_read = open('/tmp/wait_time', 'r')
-    #    wait_time = f_wait_time_read.read().rstrip()
-    #    f_wait_time_read.close()
     if "ping -c" in args.cmd:
         timeout = int(re.search("-c ([\d]+)", args.cmd).group(1))
     logging.info(wait_time)
