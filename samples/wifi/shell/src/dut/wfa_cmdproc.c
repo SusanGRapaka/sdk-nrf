@@ -6393,6 +6393,9 @@ int xcCmdProcStaGetParameter(char *pcmdStr, BYTE *aBuf, int *aLen)
 			else if (strcasecmp(str, "WFDS") == 0)
 			{
 				staGetParameter->program= PROG_TYPE_WFDS;
+			} else if (strcasecmp(str, "HE") == 0)
+			{
+				staGetParameter->program= PROG_TYPE_HE;
 			}
 
 			str = strtok_r(NULL, ",", &pcmdStr);
@@ -6415,7 +6418,10 @@ int xcCmdProcStaGetParameter(char *pcmdStr, BYTE *aBuf, int *aLen)
 					{
 						staGetParameter->getParamValue= eMasterPref;
 					}
-				}			 
+				} else if (strcasecmp(str, "RSSI") == 0)
+				{
+					staGetParameter->getParamValue = eRSSI;
+				}
 			}
 
 		}
