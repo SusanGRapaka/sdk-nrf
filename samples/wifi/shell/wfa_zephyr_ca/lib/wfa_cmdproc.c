@@ -6303,41 +6303,47 @@ int xcCmdProcStaGetParameter(char *pcmdStr, BYTE *aBuf, int *aLen)
         {
             str = strtok_r(NULL, ",", &pcmdStr);
 
-		  if (strcasecmp(str, "WFD") == 0)
-		  {
-	  		  staGetParameter->program= PROG_TYPE_WFD;
-		  }
-		  else if (strcasecmp(str, "WFDS") == 0)
-		  {
-	  		  staGetParameter->program= PROG_TYPE_WFDS;
-		  }
-			  
-		  str = strtok_r(NULL, ",", &pcmdStr);
-		  if(strcasecmp(str, "Parameter") == 0)
-		  {
-			 str = strtok_r(NULL, ",", &pcmdStr);  
-			 if (strcasecmp(str, "DiscoveredDevList") == 0)
-			 {
-				 staGetParameter->getParamValue= eDiscoveredDevList;
-			 }
-			 else if (strcasecmp(str, "OpenPorts") == 0)
-			 {
-				 staGetParameter->getParamValue= eOpenPorts;				 
-			 }
-			 else if (strcasecmp(str, "NAN") == 0)
-		  	 {
-			 	staGetParameter->program= PROG_TYPE_NAN;
-			 	str = strtok_r(NULL, ",", &pcmdStr);
-             	if(strcasecmp(str, "Parameter") == 0)
-             	{
-					staGetParameter->getParamValue= eMasterPref;
-			 	}
-		  	 }			 
-		  }
-		  
-	   	}
-	   
-	}
+            if (strcasecmp(str, "WFD") == 0)
+            {
+                staGetParameter->program= PROG_TYPE_WFD;
+            }
+            else if (strcasecmp(str, "WFDS") == 0)
+            {
+                staGetParameter->program= PROG_TYPE_WFDS;
+            } else if (strcasecmp(str, "HE") == 0)
+            {
+            staGetParameter->program= PROG_TYPE_HE;
+            }
+
+            str = strtok_r(NULL, ",", &pcmdStr);
+            if(strcasecmp(str, "Parameter") == 0)
+            {
+                str = strtok_r(NULL, ",", &pcmdStr);  
+                if (strcasecmp(str, "DiscoveredDevList") == 0)
+                {
+                    staGetParameter->getParamValue= eDiscoveredDevList;
+                }
+                else if (strcasecmp(str, "OpenPorts") == 0)
+                {
+                    staGetParameter->getParamValue= eOpenPorts;				 
+                }
+                else if (strcasecmp(str, "NAN") == 0)
+                {
+                staGetParameter->program= PROG_TYPE_NAN;
+                str = strtok_r(NULL, ",", &pcmdStr);
+                if(strcasecmp(str, "Parameter") == 0)
+                {
+                    staGetParameter->getParamValue= eMasterPref;
+                }
+                } else if (strcasecmp(str, "RSSI") == 0)
+                {
+                staGetParameter->getParamValue = eRSSI;
+                }
+            }
+            
+        }
+        
+    }
 	
 	wfaEncodeTLV(WFA_STA_GET_PARAMETER_TLV, sizeof(caStaGetParameter_t), (BYTE *)staGetParameter, aBuf);
 	

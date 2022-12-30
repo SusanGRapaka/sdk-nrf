@@ -65,6 +65,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <wpa_supplicant/wpa_supplicant_i.h>
 #define CERTIFICATES_PATH    "/etc/wpa_supplicant"
 
+/* For net_mgmt commands */
+#include <zephyr/net/net_if.h>
+#include <zephyr/net/wifi_mgmt.h>
+#include <zephyr/net/net_event.h>
+
 /* Some device may only support UDP ECHO, activate this line */
 //#define WFA_PING_UDP_ECHO_ONLY 1
 
@@ -2672,3 +2677,86 @@ int wfaStaScan(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 
    return WFA_SUCCESS;
 }
+
+#define RSSI_FAILED 0
+int get_wifi_rssi()
+{
+	struct net_if *iface = net_if_get_default();
+	struct wifi_iface_status status = { 0 };
+
+	if (net_mgmt(NET_REQUEST_WIFI_IFACE_STATUS, iface, &status,
+				sizeof(struct wifi_iface_status))) {
+		printf("%s: Status request failed\n", __func__);
+		return RSSI_FAILED;
+	}
+    printf("RSSI = %d\n", status.rssi);
+    return status.rssi;
+}
+
+int wfaStaGetParameter(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
+{
+    dutCmdResponse_t infoResp;
+    caStaGetParameter_t *staGetParam= (caStaGetParameter_t *)caCmdBuf; //uncomment and use it
+
+
+    caStaGetParameterResp_t *paramList = &infoResp.cmdru.getParamValue;
+
+    printf("\n Entry wfaStaGetParameter... ");
+
+    // Check the program type
+    if(staGetParam->program == PROG_TYPE_WFD)
+    {
+        if(staGetParam->getParamValue == eDiscoveredDevList )
+        {
+            // Get the discovered devices, make space seperated list and return, check list is not bigger than 128 bytes.
+            paramList->getParamType = eDiscoveredDevList;
+            strcpy((char *)&paramList->devList, "11:22:33:44:55:66 22:33:44:55:66:77 33:44:55:66:77:88");
+        }
+    }
+
+    if(staGetParam->program == PROG_TYPE_WFDS)
+    {
+        if(staGetParam->getParamValue == eDiscoveredDevList )
+        {
+            // Get the discovered devices, make space seperated list and return, check list is not bigger than 128 bytes.
+            paramList->getParamType = eDiscoveredDevList;
+            strcpy((char *)&paramList->devList, "11:22:33:44:55:66 22:33:44:55:66:77 33:44:55:66:77:88");
+        }
+        if(staGetParam->getParamValue == eOpenPorts)
+        {
+            // Run the port checker tool
+            // Get all the open ports and make space seperated list and return, check list is not bigger than 128 bytes.
+            paramList->getParamType = eOpenPorts;
+            strcpy((char *)&paramList->devList, "22 139 445 68 9700");
+        }
+    }
+
+    if(staGetParam->program == PROG_TYPE_NAN)
+    {
+        if(staGetParam->getParamValue == eMasterPref )
+        {
+            // Get the master preference of the device and return the value
+            paramList->getParamType = eMasterPref;
+            strcpy((char *)&paramList->masterPref, "0xff");
+        }
+    }
+
+    if (staGetParam->program == PROG_TYPE_HE)
+    {
+        if (staGetParam->getParamValue == eRSSI)
+        {
+            // Get the RSSI of the device and return the value
+            paramList->getParamType = eRSSI;
+            signed char rssi = get_wifi_rssi();
+            snprintf((char *)&paramList->rssi, sizeof(paramList->rssi), "%d", rssi);
+            printf("\n RSSI value is %s \n", paramList->rssi);
+        }
+    }
+
+    infoResp.status = STATUS_COMPLETE;
+    wfaEncodeTLV(WFA_STA_GET_PARAMETER_RESP_TLV, sizeof(infoResp), (BYTE *)&infoResp, respBuf);
+    *respLen = WFA_TLV_HDR_LEN + sizeof(infoResp);
+
+   return WFA_SUCCESS;
+}
+
