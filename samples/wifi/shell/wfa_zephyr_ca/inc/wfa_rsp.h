@@ -112,7 +112,8 @@ typedef struct ca_sta_get_parameter_resp
 
     BYTE getParamType;
     char devList[128];
-	char masterPref[8];
+    char masterPref[8];
+    char rssi[8];
 } caStaGetParameterResp_t;
 
 /* WFD */
@@ -316,6 +317,7 @@ typedef struct dut_cmd_response
         char grpid[WFA_P2P_GRP_ID_LEN];
         char p2presult[8];
         char wpsPin[WFA_WPS_PIN_LEN];
+        caStaGetParameterResp_t getParamValue;
        int connected;
    } cmdru;
 }dutCmdResponse_t;

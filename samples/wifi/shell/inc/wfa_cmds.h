@@ -447,6 +447,7 @@ enum
     PROG_TYPE_HS2,
     PROG_TYPE_HS2_R2,
     PROG_TYPE_NAN,
+    PROG_TYPE_HE
 };
 
 typedef struct ca_sta_dev_sendframe
@@ -504,9 +505,10 @@ typedef struct ca_sta_reinvoke_wfd_session
 } caStaReinvokeWfdSession_t;
 
 enum {
-	eDiscoveredDevList = 1,
-	eOpenPorts,
-	eMasterPref,
+    eDiscoveredDevList = 1,
+    eOpenPorts,
+    eMasterPref,
+    eRSSI,
 };
 
 
@@ -1578,7 +1580,8 @@ typedef struct ca_sta_exec_action
    unsigned short includeBit;
    unsigned short srfType;
    unsigned int remoteInstanceID;
-   unsigned int localInstanceID;   
+   unsigned int localInstanceID;
+   char rssi[8];
 } caStaExecAction_t;
 
 typedef struct ca_sta_get_events
