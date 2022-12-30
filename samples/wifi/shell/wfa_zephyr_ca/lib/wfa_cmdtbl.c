@@ -119,43 +119,43 @@ xcCommandFuncPtr gWfaCmdFuncTbl[WFA_STA_COMMANDS_END] =
 #endif
     wfaStaDevSendFrame,          /*    WFA_STA_DEV_SEND_FRAME_TLV              (48)*/
     wfaStaSetSecurity,        /*    WFA_STA_SET_SECURITY_TLV           (49)*/
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    NotDefinedYet,            /*    None                               (0) */
-    wfaStaScan
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (50)*/
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (51) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (52) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (53) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (54) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (55) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (56) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (57) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (58) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (59) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (60) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (61) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (62) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (63) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (64) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (65) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (66) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (67) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (68) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (69) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (70) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (71) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (72) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (73) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (74) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (75) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (76) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (77) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (78) */
+	wfaStaGetParameter,       /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (79) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (80) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (81) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (82) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (83) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (84) */
+	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (85) */
+	wfaStaScan                /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (86) */
 };
 
 
