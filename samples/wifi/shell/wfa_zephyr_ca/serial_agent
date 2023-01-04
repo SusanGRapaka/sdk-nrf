@@ -75,12 +75,12 @@ class SERIALClient:
         out = bytes()
         try:
             while True:
+                time.sleep(5)
                 data = self.serial_conn.read(self.serial_conn.inWaiting())
                 # read_data = self.serial_conn.read(data)
                 # if not read_data:
                 #    return out
                 # out = out + read_data
-                time.sleep(5)
                 if not data:
                     f_debug = open("/tmp/debug_log.txt", "a")
                     f_debug.write(out.decode("utf-8"))
@@ -150,7 +150,8 @@ if __name__ == "__main__":
     if "ping -c" in args.cmd:
         timeout = int(re.search("-c ([\d]+)", args.cmd).group(1))
     logging.info(wait_time)
-    time.sleep(int(wait_time))
+    if "traffic_send_ping" not in args.cmd:
+        time.sleep(int(wait_time))
     if 1:
         # try:
         data = ser.read().decode("utf-8", errors="ignore").rstrip()
