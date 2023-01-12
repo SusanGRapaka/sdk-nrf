@@ -681,7 +681,7 @@ void * wfa_wmm_thread(void *thr_param)
 				/*
 				 * Set packet/socket priority TOS field
 				 */
-				// wfaTGSetPrio(mySock, myProfile->trafficClass);
+				wfaTGSetPrio(mySock, myProfile->trafficClass);
 
 				/*
 				 * set a proper priority
