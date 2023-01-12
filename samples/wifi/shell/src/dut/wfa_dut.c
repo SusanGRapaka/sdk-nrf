@@ -190,14 +190,13 @@ void *main_thread_handler()
 		if (FD_ISSET(gagtSockfd, &sockSet))
 		{
 			/* Incoming connection request */
-			/*        gxcSockfd = wfaAcceptTCPConn(gagtSockfd);
+			        gxcSockfd = wfaAcceptTCPConn(gagtSockfd);
 				  if(gxcSockfd == -1)
 				  {
 				  DPRINT_ERR(WFA_ERR, "Failed to open control link socket\n");
 				  exit(1);
-				  }*/
+				  }
 		}
-		gxcSockfd = 1;
 		/* Control Link port event*/
 		//if(gxcSockfd >= 0 && FD_ISSET(gxcSockfd, &sockSet))
 		if(gxcSockfd >= 0 )
@@ -213,6 +212,10 @@ void *main_thread_handler()
 			}
 			else
 			{
+				for (i=0; i < 100; i++) {
+				printf("%x ", xcCmdBuf[i]);
+				}
+				printf("\n");
 				wfaDecodeTLV(xcCmdBuf, nbytes, &xcCmdTag, &cmdLen, parmsVal);
 				memset(respBuf, 0, WFA_RESP_BUF_SZ);
 				respLen = 0;
@@ -365,6 +368,10 @@ int commandHandle(unsigned char *pcmdBuf)
 	char * cliCmd,*tempCmdBuff;
 	WORD tag;
 
+	for (i=0; i < 100; i++) {
+		printf("%x", pcmdBuf[i]);
+	}
+	printf("\n");
 	wfaDecodeTLV(pcmdBuf, WFA_BUFF_1K, &xcCmdTag, &cmdLen, parmsVal);
 	memset(respBuf, 0, WFA_RESP_BUF_SZ);
 	respLen = 0;
@@ -478,14 +485,15 @@ dut_main(int argc, char **argv)
 	wfa_dut_init(&trafficBuf, &respBuf, &parmsVal, &xcCmdBuf, &toutvalp);
 
 	/* 4create listening TCP socket */
-	/*gagtSockfd = wfaCreateTCPServSock(locPortNo);
+	gagtSockfd = wfaCreateTCPServSock(locPortNo);
 	  if(gagtSockfd == -1)
 	  {
 	  DPRINT_ERR(WFA_ERR, "Failed to open socket\n");
 	  exit(1);
-	  }*/
+	  }
 
 	printf("%s:%d\n", __func__, __LINE__);
+
 #if 0
 	pthread_attr_init(&ptAttr);
 
@@ -547,7 +555,7 @@ dut_main(int argc, char **argv)
 	wmmps_mutex_info.thr_id=pthread_create(&wmmps_mutex_info.thr,NULL /*&ptAttr*/,wfa_wmmps_thread,(void*)&wmmps_mutex_info.thr_id);// calls up the wmmps-thread
 #endif
 
-	// pthread_create(&main_thread, &ptAttr, main_thread_handler, NULL);
+	pthread_create(&main_thread, ptAttr, main_thread_handler, NULL);
 	dut_init = 1;   
 	return 0;
 }

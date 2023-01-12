@@ -39,6 +39,7 @@ static int wfa_dut_execute(const struct shell *shell,
 {	int ret;
 	printf("arg0: %s\n", argv[0]);
 	int status = -1;
+	int i = 0;
 	if(dut_init == 0)
 	{
 		printf("DUT is not Initialized....Initializing the DUT first\n");
@@ -48,6 +49,10 @@ static int wfa_dut_execute(const struct shell *shell,
 	hex_str_to_val(cmdBuf, sizeof(cmdBuf), argv[1]);
 #else
 	status = cmd_to_hex(argv[1], cmdBuf);
+	for (i = 0; i < 500; i++) {
+		printf("%02x", cmdBuf[i]);
+	}
+	printf("\n");
 #endif /* COMMAND_BYTE_STREAM */
 	status = commandHandle(cmdBuf);
 	return status;
