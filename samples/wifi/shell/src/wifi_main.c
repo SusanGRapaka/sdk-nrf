@@ -8,51 +8,71 @@
  * @brief WiFi shell sample main function
  */
 
-#include <stdio.h>
 #include <zephyr/sys/printk.h>
 #include <nrfx_clock.h>
 #include <zephyr/device.h>
 #include <zephyr/net/net_config.h>
 
+#include <zephyr/usb/usb_device.h>
+#include <zephyr/net/net_config.h>
+
+
+#define CONFIG_NET_CONFIG_USB_IPV4_ADDR "192.168.250.150"
+int init_usb(void)
+{
+	int ret;
+
+	ret = usb_enable(NULL);
+	if (ret != 0) {
+		printk("Cannot enable USB (%d)", ret);
+		return ret;
+	}
+
+	return 0;
+}
 void main(void)
 {
+	struct in_addr addr;
+
 #ifdef CLOCK_FEATURE_HFCLK_DIVIDE_PRESENT
 	/* For now hardcode to 128MHz */
-	nrfx_clock_divider_set(NRF_CLOCK_DOMAIN_HFCLK,
-			       NRF_CLOCK_HFCLK_DIV_1);
+	nrfx_clock_divider_set(NRF_CLOCK_DOMAIN_HFCLK, NRF_CLOCK_HFCLK_DIV_1);
 #endif
-	printk("Starting %s with CPU frequency: %d MHz\n", CONFIG_BOARD, SystemCoreClock/MHZ(1));
+	printk("Starting %s with CPU frequency: %d MHz\n", CONFIG_BOARD, SystemCoreClock / MHZ(1));
 
-#ifdef CONFIG_NET_CONFIG_SETTINGS
-	/* Without this, DHCPv4 starts on first interface and if that is not Wi-Fi or
-	 * only supports IPv6, then its an issue. (E.g., OpenThread)
-	 *
-	 * So, we start DHCPv4 on Wi-Fi interface always, independent of the ordering.
-	 */
-	/* TODO: Replace device name with DTS settings later */
+	init_usb();
+
+	/* Redirect static IP address to netusb*/
+	const struct device *usb_dev = device_get_binding("eth_netusb");
+	struct net_if *iface = net_if_lookup_by_dev(usb_dev);
+	if (!iface) {
+		printk("Cannot find network interface: %s", "eth_netusb");
+		return;
+	}
+	if (sizeof(CONFIG_NET_CONFIG_USB_IPV4_ADDR) > 1) {
+		if (net_addr_pton(AF_INET, CONFIG_NET_CONFIG_USB_IPV4_ADDR, &addr)) {
+			printk("Invalid address: %s", CONFIG_NET_CONFIG_USB_IPV4_ADDR);
+			return;
+		}
+		net_if_ipv4_addr_add(iface, &addr, NET_ADDR_MANUAL, 0);
+	}
+
+	if (sizeof(CONFIG_NET_CONFIG_MY_IPV4_NETMASK) > 1) {
+		/* If not empty */
+		if (net_addr_pton(AF_INET, CONFIG_NET_CONFIG_MY_IPV4_NETMASK, &addr)) {
+			printk("Invalid netmask: %s", CONFIG_NET_CONFIG_MY_IPV4_NETMASK);
+		} else {
+			net_if_ipv4_set_netmask(iface, &addr);
+		}
+	}
 	const struct device *dev = device_get_binding("wlan0");
+	struct net_if *wifi_iface = net_if_lookup_by_dev(dev);
+	if (!wifi_iface) {
+		printk("Cannot find network interface: %s", "wlan0");
+		return;
+	}
+	/* As both are Ethernet, we need to set specific interface*/
+	net_if_set_default(wifi_iface);
 
 	net_config_init_app(dev, "Initializing network");
-#endif
-/* Test bench for serial agent */
-#if 0
-	for(int i = 0; i < 10; i++) {
-		size_t buf_size = 500 + i * 100;
-
-		printf("Trying buf size: %d\n", buf_size);
-
-		char *buf = malloc(buf_size);
-		if (!buf) {
-			printf("Failed to alloc: %d\n", buf_size);
-			continue;
-		}
-		memset(buf, 0XAA + i, buf_size);
-		printf("START\n");
-		for (int j = 0; j < buf_size; j++)
-			printf("%02X", buf[j]);
-		printf("END\n");
-		free(buf);
-	}
-	exit(0);
-#endif
 }
