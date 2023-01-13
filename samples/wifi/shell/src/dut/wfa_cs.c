@@ -2659,16 +2659,17 @@ int wfaStopPing(dutCmdResponse_t *stpResp, int streamid)
 
 int wfaStaScan(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 {
-
     dutCmdResponse_t infoResp;
     caStaScan_t *staScan = (caStaScan_t *)caCmdBuf;  //comment if not used
-    char *ifname = staScan->intf;
     printf("\n Entry wfaStaScan ...\n ");
 
     // SCAN command
-    sprintf(gCmdStr, "wifi scan");
-    sret = shell_execute_cmd(NULL,gCmdStr);
-    printf("\n %s \n", gCmdStr);
+    struct net_if *iface = net_if_get_default();
+    if (net_mgmt(NET_REQUEST_WIFI_SCAN, iface, NULL, 0)) {
+	    printf("Scan request failed");
+	    return -ENOEXEC;
+    }
+    printf("Scan requested");
     sleep(2);
 
     infoResp.status = STATUS_COMPLETE;
