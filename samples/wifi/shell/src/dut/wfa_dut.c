@@ -514,9 +514,19 @@ dut_main(int argc, char **argv)
 		pthread_attr_getschedpolicy(ptAttr, &ptPolicy);
 		ret = pthread_attr_setstack(ptAttr, &status_check_stack[i], STACK_SIZE);
 		printf("%s:%d ret: %d\n", __func__, __LINE__, ret);
+		if (ret != 0)
+		{
+			DPRINT_INFO(WFA_OUT, "pthread_attr_setstack failed: %d\n", ret);
+			return WFA_FAILURE;
+		}
 		wmm_thr[i].thr_id = pthread_create(&wmm_thr[i].thr,
 				ptAttr, wfa_wmm_thread, &tdata[i]);
 		printf("%s:%d thread_id :%d\n", __func__, __LINE__, wmm_thr[i].thr_id);
+		if (wmm_thr[i].thr_id != 0)
+		{
+			DPRINT_INFO(WFA_OUT, "pthread_create failed: %d\n", wmm_thr[i].thr_id);
+			return WFA_FAILURE;
+		}
 	}
 
 	for(i = 0; i < WFA_MAX_TRAFFIC_STREAMS; i++)

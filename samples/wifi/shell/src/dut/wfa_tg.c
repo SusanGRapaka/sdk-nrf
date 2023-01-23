@@ -408,7 +408,7 @@ int wfaTGRecvStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 	tgProfile_t *theProfile;
 	tgStream_t *myStream;
 
-	DPRINT_INFO(WFA_OUT, "entering tgRecvStart: %d\n", numStreams);
+	DPRINT_INFO(WFA_OUT, "entering tgRecvStart: %d -> %d\n", numStreams, usedThread );
 
 	/*
 	 * The function wfaSetProcPriority called here is to enhance the real-time
@@ -716,7 +716,7 @@ int wfaTGSendStart(int len, BYTE *parms, int *respLen, BYTE *respBuf)
 
 	dutCmdResponse_t staSendResp;
 
-	DPRINT_INFO(WFA_OUT, "Entering tgSendStart for %i streams ...\n", numStreams);
+	DPRINT_INFO(WFA_OUT, "Entering tgSendStart for %i streams ...%d\n", numStreams, usedThread);
 	for(i=0; i<numStreams; i++)
 	{
 		wMEMCPY(&streamid, parms+(4*i), 4);
