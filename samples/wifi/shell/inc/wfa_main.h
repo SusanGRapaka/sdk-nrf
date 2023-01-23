@@ -29,7 +29,7 @@
 #define WFA_MAX_TRAFFIC_STREAMS           8
 
 /* WMM THREADS NUMBER */
-#define WFA_THREADS_NUM   3
+#define WFA_THREADS_NUM   4
 #endif
 
 #define MAX_CMD_BUFF        1024
