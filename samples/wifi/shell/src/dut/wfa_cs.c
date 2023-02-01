@@ -2008,9 +2008,10 @@ int wfaStaSetPwrSave(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
     caStaSetPwrSave_t *setps = (caStaSetPwrSave_t *)caCmdBuf;
     dutCmdResponse_t *SetPSResp = &gGenericResp;
 
-    sprintf(gCmdStr, "iwconfig %s power %s", setps->intf, setps->mode);
+    sprintf(gCmdStr, "wifi ps %s", setps->mode);
     sret = shell_execute_cmd(NULL,gCmdStr);
 
+    printf("\n %s \n",gCmdStr);
 
     SetPSResp->status = STATUS_COMPLETE;
     wfaEncodeTLV(WFA_STA_SET_PWRSAVE_RESP_TLV, 4, (BYTE *)SetPSResp, respBuf);
