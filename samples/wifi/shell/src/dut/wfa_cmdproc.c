@@ -3446,7 +3446,7 @@ int xcCmdProcStaSetPwrSave(char *pcmdStr, BYTE *aBuf, int *aLen)
 			str = strtok_r(NULL, ",", &pcmdStr);
 			strncpy(setps->intf, str, 15);
 		}
-		else if(strcasecmp(str, "mode") == 0)
+		else if((strcasecmp(str, "mode") == 0) || (strcasecmp(str, "powersave") == 0))
 		{
 			str = strtok_r(NULL, ",", &pcmdStr);
 			strncpy(setps->mode, str, 64);
