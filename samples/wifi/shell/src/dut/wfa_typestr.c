@@ -179,7 +179,7 @@ typeNameStr_t nameStr[] =
 	{WFA_STA_SET_EAPFAST_TLV, "sta_set_eapfast", xcCmdProcStaSetEapFAST},
 	{WFA_STA_SET_EAPAKA_TLV, "sta_set_eapaka", xcCmdProcStaSetEapAKA},
 	{WFA_STA_SET_SYSTIME_TLV, "sta_set_systime", xcCmdProcStaSetSystime},
-	{WFA_STA_SET_PWRSAVE_TLV, "sta_set_pwrsave", xcCmdProcStaSetPwrSave},
+	{WFA_STA_SET_PWRSAVE_TLV, "sta_set_power_save", xcCmdProcStaSetPwrSave},
 #ifdef WFA_STA_TB
 	{WFA_STA_RESET_DEFAULT_TLV, "sta_reset_default", xcCmdProcStaResetDefault},
 	{WFA_STA_SET_11N_TLV, "sta_set_11n", xcCmdProcStaSet11n},
