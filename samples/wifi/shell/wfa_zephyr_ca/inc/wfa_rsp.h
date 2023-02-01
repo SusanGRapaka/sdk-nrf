@@ -282,7 +282,7 @@ typedef struct ca_sta_invoke_cmd_resp
 
 typedef struct ca_sta_exec_action_resp
 {
-	char mac[18];
+	char scan_res_buf[256];
 } caStaExecActionResp_t;
 
 typedef struct ca_sta_get_events_resp

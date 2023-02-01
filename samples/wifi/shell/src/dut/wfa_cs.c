@@ -2657,26 +2657,131 @@ int wfaStopPing(dutCmdResponse_t *stpResp, int streamid)
     return WFA_SUCCESS;
 }
 
+#define WIFI_SHELL_MGMT_EVENTS (NET_EVENT_WIFI_SCAN_RESULT |		\
+				NET_EVENT_WIFI_SCAN_DONE)
+
+static struct net_mgmt_event_callback wifi_shell_mgmt_cb;
+char *scan_buffer = NULL;
+int length = 0;
+K_SEM_DEFINE(sem_scan, 0, 1);
+
+static void handle_wifi_scan_result(struct net_mgmt_event_callback *cb)
+{
+	const struct wifi_scan_result *entry =
+		(const struct wifi_scan_result *)cb->info;
+	uint8_t mac_string_buf[sizeof("xx:xx:xx:xx:xx:xx")];
+
+	int ret = 0;
+	static int i = 1;
+	if (!entry) {
+		return;
+	} else {
+		if (length < 1024) {
+			ret = sprintf(scan_buffer + length, "SSID%d,%s,BSSID%d,%s,", i, entry->ssid,
+					i, ((entry->mac_length) ?
+						net_sprint_ll_addr_buf(entry->mac, WIFI_MAC_ADDR_LEN, mac_string_buf,
+							sizeof(mac_string_buf)) : ""));
+			length += ret;
+			i++;
+		}
+	}
+}
+
+static void handle_wifi_scan_done(struct net_mgmt_event_callback *cb)
+{
+	const struct wifi_status *status =
+		(const struct wifi_status *)cb->info;
+
+	if (status->status) {
+		printf("Scan request failed (%d)\n", status->status);
+	} else {
+		printf("Scan request done\n");
+	}
+	length = 0;
+	k_sem_give(&sem_scan);
+}
+
+static void wifi_mgmt_event_handler(struct net_mgmt_event_callback *cb,
+		uint32_t mgmt_event, struct net_if *iface)
+{
+	switch (mgmt_event) {
+		case NET_EVENT_WIFI_SCAN_RESULT:
+			handle_wifi_scan_result(cb);
+			break;
+		case NET_EVENT_WIFI_SCAN_DONE:
+			handle_wifi_scan_done(cb);
+			break;
+		default:
+			break;
+	}
+}
+
+static int wifi_scan(void)
+{
+	struct net_if *iface = net_if_get_default();
+
+	if (net_mgmt(NET_REQUEST_WIFI_SCAN, iface, NULL, 0)) {
+		printf("Scan request failed\n");
+
+		return -ENOEXEC;
+	}
+
+	printf("Scan requested\n");
+
+	return 0;
+}
+
+static void wifi_init(void)
+{
+	static bool val = false;
+
+	if (!val) {
+		net_mgmt_init_event_callback(&wifi_shell_mgmt_cb,
+				wifi_mgmt_event_handler,
+				WIFI_SHELL_MGMT_EVENTS);
+
+		net_mgmt_add_event_callback(&wifi_shell_mgmt_cb);
+		val = true;
+	}
+
+	k_sleep(K_SECONDS(1));
+	wifi_scan();
+}
+
 int wfaStaScan(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 {
-    dutCmdResponse_t infoResp;
-    caStaScan_t *staScan = (caStaScan_t *)caCmdBuf;  //comment if not used
-    printf("\n Entry wfaStaScan ...\n ");
+	dutCmdResponse_t *infoResp = &gGenericResp;
+	caStaScan_t *staScan = (caStaScan_t *)caCmdBuf;  //comment if not used
+	printf("\n Entry wfaStaScan ...\n ");
 
-    // SCAN command
-    struct net_if *iface = net_if_get_default();
-    if (net_mgmt(NET_REQUEST_WIFI_SCAN, iface, NULL, 0)) {
-	    printf("Scan request failed");
-	    return -ENOEXEC;
-    }
-    printf("Scan requested");
-    sleep(2);
+	scan_buffer = malloc(1024);
+	if(!scan_buffer)
+		printf("Malloc failed\n");
 
-    infoResp.status = STATUS_COMPLETE;
-    wfaEncodeTLV(WFA_STA_SCAN_RESP_TLV, sizeof(infoResp), (BYTE *)&infoResp, respBuf);
-    *respLen = WFA_TLV_HDR_LEN + sizeof(infoResp);
+	memset(scan_buffer, 0, 1024);
+	memset(infoResp->cmdru.execAction.scan_res_buf, 0, 256);
+	wifi_init();
+	sleep(3);
 
-   return WFA_SUCCESS;
+	if (k_sem_take(&sem_scan, K_SECONDS(5)) == -EAGAIN) {
+		infoResp->status = STATUS_ERROR;
+		goto exit;
+	} else {
+		if(strlen(scan_buffer)) {
+			memcpy(infoResp->cmdru.execAction.scan_res_buf, scan_buffer, 256);
+			infoResp->status = STATUS_COMPLETE;
+			goto exit;
+		}
+	}
+
+exit:
+	wfaEncodeTLV(WFA_STA_SCAN_RESP_TLV, sizeof(*infoResp), (BYTE *)infoResp, respBuf);
+	*respLen = WFA_TLV_HDR_LEN + sizeof(*infoResp);
+
+	free(scan_buffer);
+	scan_buffer = NULL;
+
+	return WFA_SUCCESS;
 }
 
 #define RSSI_FAILED 0
