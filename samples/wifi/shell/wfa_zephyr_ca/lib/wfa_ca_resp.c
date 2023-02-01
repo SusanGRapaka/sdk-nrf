@@ -820,8 +820,9 @@ int wfaStaExecActionResp(BYTE *cmdBuf)
                         break;
 
                 case STATUS_COMPLETE:
-                        sprintf(gRespStr, "status,COMPLETE,mac,%s\r\n", execActionResp->cmdru.execAction.mac);
-                        printf("status,COMPLETE,mac,%s\r\n", execActionResp->cmdru.execAction.mac);
+                        sprintf(gRespStr, "status,COMPLETE,%s\r\n", execActionResp->cmdru.execAction.scan_res_buf);
+                        printf("status,COMPLETE,%s\r\n", execActionResp->cmdru.execAction.scan_res_buf);
+                        DPRINT_INFO(WFA_OUT, " %s\n", gRespStr);
                         break;
 
                 case STATUS_ERROR:
