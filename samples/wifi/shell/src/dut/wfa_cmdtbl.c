@@ -142,7 +142,7 @@ xcCommandFuncPtr gWfaCmdFuncTbl[WFA_STA_COMMANDS_END] =
 	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (70) */
 	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (71) */
 	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (72) */
-	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (73) */
+	wfaStaSetRFeature,        /*    WFA_STA_SET_RFEATURE_TLV           (73) */
 	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (74) */
 	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (75) */
 	NotDefinedYet,            /*    WFA_TRAFFIC_AGENT_STATUS_TLV       (76) */

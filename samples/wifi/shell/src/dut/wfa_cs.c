@@ -2658,6 +2658,53 @@ int wfaStopPing(dutCmdResponse_t *stpResp, int streamid)
     return WFA_SUCCESS;
 }
 
+/*
+ *  * wfaStaSetRFeature():
+ *   */
+
+int wfaStaSetRFeature(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
+{
+	caStaRFeat_t *rfeat = (caStaRFeat_t *)caCmdBuf;
+	dutCmdResponse_t *caResp = &gGenericResp;
+
+	if(strcasecmp(rfeat->prog, "tdls") == 0)
+	{
+
+	}
+	if(rfeat->prog == 7)
+	{
+		printf("\n------------INSIDE MBO--------\n");
+		printf("\n------------rfeat->cellulardatacap =%d--------\n", rfeat->cellulardatacap);
+		sprintf(gCmdStr, "wpa_cli set mbo_cell_capa %d", rfeat->cellulardatacap);
+		sret = shell_execute_cmd(NULL, gCmdStr);
+		printf("\n %s \n ",gCmdStr);
+		sleep(5);
+		if (chan_buf2 != NULL)
+		{
+			sprintf(gCmdStr, "wpa_cli set non_pref_chan %s %s",
+					chan_buf1, chan_buf2);
+			printf("\n %s \n", gCmdStr);
+			sret = shell_execute_cmd(NULL, gCmdStr);
+			wFREE(chan_buf1);
+			chan_buf1 = NULL;
+			wFREE(chan_buf2);
+			chan_buf2 = NULL;
+		}
+		/* sprintf(gCmdStr, "wpa_cli set non_pref_chan %d:%d:%s:%d",
+		   rfeat->ch_op_class, rfeat->ch_pref_num, rfeat->ch_pref,
+		   rfeat->ch_reason_code);//AJAY
+		   sprintf(gCmdStr, "wpa_cli set non_pref_chan 115:48:0:0", ifname);
+		   sret = shell_execute_cmd(NULL, gCmdStr);
+		   sprintf(gCmdStr, "wpa_cli set non_pref_chan 115:44:1:1", ifname);
+		   sret = shell_execute_cmd(NULL,gCmdStr);*/
+	}
+	caResp->status = STATUS_COMPLETE;
+	wfaEncodeTLV(WFA_STA_SET_RFEATURE_RESP_TLV, 4, (BYTE *)caResp, respBuf);
+	*respLen = WFA_TLV_HDR_LEN + 4;
+
+	return WFA_SUCCESS;
+}
+
 #define WIFI_SHELL_MGMT_EVENTS (NET_EVENT_WIFI_SCAN_RESULT |		\
 				NET_EVENT_WIFI_SCAN_DONE)
 
