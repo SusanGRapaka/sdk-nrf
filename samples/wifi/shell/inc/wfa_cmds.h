@@ -1537,6 +1537,29 @@ typedef struct ca_sta_set_radio
     wfaOnOffType mode;
 } caStaSetRadio_t;
 
+typedef enum wfa_twt_operation {
+	WFA_TWT_SETUP = 0,
+	WFA_TWT_TEARDOWN,
+} CaStaTwtOperation;
+
+typedef struct wfa_twt_configs
+{
+	BYTE NDPPagingInd;
+	BYTE RespPMMode;
+	BYTE NegotiationType;
+	CaStaTwtOperation Twt_Setup;
+	BYTE SetupCommand;
+	BYTE TWT_Trigger;
+	BYTE Implicit;
+	BYTE FlowType;
+	BYTE WakeIntervalExp;
+	BYTE Protection;
+	WORD NominalMinWakeDur;
+	WORD WakeIntervalMantissa;
+	BYTE Twt_Channel;
+	BYTE FlowID;
+}CaTwtConfig;
+
 typedef struct ca_sta_rfeature
 {
     char intf[WFA_IF_NAME_LEN];
@@ -1552,6 +1575,7 @@ typedef struct ca_sta_rfeature
     char ch_pref[16];
     BYTE ch_pref_num;
     BYTE ch_reason_code;
+    CaTwtConfig Twt_Config;
 } caStaRFeat_t;
 
 typedef struct ca_sta_exec_action

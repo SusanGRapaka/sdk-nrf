@@ -5921,8 +5921,10 @@ int xcCmdProcStaSet11n(char *pcmdStr, BYTE *aBuf, int *aLen)
 int xcCmdProcStaSetRFeature(char *pcmdStr, BYTE *aBuf, int *aLen)
 {
 	caStaRFeat_t *rfeat = (caStaRFeat_t *) (aBuf+sizeof(wfaTLV));;
+	CaTwtConfig *Twt_Feat;
 	char *str;
 
+	DPRINT_INFO(WFA_OUT, "Entering xcCmdProcStaScan ...\n");
 	if(aBuf == NULL)
 		return WFA_FAILURE;
 
@@ -5946,7 +5948,138 @@ int xcCmdProcStaSetRFeature(char *pcmdStr, BYTE *aBuf, int *aLen)
 			{
 				rfeat->prog = PROG_TYPE_MBO;
 			}
-		}
+			else if (strcasecmp(str, "HE") == 0)
+			{
+				rfeat->prog = PROG_TYPE_HE;
+				DPRINT_INFO(WFA_OUT, "Prog:%d\n", rfeat->prog);
+				Twt_Feat = (CaTwtConfig *) &rfeat->Twt_Config;
+				for(;;)
+				{
+					str = strtok_r(NULL, ",", &pcmdStr);
+					if(str == NULL || str[0] == '\0')
+						break;
+					if (strcasecmp(str, "NDPPagingInd") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						rfeat->Twt_Config.NDPPagingInd = atoi(str);
+						DPRINT_INFO(WFA_OUT, "NDPPagingInd:%d\n", rfeat->Twt_Config.NDPPagingInd);
+					}
+					else if (strcasecmp(str, "RespPMMode") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						rfeat->Twt_Config.RespPMMode = atoi(str);
+						DPRINT_INFO(WFA_OUT, "RespPMMode:%d\n", rfeat->Twt_Config.RespPMMode);
+					}
+					else if (strcasecmp(str, "NegotiationType") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						rfeat->Twt_Config.NegotiationType = atoi(str);
+						DPRINT_INFO(WFA_OUT, "NegotiationType:%d\n", rfeat->Twt_Config.NegotiationType);
+					}
+					else if (strcasecmp(str, "SetupCommand") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						/*if (strcasecmp(str, "request") == 0)
+						  {
+						  rfeat->Twt_Config.SetupCommand = WFA_TWT_SETUP_CMD_REQUEST;
+						  }
+						  else if (strcasecmp(str, "suggest") == 0)
+						  {
+						  rfeat->Twt_Config.SetupCommand = WFA_TWT_SETUP_CMD_SUGGEST;
+						  }
+						  else if (strcasecmp(str, "demand") == 0)
+						  {
+						  rfeat->Twt_Config.SetupCommand = WFA_TWT_SETUP_CMD_DEMAND;
+						  }
+						  else if (strcasecmp(str, "grouping") == 0)
+						  {
+						  rfeat->Twt_Config.SetupCommand = WFA_TWT_SETUP_CMD_GROUPING;
+						  }
+						  else if (strcasecmp(str, "accept") == 0)
+						  {
+						  rfeat->Twt_Config.SetupCommand = WFA_TWT_SETUP_CMD_ACCEPT;
+						  }
+						  else if (strcasecmp(str, "alternate") == 0)
+						  {
+						  rfeat->Twt_Config.SetupCommand = WFA_TWT_SETUP_CMD_ALTERNATE;
+						  }
+						  else if (strcasecmp(str, "reject") == 0)
+						  {
+						  rfeat->Twt_Config.SetupCommand = WFA_TWT_SETUP_CMD_REJECT;
+						  }*/
+						rfeat->Twt_Config.SetupCommand = atoi(str);
+						DPRINT_INFO(WFA_OUT, "SetupCommand:%d\n", rfeat->Twt_Config.SetupCommand);
+					}
+					else if (strcasecmp(str, "Twt_Setup") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						if (strcasecmp(str, "request") == 0)
+						{
+							rfeat->Twt_Config.Twt_Setup = WFA_TWT_SETUP;
+						}
+						else if(strcasecmp(str, "teardown") == 0)
+						{
+							rfeat->Twt_Config.Twt_Setup = WFA_TWT_TEARDOWN;
+						}
+						DPRINT_INFO(WFA_OUT, "Twt_Setup:%d\n", rfeat->Twt_Config.Twt_Setup);
+					}
+					else if (strcasecmp(str, "TWT_Trigger") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						rfeat->Twt_Config.TWT_Trigger = atoi(str);
+						DPRINT_INFO(WFA_OUT, "TWT_Trigger:%d\n", rfeat->Twt_Config.TWT_Trigger);
+					}
+					else if (strcasecmp(str, "implicit") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						rfeat->Twt_Config.Implicit = atoi(str);
+						DPRINT_INFO(WFA_OUT, "Implicit:%d\n", rfeat->Twt_Config.Implicit);
+					}
+					else if (strcasecmp(str, "FlowType") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						rfeat->Twt_Config.FlowType = atoi(str);
+						DPRINT_INFO(WFA_OUT, "FlowType:%d\n", rfeat->Twt_Config.FlowType);
+					}
+					else if (strcasecmp(str, "WakeIntervalExp") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						rfeat->Twt_Config.WakeIntervalExp = atoi(str);
+						DPRINT_INFO(WFA_OUT, "WakeIntervalExp:%d\n", rfeat->Twt_Config.WakeIntervalExp);
+					}
+					else if (strcasecmp(str, "protection") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						rfeat->Twt_Config.Protection = atoi(str);
+						DPRINT_INFO(WFA_OUT, "protection:%d\n", rfeat->Twt_Config.Protection);
+					}
+					else if (strcasecmp(str, "NominalMinWakeDur") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						rfeat->Twt_Config.NominalMinWakeDur = atoi(str);
+						DPRINT_INFO(WFA_OUT, "NominalMinWakeDur:%d\n", rfeat->Twt_Config.NominalMinWakeDur);
+					}
+					else if (strcasecmp(str, "WakeIntervalMantissa") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						rfeat->Twt_Config.WakeIntervalMantissa = atoi(str);
+						DPRINT_INFO(WFA_OUT, "WakeIntervalMantissa:%d\n", rfeat->Twt_Config.WakeIntervalMantissa);
+					}
+					else if (strcasecmp(str, "TWT_Channel") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						rfeat->Twt_Config.Twt_Channel = atoi(str);
+						DPRINT_INFO(WFA_OUT, "TWT_Channel:%d\n", rfeat->Twt_Config.Twt_Channel);
+					}
+					else if (strcasecmp(str, "FlowID") == 0)
+					{
+						str = strtok_r(NULL, ",", &pcmdStr);
+						rfeat->Twt_Config.FlowID = atoi(str);
+						DPRINT_INFO(WFA_OUT, "FlowID:%d\n", rfeat->Twt_Config.FlowID);
+					}
+				}
+			}
+		}/*End Of Prog*/
 		else if(strcasecmp(str, "uapsd") == 0)
 		{
 			str = strtok_r(NULL, ",", &pcmdStr);
