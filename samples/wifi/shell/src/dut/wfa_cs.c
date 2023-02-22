@@ -2731,15 +2731,11 @@ int wfaStaSetRFeature(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 	return WFA_SUCCESS;
 }
 
-#define WIFI_SHELL_MGMT_EVENTS (NET_EVENT_WIFI_SCAN_RESULT |		\
-				NET_EVENT_WIFI_SCAN_DONE)
-
-static struct net_mgmt_event_callback wifi_shell_mgmt_cb;
 char *scan_buffer = NULL;
 int length = 0;
 K_SEM_DEFINE(sem_scan, 0, 1);
 
-static void handle_wifi_scan_result(struct net_mgmt_event_callback *cb)
+static void handle_wfa_scan_result(struct net_mgmt_event_callback *cb)
 {
 	const struct wifi_scan_result *entry =
 		(const struct wifi_scan_result *)cb->info;
@@ -2747,10 +2743,14 @@ static void handle_wifi_scan_result(struct net_mgmt_event_callback *cb)
 
 	int ret = 0;
 	static int i = 1;
+
 	if (!entry) {
 		return;
 	} else {
-		if (length < 1024) {
+		if(length == 0) {
+			i = 1;
+		}
+		if ((length < 1024) && (i < 10)) {
 			ret = sprintf(scan_buffer + length, "SSID%d,%s,BSSID%d,%s,", i, entry->ssid,
 					i, ((entry->mac_length) ?
 						net_sprint_ll_addr_buf(entry->mac, WIFI_MAC_ADDR_LEN, mac_string_buf,
@@ -2761,7 +2761,7 @@ static void handle_wifi_scan_result(struct net_mgmt_event_callback *cb)
 	}
 }
 
-static void handle_wifi_scan_done(struct net_mgmt_event_callback *cb)
+static void handle_wfa_scan_done(struct net_mgmt_event_callback *cb)
 {
 	const struct wifi_status *status =
 		(const struct wifi_status *)cb->info;
@@ -2775,22 +2775,22 @@ static void handle_wifi_scan_done(struct net_mgmt_event_callback *cb)
 	k_sem_give(&sem_scan);
 }
 
-static void wifi_mgmt_event_handler(struct net_mgmt_event_callback *cb,
+void wfa_mgmt_event_handler(struct net_mgmt_event_callback *cb,
 		uint32_t mgmt_event, struct net_if *iface)
 {
 	switch (mgmt_event) {
 		case NET_EVENT_WIFI_SCAN_RESULT:
-			handle_wifi_scan_result(cb);
+			handle_wfa_scan_result(cb);
 			break;
 		case NET_EVENT_WIFI_SCAN_DONE:
-			handle_wifi_scan_done(cb);
+			handle_wfa_scan_done(cb);
 			break;
 		default:
 			break;
 	}
 }
 
-static int wifi_scan(void)
+static int wfa_scan(void)
 {
 	struct net_if *iface = net_if_get_default();
 
@@ -2805,23 +2805,6 @@ static int wifi_scan(void)
 	return 0;
 }
 
-static void wifi_init(void)
-{
-	static bool val = false;
-
-	if (!val) {
-		net_mgmt_init_event_callback(&wifi_shell_mgmt_cb,
-				wifi_mgmt_event_handler,
-				WIFI_SHELL_MGMT_EVENTS);
-
-		net_mgmt_add_event_callback(&wifi_shell_mgmt_cb);
-		val = true;
-	}
-
-	k_sleep(K_SECONDS(1));
-	wifi_scan();
-}
-
 int wfaStaScan(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 {
 	dutCmdResponse_t *infoResp = &gGenericResp;
@@ -2834,7 +2817,7 @@ int wfaStaScan(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 
 	memset(scan_buffer, 0, 1024);
 	memset(infoResp->cmdru.execAction.scan_res_buf, 0, 256);
-	wifi_init();
+	wfa_scan();
 	sleep(3);
 
 	if (k_sem_take(&sem_scan, K_SECONDS(5)) == -EAGAIN) {

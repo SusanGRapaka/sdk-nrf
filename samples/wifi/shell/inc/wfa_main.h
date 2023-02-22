@@ -52,6 +52,11 @@
 
 #define WFA_CMD_STR_SZ      512
 
+#include <zephyr/net/wifi_mgmt.h>
+
+#define WFA_SHELL_MGMT_EVENTS (NET_EVENT_WIFI_SCAN_RESULT |		\
+				NET_EVENT_WIFI_SCAN_DONE)
+
 enum tg_port
 {
     UDP_PORT_BE1 = 0,

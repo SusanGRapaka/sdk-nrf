@@ -51,6 +51,19 @@ void init_thr_flag()
 	}
 }
 
+struct net_mgmt_event_callback wfa_shell_mgmt_cb;
+void wfa_mgmt_event_handler(struct net_mgmt_event_callback *cb,
+		uint32_t mgmt_event, struct net_if *iface);
+
+void wfa_scan_init(void)
+{
+	printf("In WFA_Scan_Init....!\n");
+	net_mgmt_init_event_callback(&wfa_shell_mgmt_cb,
+			wfa_mgmt_event_handler,
+			WFA_SHELL_MGMT_EVENTS);
+
+	net_mgmt_add_event_callback(&wfa_shell_mgmt_cb);
+}
 
 void wfa_dut_init(BYTE **tBuf, BYTE **rBuf, BYTE **paBuf, BYTE **cBuf, struct timeval **timerp)
 {
@@ -102,4 +115,6 @@ void wfa_dut_init(BYTE **tBuf, BYTE **rBuf, BYTE **paBuf, BYTE **cBuf, struct ti
 		DPRINT_ERR(WFA_ERR, "Failed to malloc parms value buff\n");
 		exit(1);
 	}
+
+	wfa_scan_init();
 }
