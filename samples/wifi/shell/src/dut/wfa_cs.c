@@ -34,6 +34,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
 #include <stdio.h>
+#include <math.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
@@ -2697,6 +2698,31 @@ int wfaStaSetRFeature(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 		   sret = shell_execute_cmd(NULL, gCmdStr);
 		   sprintf(gCmdStr, "wpa_cli set non_pref_chan 115:44:1:1", ifname);
 		   sret = shell_execute_cmd(NULL,gCmdStr);*/
+	}
+	else if (rfeat->prog == 11)
+	{
+		printf("\n------------INSIDE HE--------\n");
+		if (rfeat->Twt_Config.Twt_Setup == WFA_TWT_SETUP) {
+			int twt_wake_interval_ms = (rfeat->Twt_Config.NominalMinWakeDur * 256)/1000;
+			if (twt_wake_interval_ms > 65) {
+				twt_wake_interval_ms = (twt_wake_interval_ms * 1024)/1000;
+			}
+			int twt_interval_ms = ((pow(2, rfeat->Twt_Config.WakeIntervalExp)) * rfeat->Twt_Config.WakeIntervalMantissa)/1000;
+
+			sprintf(gCmdStr, "wifi twt setup %d %d 1 1 %d %d %d %d %d %d", rfeat->Twt_Config.NegotiationType,
+						rfeat->Twt_Config.SetupCommand, rfeat->Twt_Config.RespPMMode,
+						rfeat->Twt_Config.TWT_Trigger, rfeat->Twt_Config.Implicit,
+						rfeat->Twt_Config.FlowType, twt_wake_interval_ms,
+						twt_interval_ms);
+			printf("\n------------%s--------\n", gCmdStr);
+			sret = shell_execute_cmd(NULL, gCmdStr);
+		}
+		else if (rfeat->Twt_Config.Twt_Setup == WFA_TWT_TEARDOWN) {
+			sprintf(gCmdStr, "wifi twt teardown %d 0 1 %d", rfeat->Twt_Config.NegotiationType,
+						rfeat->Twt_Config.FlowID);
+			printf("\n------------%s--------\n", gCmdStr);
+			sret = shell_execute_cmd(NULL, gCmdStr);
+		}
 	}
 	caResp->status = STATUS_COMPLETE;
 	wfaEncodeTLV(WFA_STA_SET_RFEATURE_RESP_TLV, 4, (BYTE *)caResp, respBuf);
