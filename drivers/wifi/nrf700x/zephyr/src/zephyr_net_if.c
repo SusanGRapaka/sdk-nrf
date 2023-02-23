@@ -178,6 +178,12 @@ static void ip_maddr_event_handler(struct net_mgmt_event_callback *cb,
 	enum wifi_nrf_status status;
 	uint8_t mac_string_buf[sizeof("xx:xx:xx:xx:xx:xx")];
 
+	if ((mgmt_event != NET_EVENT_IPV4_MADDR_ADD) &&
+		(mgmt_event != NET_EVENT_IPV4_MADDR_DEL)) {
+		LOG_ERR("Invalid event\n");
+		return;
+	}
+
 	dev = net_if_get_device(iface);
 
 	if (!dev) {
