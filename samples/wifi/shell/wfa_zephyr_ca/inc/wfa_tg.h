@@ -237,6 +237,7 @@ extern int wfaTGSendPing(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf);
 extern int wfaTGStopPing(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf);
 
 extern int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *aRespLen);
+extern int wfaSendBitrateDataVI(int mySockfd, int streamId, BYTE *pRespBuf, int *aRespLen);
 tgStream_t *findStreamProfile(int streamId);
 tgProfile_t *findTGProfile(int streamId);
 int convertDscpToTos(int dscp); // return >=0 as TOS, otherwise error.

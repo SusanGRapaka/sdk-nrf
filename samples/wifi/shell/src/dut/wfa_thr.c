@@ -721,11 +721,23 @@ void * wfa_wmm_thread(void *thr_param)
 
 					if ( (myProfile->rate != 0 ) /* WFA_SEND_FIX_BITRATE_MAX_FRAME_RATE)*/ && 
 						(myProfile->pksize * myProfile->rate * 8 < WFA_SEND_FIX_BITRATE_MAX) &&
-							(myProfile->trafficClass != TG_WMM_AC_VO)  ) 
+							(myProfile->trafficClass != TG_WMM_AC_VO) && (myProfile->trafficClass != TG_WMM_AC_VI) )
+					{
+							printf("trafficClass is BE or BK %d\n",myProfile->trafficClass);	
 							wfaSendBitrateData(mySock, myStreamId, respBuf, &respLen);
+					}
+					else if ( (myProfile->rate != 0 ) /* WFA_SEND_FIX_BITRATE_MAX_FRAME_RATE)*/ && 
+						(myProfile->trafficClass == TG_WMM_AC_VI) )
+					{
+							printf("trafficClass is Video = %d\n",myProfile->trafficClass);	
+							wfaSendBitrateDataVI(mySock, myStreamId, respBuf, &respLen);
+							// wfaSendLongFile(mySock, myStreamId, respBuf, &respLen);
+					}
+
 					else
 					{
-						wfaSendLongFile(mySock, myStreamId, respBuf, &respLen);
+							printf("trafficClass is Voice = %d\n",myProfile->trafficClass);	
+							wfaSendLongFile(mySock, myStreamId, respBuf, &respLen);
 					}
 
 					/* wfaSendLongFile(mySock, myStreamId, respBuf, &respLen); */
@@ -792,6 +804,7 @@ void * wfa_wmm_thread(void *thr_param)
 								{
 									DPRINT_INFO(WFA_OUT, "wfa_wmm_thread SEND,PROF_TRANSC::a Null respBuf\n");
 								}
+							printf("trafficClass ...............!\n");	
 								memset(respBuf, 0, WFA_RESP_BUF_SZ);
 								respLen = 0;
 								memset(trafficBuf  ,0, MAX_UDP_LEN + 1);
@@ -927,6 +940,7 @@ void * wfa_wmm_thread(void *thr_param)
 				if(myId == sendThrId)
 				{
 					wfaSentStatsResp(gxcSockfd, respBuf);
+							printf("\n");	
 					printf("done stats\n");
 					sendThrId = 0;
 				}
