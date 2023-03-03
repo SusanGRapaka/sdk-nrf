@@ -256,31 +256,61 @@ int wfaTGSetPrio(int sockfd, int tgUserPriority)
  */
 void wfaSetThreadPrio(int tid, int userPriority)
 {
-	struct sched_param tschedParam;
 	pthread_attr_t tattr;
 
-	wPT_ATTR_INIT(&tattr);
-	wPT_ATTR_SETSCH(&tattr, SCHED_RR);
+	//wPT_ATTR_INIT(&tattr);
+	//wPT_ATTR_SETSCH(&tattr, SCHED_RR);
+
+	struct sched_param ptSchedParam;	
+	//pthread_t thr_ptr = &my_wmm->pthread_thr.thr;
+	int thr_id;
+			printf("thread id is in Prio %d\n",tid);
 
 	switch(userPriority)
 	{
 		case TG_WMM_AC_BK:
-			tschedParam.sched_priority = -1;
+			//ptSchedParam.sched_priority = 10;
+			ptSchedParam.sched_priority = 0;
+			printf("thread id = %d trafficClass = BK Priority= %d \n",tid,ptSchedParam.sched_priority);
 			break;
 		case TG_WMM_AC_VI:
-			tschedParam.sched_priority = 19-1;
+			//ptSchedParam.sched_priority = 2;
+			ptSchedParam.sched_priority = 9;
+			printf("thread id = %d trafficClass = VI Priority= %d \n",tid,ptSchedParam.sched_priority);
 			break;
 		case TG_WMM_AC_VO:
-			tschedParam.sched_priority = 19;
+			//ptSchedParam.sched_priority = 1;
+			ptSchedParam.sched_priority = 10;
+			printf("thread id = %d trafficClass = VO Priority= %d \n",tid,ptSchedParam.sched_priority);
 			break;
 		case TG_WMM_AC_BE:
-			tschedParam.sched_priority = 0;
+			//ptSchedParam.sched_priority = 9;			
+			ptSchedParam.sched_priority = 1;
+			printf("thread id = %d trafficClass = BE Priority= %d \n",tid,ptSchedParam.sched_priority);
 		default:
 			/* default */
 			;
 	}
+	int i = 0,ret;
+//	for(int i = 0; i< WFA_THREADS_NUM; i++)
+	while(i < WFA_THREADS_NUM)
+	{
+		thr_id = wmm_thr[i].thr;
+		if(thr_id == tid)
+			break;
+		i++;
+	}
+		printf("thread id is %d and tid = %d\n",thr_id,tid);
+	//if(thr_id == tid)
+	//	{	
+			printf("Calling thread schedule...!\n",thr_id);
+		ret  =	pthread_setschedparam(thr_id,1,&ptSchedParam);
+		printf("set priority ret = %d...\n",ret);
+		if(ret == -1)
+			printf("set priority invalid...\n");
+	//	}
 
-	wPT_ATTR_SETSCHPARAM(&tattr, &tschedParam);
+	//wPT_ATTR_SETSCHPARAM(&tattr, &tschedParam);
 }
 
 /*
@@ -622,7 +652,6 @@ void * wfa_wmm_thread(void *thr_param)
 	wPT_ATTR_INIT(&tattr);
 	wPT_ATTR_SETSCH(&tattr, SCHED_RR);
 
-
 	while(1)
 	{
 		int sleepTotal=0,sendFailCount=0;
@@ -718,7 +747,7 @@ void * wfa_wmm_thread(void *thr_param)
 					getsockopt(mySock, SOL_SOCKET, SO_SNDBUF, (char *)&iOptVal, (socklen_t *)&iOptLen);
 					iOptVal = iOptVal * 16;
 					setsockopt(mySock, SOL_SOCKET, SO_SNDBUF, (char *)&iOptVal, (socklen_t )iOptLen);
-
+#if 1
 					if ( (myProfile->rate != 0 ) /* WFA_SEND_FIX_BITRATE_MAX_FRAME_RATE)*/ && 
 						(myProfile->pksize * myProfile->rate * 8 < WFA_SEND_FIX_BITRATE_MAX) &&
 							(myProfile->trafficClass != TG_WMM_AC_VO) && (myProfile->trafficClass != TG_WMM_AC_VI) )
@@ -731,7 +760,7 @@ void * wfa_wmm_thread(void *thr_param)
 					{
 							printf("trafficClass is Video = %d\n",myProfile->trafficClass);	
 							wfaSendBitrateDataVI(mySock, myStreamId, respBuf, &respLen);
-							// wfaSendLongFile(mySock, myStreamId, respBuf, &respLen);
+							 //wfaSendLongFile(mySock, myStreamId, respBuf, &respLen);
 					}
 
 					else
@@ -739,8 +768,18 @@ void * wfa_wmm_thread(void *thr_param)
 							printf("trafficClass is Voice = %d\n",myProfile->trafficClass);	
 							wfaSendLongFile(mySock, myStreamId, respBuf, &respLen);
 					}
-
+#endif
+#if 0
+					 if ( (myProfile->rate != 0 ) /* WFA_SEND_FIX_BITRATE_MAX_FRAME_RATE)*/ &&
+                                                (myProfile->pksize * myProfile->rate * 8 < WFA_SEND_FIX_BITRATE_MAX) &&
+                                                        (myProfile->trafficClass != TG_WMM_AC_VO)  )
+                                                        wfaSendBitrateData(mySock, myStreamId, respBuf, &respLen);
+                                        else
+                                        {
+                                                	wfaSendLongFile(mySock, myStreamId, respBuf, &respLen);
+                                        }
 					/* wfaSendLongFile(mySock, myStreamId, respBuf, &respLen); */
+#endif
 					if(mySock != -1)
 					{
 						wCLOSE(mySock);

@@ -521,7 +521,7 @@ dut_main(int argc, char **argv)
 		}
 		wmm_thr[i].thr_id = pthread_create(&wmm_thr[i].thr,
 				ptAttr, wfa_wmm_thread, &tdata[i]);
-		printf("%s:%d thread_id :%d\n", __func__, __LINE__, wmm_thr[i].thr_id);
+		printf("%s:%d thread_id :%d thr = %d\n", __func__, __LINE__, wmm_thr[i].thr_id,wmm_thr[i].thr);
 		if (wmm_thr[i].thr_id != 0)
 		{
 			DPRINT_INFO(WFA_OUT, "pthread_create failed: %d\n", wmm_thr[i].thr_id);

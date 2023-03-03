@@ -1478,12 +1478,12 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 		ret= WFA_FAILURE;
 		goto errcleanup;
 	}
-	memset(packBuf, 0, packLen + 4);
+	wMEMSET(packBuf, 0, packLen + 4);
 	/* fill in the header */
 	wSTRNCPY(packBuf, "1345678", sizeof(tgHeader_t));
 
 	/*  initialize the destination address  */
-	memset(&toAddr, 0, sizeof(toAddr));
+	wMEMSET(&toAddr, 0, sizeof(toAddr));
 	toAddr.sin_family = AF_INET;
 	inet_pton(toAddr.sin_family, theProf->dipaddr, &toAddr.sin_addr);
 	toAddr.sin_port = htons(theProf->dport);
@@ -1588,13 +1588,13 @@ int wfaSendBitrateData(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespLen
 		}
 
 	}// while loop
-
+	printf("BytesSent in BE = %d  sock = %d streamId = %d\n",counter,mySockfd,streamId);
 	if (packBuf) wFREE(packBuf);
 	/* return statistics */
 	sendResp.status = STATUS_COMPLETE;
 	sendResp.streamId = myStream->id;
 
-	memcpy(&sendResp.cmdru.stats, &myStream->stats, sizeof(tgStats_t));
+	wMEMCPY(&sendResp.cmdru.stats, &myStream->stats, sizeof(tgStats_t));
 
 	wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, sizeof(dutCmdResponse_t),(BYTE *)&sendResp, (BYTE *)pRespBuf);
 			*pRespLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
@@ -1682,12 +1682,12 @@ int wfaSendBitrateDataVI(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespL
 		ret= WFA_FAILURE;
 		goto errcleanup;
 	}
-	memset(packBuf, 0, packLen + 4);
+	wMEMSET(packBuf, 0, packLen + 4);
 	/* fill in the header */
 	wSTRNCPY(packBuf, "1345678", sizeof(tgHeader_t));
 
 	/*  initialize the destination address  */
-	memset(&toAddr, 0, sizeof(toAddr));
+	wMEMSET(&toAddr, 0, sizeof(toAddr));
 	toAddr.sin_family = AF_INET;
 	inet_pton(toAddr.sin_family, theProf->dipaddr, &toAddr.sin_addr);
 	toAddr.sin_port = htons(theProf->dport);
@@ -1793,12 +1793,13 @@ int wfaSendBitrateDataVI(int mySockfd, int streamId, BYTE *pRespBuf, int *pRespL
 
 	}// while loop
 
+	printf("BytesSent in VI = %d  sock = %d streamId = %d\n",counter,mySockfd,streamId);
 	if (packBuf) wFREE(packBuf);
 	/* return statistics */
 	sendResp.status = STATUS_COMPLETE;
 	sendResp.streamId = myStream->id;
 
-	memcpy(&sendResp.cmdru.stats, &myStream->stats, sizeof(tgStats_t));
+	wMEMCPY(&sendResp.cmdru.stats, &myStream->stats, sizeof(tgStats_t));
 
 	wfaEncodeTLV(WFA_TRAFFIC_AGENT_SEND_RESP_TLV, sizeof(dutCmdResponse_t),(BYTE *)&sendResp, (BYTE *)pRespBuf);
 			*pRespLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
