@@ -269,22 +269,18 @@ void wfaSetThreadPrio(int tid, int userPriority)
 	switch(userPriority)
 	{
 		case TG_WMM_AC_BK:
-			//ptSchedParam.sched_priority = 10;
 			ptSchedParam.sched_priority = 0;
 			printf("thread id = %d trafficClass = BK Priority= %d \n",tid,ptSchedParam.sched_priority);
 			break;
 		case TG_WMM_AC_VI:
-			//ptSchedParam.sched_priority = 2;
-			ptSchedParam.sched_priority = 9;
+			ptSchedParam.sched_priority = 10;
 			printf("thread id = %d trafficClass = VI Priority= %d \n",tid,ptSchedParam.sched_priority);
 			break;
 		case TG_WMM_AC_VO:
-			//ptSchedParam.sched_priority = 1;
-			ptSchedParam.sched_priority = 10;
+			ptSchedParam.sched_priority = 11;
 			printf("thread id = %d trafficClass = VO Priority= %d \n",tid,ptSchedParam.sched_priority);
 			break;
 		case TG_WMM_AC_BE:
-			//ptSchedParam.sched_priority = 9;			
 			ptSchedParam.sched_priority = 1;
 			printf("thread id = %d trafficClass = BE Priority= %d \n",tid,ptSchedParam.sched_priority);
 		default:
@@ -747,7 +743,7 @@ void * wfa_wmm_thread(void *thr_param)
 					getsockopt(mySock, SOL_SOCKET, SO_SNDBUF, (char *)&iOptVal, (socklen_t *)&iOptLen);
 					iOptVal = iOptVal * 16;
 					setsockopt(mySock, SOL_SOCKET, SO_SNDBUF, (char *)&iOptVal, (socklen_t )iOptLen);
-#if 1
+#if 0
 					if ( (myProfile->rate != 0 ) /* WFA_SEND_FIX_BITRATE_MAX_FRAME_RATE)*/ && 
 						(myProfile->pksize * myProfile->rate * 8 < WFA_SEND_FIX_BITRATE_MAX) &&
 							(myProfile->trafficClass != TG_WMM_AC_VO) && (myProfile->trafficClass != TG_WMM_AC_VI) )
@@ -769,7 +765,7 @@ void * wfa_wmm_thread(void *thr_param)
 							wfaSendLongFile(mySock, myStreamId, respBuf, &respLen);
 					}
 #endif
-#if 0
+#if 1
 					 if ( (myProfile->rate != 0 ) /* WFA_SEND_FIX_BITRATE_MAX_FRAME_RATE)*/ &&
                                                 (myProfile->pksize * myProfile->rate * 8 < WFA_SEND_FIX_BITRATE_MAX) &&
                                                         (myProfile->trafficClass != TG_WMM_AC_VO)  )
