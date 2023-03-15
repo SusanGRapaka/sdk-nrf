@@ -256,12 +256,11 @@ int wfaTGSetPrio(int sockfd, int tgUserPriority)
  */
 void wfaSetThreadPrio(int tid, int userPriority)
 {
-#if 1
 	struct sched_param tschedParam;
 	pthread_attr_t tattr;
-
-	wPT_ATTR_INIT(&tattr);
-	wPT_ATTR_SETSCH(&tattr, SCHED_RR);
+	int thr_id;
+	//wPT_ATTR_INIT(&tattr);
+	//wPT_ATTR_SETSCH(&tattr, SCHED_RR);
 
 	switch(userPriority)
 	{
@@ -280,39 +279,8 @@ void wfaSetThreadPrio(int tid, int userPriority)
 			/* default */
 			;
 	}
-	wPT_ATTR_SETSCHPARAM(&tattr, &tschedParam);
-
-
-#endif
-#if 0
-	/*Changed to set Thread priority acc to traffci Class*/
-	pthread_attr_t tattr;
-
-	struct sched_param ptSchedParam;	
-	int thr_id;
-			printf("thread id is in Prio %d\n",tid);
-
-	switch(userPriority)
-	{
-		case TG_WMM_AC_BK:
-			ptSchedParam.sched_priority = 0;
-			printf("thread id = %d trafficClass = BK Priority= %d \n",tid,ptSchedParam.sched_priority);
-			break;
-		case TG_WMM_AC_VI:
-			ptSchedParam.sched_priority = 9;
-			printf("thread id = %d trafficClass = VI Priority= %d \n",tid,ptSchedParam.sched_priority);
-			break;
-		case TG_WMM_AC_VO:
-			ptSchedParam.sched_priority = 10;
-			printf("thread id = %d trafficClass = VO Priority= %d \n",tid,ptSchedParam.sched_priority);
-			break;
-		case TG_WMM_AC_BE:
-			ptSchedParam.sched_priority = 1;
-			printf("thread id = %d trafficClass = BE Priority= %d \n",tid,ptSchedParam.sched_priority);
-		default:
-			/* default */
-			;
-	}
+	//wPT_ATTR_SETSCHPARAM(&tattr, &tschedParam);
+	
 	int i = 0,ret;
 	while(i < WFA_THREADS_NUM)
 	{
@@ -321,17 +289,12 @@ void wfaSetThreadPrio(int tid, int userPriority)
 			break;
 		i++;
 	}
-		printf("thread id is %d and tid = %d\n",thr_id,tid);
-	//if(thr_id == tid)
-	//	{	
-			printf("Calling thread schedule...!\n",thr_id);
-		ret  =	pthread_setschedparam(thr_id,1,&ptSchedParam);
-		printf("set priority ret = %d...\n",ret);
+		ret  =	pthread_setschedparam(thr_id,1,&tschedParam);
 		if(ret == -1)
 			printf("set priority invalid...\n");
-	//	}
 
-#endif
+
+
 }
 
 /*
